@@ -1,0 +1,8 @@
+apiVersion: v2
+name: redis
+description: Redis for Quiz App multiplayer pub/sub and session state
+type: application
+version: 1.0.0
+appVersion: "7.2"
+maintainers:
+  - name: Liav

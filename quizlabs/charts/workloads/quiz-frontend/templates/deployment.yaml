@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "quiz-frontend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "quiz-frontend.labels" . | nindent 4 }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "quiz-frontend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "quiz-frontend.selectorLabels" . | nindent 8 }}
+
+    spec:
+      serviceAccountName: {{ include "quiz-frontend.serviceAccountName" . }}
+
+      containers:
+        - name: quiz-frontend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            # Backend service URL for nginx proxy
+            - name: BACKEND_URL
+              value: "{{ .Values.backend.serviceName }}.{{ .Values.backend.namespace }}.svc.cluster.local:{{ .Values.backend.port }}"
+            # Multiplayer service URL for nginx websocket proxy
+            - name: MULTIPLAYER_URL
+              value: "{{ .Values.multiplayer.serviceName }}.{{ .Values.multiplayer.namespace }}.svc.cluster.local:{{ .Values.multiplayer.port }}"
+
+          # probes
+          {{- if .Values.probes.enabled }}
+
+          livenessProbe:
+            {{- toYaml .Values.probes.liveness | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.probes.readiness | nindent 12 }}
+
+          {{- end }}
+
+          # requests and limits
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

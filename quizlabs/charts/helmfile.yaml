@@ -1,0 +1,86 @@
+# --- central chart dependencies and deployment configurations --- #
+#
+# openebs: must install a storage driver for provisioning volumes
+# since kubeadm does not provide one by default
+repositories:
+  - name: openebs
+    url: https://openebs.github.io/openebs
+
+# global values for all charts
+helmDefaults:
+  createNamespace: true
+  # wait for each release to complete before continuing
+  wait: true
+  
+# global labels for all charts
+commonLabels:
+  projectName: Quizlabs
+  managedBy: Liav
+
+# --- all releases for quizlabs --- #
+releases:
+  # deploy envoy api gateway  
+  - name: envoy-gateway
+    namespace: envoy-gateway-system
+    chart: oci://docker.io/envoyproxy/gateway-helm
+
+  # storage driver for stateful
+  - name: openebs
+    namespace: openebs
+    chart: openebs/openebs
+
+  # stateful setup (mongo + redis)
+  - name: mongodb
+    namespace: mongodb
+    chart: ./stateful/mongodb
+    values: 
+      - ./stateful/mongodb/values.yaml
+    needs: 
+      - openebs
+
+  - name: mongodb-init
+    namespace: mongodb
+    chart: ./stateful/mongodb-init
+    values: 
+      - ./stateful/mongodb-init/values.yaml
+    needs: 
+      - mongodb
+
+  - name: redis
+    namespace: redis
+    chart: ./stateful/redis
+    values: 
+      - ./stateful/redis/values.yaml
+    needs: 
+      - openebs
+
+  # quizlabs backend workloads, depends on stateful releases
+  - name: quiz-backend
+    namespace: quiz-backend
+    chart: ./workloads/quiz-backend
+    values: 
+      - ./workloads/quiz-backend/values.yaml
+    needs: 
+      - mongodb
+      - mongodb-init
+      - redis
+  
+  - name: quiz-multiplayer
+    namespace: quiz-multiplayer
+    chart: ./workloads/quiz-multiplayer
+    values: 
+      - ./workloads/quiz-multiplayer/values.yaml
+    needs: 
+      - mongodb
+      - mongodb-init
+      - redis
+  
+  # quizlabs frontend workloads, depends on backend releases
+  - name: quiz-frontend
+    namespace: quiz-frontend
+    chart: ./workloads/quiz-frontend
+    values: 
+      - ./workloads/quiz-frontend/values.yaml
+    needs: 
+      - quiz-backend
+      - quiz-multiplayer

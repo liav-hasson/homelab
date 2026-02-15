@@ -1,0 +1,61 @@
+nameOverride: ""
+fullnameOverride: "quiz-backend"
+
+image:
+  repository: liavvv/quiz-app
+  tag: "v2.0.3"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 5000
+
+# Environment variables
+env:
+  - name: FLASK_ENV
+    value: "production"
+  - name: PYTHONUNBUFFERED
+    value: "1"
+
+# MongoDB connection
+mongodb:
+  host: "mongodb.mongodb.svc.cluster.local"
+  port: "27017"
+
+# Redis connection (for multiplayer event publishing)
+redis:
+  host: "redis.redis.svc.cluster.local"
+  port: "6379"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Probes
+probes:
+  enabled: true
+
+  liveness:
+    httpGet:
+      path: /api/health
+      port: 5000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  readiness:
+    httpGet:
+      path: /api/health
+      port: 5000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# Service account
+serviceAccount:
+  create: true
+  name: ""

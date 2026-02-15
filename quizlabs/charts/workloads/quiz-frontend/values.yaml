@@ -1,0 +1,56 @@
+nameOverride: ""
+fullnameOverride: "quiz-frontend"
+
+image:
+  repository: liavvv/quiz-app-front
+  tag: "v2.0.3"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+# Backend service configuration for nginx proxy
+backend:
+  serviceName: quiz-backend
+  namespace: quiz-backend
+  port: 5000
+
+# Multiplayer service configuration for nginx websocket proxy
+multiplayer:
+  serviceName: quiz-multiplayer
+  namespace: quiz-multiplayer
+  port: 5001
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+# Probes
+probes:
+  enabled: true
+
+  liveness:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 20
+    periodSeconds: 10
+
+  readiness:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# Service account
+serviceAccount:
+  create: true
+  name: ""

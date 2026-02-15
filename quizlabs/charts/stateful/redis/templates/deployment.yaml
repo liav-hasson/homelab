@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "redis.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis.labels" . | nindent 4 }}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "redis.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "redis.selectorLabels" . | nindent 8 }}
+
+    spec:
+      serviceAccountName: {{ include "redis.serviceAccountName" . }}
+
+      containers:
+        - name: redis
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - redis-server
+            - "--appendonly"
+            - {{ .Values.config.appendonly | quote }}
+            - "--maxmemory"
+            - {{ .Values.config.maxmemory | quote }}
+            - "--maxmemory-policy"
+            - {{ .Values.config.maxmemoryPolicy | quote }}
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+
+          # volume configuration
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          {{- end }}
+
+          # probes
+          {{- if .Values.probes.enabled }}
+
+          livenessProbe:
+            {{- toYaml .Values.probes.liveness | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.probes.readiness | nindent 12 }}
+
+          {{- end }}
+
+          # requests and limits
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+      # pvc configuration
+      {{- if .Values.persistence.enabled }}
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: {{ include "redis.fullname" . }}-pvc
+      {{- end }}

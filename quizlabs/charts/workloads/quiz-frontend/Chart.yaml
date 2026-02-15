@@ -1,0 +1,8 @@
+apiVersion: v2
+name: quiz-frontend
+description: Helm chart for the Quiz frontend React application
+type: application
+version: 0.1.0
+appVersion: "v2.0.3"
+maintainers:
+  - name: Liav

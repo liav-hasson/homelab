@@ -1,0 +1,53 @@
+nameOverride: ""
+fullnameOverride: "redis"
+
+image:
+  repository: redis
+  tag: "7-alpine"
+  pullPolicy: IfNotPresent
+
+# Redis server configuration flags
+config:
+  maxmemory: "256mb"
+  maxmemoryPolicy: "allkeys-lru"
+  appendonly: "yes"
+
+# Persistent storage for AOF data
+persistence:
+  enabled: true
+  size: 1Gi
+  accessMode: ReadWriteOnce
+  storageClass: "openebs-hostpath"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+service:
+  type: ClusterIP
+  port: 6379
+
+# Service account
+serviceAccount:
+  create: true
+  name: ""
+
+# Probes
+probes:
+  enabled: true
+
+  liveness:
+    exec:
+      command: ["redis-cli", "ping"]
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+  readiness:
+    exec:
+      command: ["redis-cli", "ping"]
+    initialDelaySeconds: 5
+    periodSeconds: 5

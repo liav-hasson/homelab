@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "quiz-multiplayer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "quiz-multiplayer.labels" . | nindent 4 }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "quiz-multiplayer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "quiz-multiplayer.selectorLabels" . | nindent 8 }}
+
+    spec:
+      serviceAccountName: {{ include "quiz-multiplayer.serviceAccountName" . }}
+
+      # wait for Redis before starting
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z redis.redis.svc.cluster.local 6379; do echo "Waiting for Redis..."; sleep 5; done']
+
+      containers:
+        - name: quiz-multiplayer
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+            # Secrets (injected from K8s Secret)
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-multiplayer-secrets
+                  key: JWT_SECRET
+            - name: INTERNAL_SERVICE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-multiplayer-secrets
+                  key: INTERNAL_SERVICE_SECRET
+
+          # probes
+          {{- if .Values.probes.enabled }}
+
+          livenessProbe:
+            {{- toYaml .Values.probes.liveness | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.probes.readiness | nindent 12 }}
+
+          {{- end }}
+
+          # requests and limits
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

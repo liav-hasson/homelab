@@ -1,0 +1,4421 @@
+{
+  "Linux Fundamentals": {
+    "Kernel & Hardware Fundamentals": {
+      "keywords": [
+        "cpu architecture",
+        "cores vs threads",
+        "hyperthreading",
+        "context switching",
+        "cpu scheduling",
+        "interrupts",
+        "system calls",
+        "kernel space vs user space",
+        "memory hierarchy",
+        "cpu cache",
+        "l1 l2 l3 cache",
+        "numa",
+        "ram",
+        "virtual memory",
+        "paging",
+        "page tables",
+        "page faults",
+        "swap",
+        "memory overcommit",
+        "oom killer",
+        "io scheduling",
+        "block size",
+        "buffer cache",
+        "page cache",
+        "direct io"
+      ],
+      "styles": [
+        "concept explanation",
+        "tricky question",
+        "yes or no + explanation",
+        "advantages and disadvantages",
+        "comparison",
+        "troubleshooting"
+      ]
+    },
+    "Filesystem & Storage": {
+      "keywords": [
+        "block devices",
+        "boot process",
+        "systemd",
+        "partitions",
+        "filesystems",
+        "ext4",
+        "xfs",
+        "inode usage",
+        "cloud-init",
+        "initramfs",
+        "kernel parameters",
+        "sysctl",
+        "fstab",
+        "mount",
+        "umount",
+        "bind mounts",
+        "tmpfs",
+        "lvm",
+        "volume resizing",
+        "package management",
+        "disk pressure"
+      ],
+      "styles": [
+        "concept explanation",
+        "tricky question",
+        "yes or no + explanation",
+        "advantages and disadvantages",
+        "comparison",
+        "troubleshooting"
+      ]
+    },
+    "System Monitoring": {
+      "keywords": [
+        "top",
+        "htop",
+        "ps aux",
+        "ps",
+        "pgrep",
+        "pkill",
+        "kill",
+        "killall",
+        "nice",
+        "renice",
+        "uptime",
+        "free",
+        "df",
+        "du",
+        "iostat",
+        "vmstat",
+        "lsof",
+        "strace",
+        "netstat",
+        "ss",
+        "mpstat",
+        "pidstat"
+      ],
+      "style_modifiers": [
+        "command comparison and selection",
+        "command explenation",
+        "command flags and options",
+        "command output",
+        "concept explanation",
+        "one line code syntax challange",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "System and User Management": {
+      "keywords": [
+        "journalctl",
+        "systemctl",
+        "service",
+        "systemd",
+        "useradd",
+        "usermod",
+        "userdel",
+        "groupadd",
+        "groupmod",
+        "groupdel",
+        "passwd",
+        "chage",
+        "id",
+        "whoami",
+        "who",
+        "w",
+        "last",
+        "sudo",
+        "su",
+        "chmod",
+        "chown",
+        "chgrp",
+        "umask"
+      ],
+      "style_modifiers": [
+        "command comparison and selection",
+        "command explenation",
+        "command flags and options",
+        "command output",
+        "concept explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "CLI & Text Tools": {
+    "Text Manipulation": {
+      "keywords": [
+        "grep",
+        "egrep",
+        "sed",
+        "awk",
+        "cut",
+        "tr",
+        "sort",
+        "uniq",
+        "head",
+        "tail",
+        "wc",
+        "column",
+        "join",
+        "comm",
+        "diff",
+        "patch"
+      ],
+      "style_modifiers": [
+        "command comparison and selection",
+        "command explenation",
+        "command flags and options",
+        "command output",
+        "concept explanation",
+        "one line code syntax challange",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "File Operations": {
+      "keywords": [
+        "find",
+        "xargs",
+        "locate",
+        "which",
+        "whereis",
+        "tar",
+        "gzip",
+        "gunzip",
+        "zip",
+        "unzip",
+        "curl",
+        "wget",
+        "<",
+        "<<",
+        "<<<",
+        "mkdir",
+        "rm",
+        "cp",
+        "mv",
+        "ln"
+      ],
+      "style_modifiers": [
+        "command comparison and selection",
+        "command flags and options",
+        "command output",
+        "command use case",
+        "concept explanation",
+        "one line code syntax challange",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Regular Expressions": {
+      "keywords": [
+        "Character matching",
+        "Quantifiers (*, +, ?)",
+        "Start/end anchors",
+        "Groups and capturing",
+        "Log parsing",
+        "Pattern matching",
+        "Input validation",
+        "Search and replace",
+        "Special characters",
+        "Simple patterns",
+        "Flags (like case-insensitive)",
+        "Common regex uses"
+      ],
+      "style_modifiers": [
+        "basic definition",
+        "compare two patterns",
+        "devops common uses",
+        "explain what it does",
+        "identify the pattern",
+        "simple example pattern",
+        "troubleshoot simple error",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes/no question"
+      ]
+    }
+  },
+  "Scripting & Automation": {
+    "Shell Scripting": {
+      "keywords": [
+        "Bash scripting",
+        "Shebang",
+        "Variables",
+        "Environment variables",
+        "Positional parameters",
+        "Exit codes",
+        "Conditionals (if/else)",
+        "Loops (for/while)",
+        "Functions",
+        "Command substitution",
+        "Piping",
+        "Redirection",
+        "Here documents",
+        "Arrays",
+        "String manipulation",
+        "set -e",
+        "set -x",
+        "trap",
+        "getopts",
+        "source vs execute"
+      ],
+      "style_modifiers": [
+        "code snippet completion",
+        "concept explanation",
+        "script debugging scenario",
+        "syntax explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Python for DevOps": {
+      "keywords": [
+        "subprocess module",
+        "os module",
+        "sys module",
+        "pathlib",
+        "shutil",
+        "argparse",
+        "json module",
+        "yaml module (PyYAML)",
+        "requests library",
+        "boto3 (AWS SDK)",
+        "paramiko (SSH)",
+        "fabric",
+        "Jinja2 templating",
+        "logging module",
+        "virtualenv",
+        "pip",
+        "poetry",
+        "Python scripts in CI/CD",
+        "API scripting",
+        "Log parsing with Python"
+      ],
+      "style_modifiers": [
+        "automation use case",
+        "code snippet",
+        "concept explanation",
+        "error handling scenario",
+        "module comparison and selection",
+        "one-liner challenge",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Go for DevOps": {
+      "keywords": [
+        "Go basics (variables, types, structs)",
+        "Functions and methods",
+        "Error handling",
+        "Pointers",
+        "Interfaces",
+        "Goroutines and channels",
+        "os/exec package",
+        "os and io packages",
+        "encoding/json and YAML",
+        "net/http package",
+        "flag and cobra CLI",
+        "go modules",
+        "Go CLI tools",
+        "Cross-compilation"
+      ],
+      "style_modifiers": [
+        "Write a function",
+        "automation use case",
+        "code snippet",
+        "concept explanation",
+        "concurrency pattern",
+        "error handling scenario",
+        "package comparison and selection",
+        "syntax explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Coding Challenges": {
+      "keywords": [
+        "Python",
+        "Bash",
+        "Go",
+        "Groovy",
+        "HCL (Terraform)",
+        "SQL",
+        "PromQL",
+        "MongoDB queries",
+        "JavaScript",
+        "YAML",
+        "JSON",
+        "Dockerfile",
+        "Helm templates",
+        "Makefile",
+        "Regex",
+        "Linux shell scripting",
+        "CI/CD pipeline code",
+        "Kubernetes manifests"
+      ],
+      "style_modifiers": [
+        "complete the missing line",
+        "concept explanation",
+        "explain what this snippet does",
+        "find the bug in the snippet",
+        "improve the snippet",
+        "make the code more secure",
+        "optimize for performance",
+        "refactor for readability",
+        "syntax explanation",
+        "what happens behind the scenes?",
+        "what is it?",
+        "write a short code snippet",
+        "yes or no syntax validity"
+      ]
+    }
+  },
+  "Containers": {
+    "Container Fundamentals": {
+      "keywords": [
+        "Container",
+        "Container engine",
+        "Container image",
+        "Container repository",
+        "Namespaces",
+        "Cgroups (control groups)",
+        "Union file system",
+        "Monolithic architecture",
+        "Microservice architecture",
+        "Container orchestration",
+        "Container runtime",
+        "OCI (Open Container Initiative)"
+      ],
+      "style_modifiers": [
+        "advantages and disadvantages",
+        "comparison",
+        "concept explanation",
+        "tricky question",
+        "troubleshooting",
+        "use case scenario",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Container Runtimes & Alternatives": {
+      "keywords": [
+        "containerd",
+        "CRI-O",
+        "Podman",
+        "Kata Containers",
+        "buildkit",
+        "Buildah",
+        "Kaniko",
+        "Nerdctl",
+        "Dockerless builds",
+        "Rootless containers",
+        "Container runtime interface (CRI)"
+      ],
+      "style_modifiers": [
+        "brief usage recommendation",
+        "concept explanation",
+        "performance vs security summary",
+        "quick comparison",
+        "short pros and cons",
+        "simple compatibility check",
+        "troubleshooting hint",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no with short justification"
+      ]
+    },
+    "Container Security": {
+      "keywords": [
+        "Image scanning",
+        "Vulnerability patching",
+        "Rootless containers",
+        "Daemonless containers",
+        "Seccomp",
+        "AppArmor",
+        "SELinux",
+        "Capabilities drop",
+        "Read-only file system",
+        "Trusted registries",
+        "Image signing (cosign/notary)",
+        "Runtime security",
+        "Least privilege containers",
+        "Namespace isolation",
+        "cgroups"
+      ],
+      "style_modifiers": [
+        "brief weakness highlight",
+        "comparison",
+        "concept explanation",
+        "risk explanation",
+        "short security best practice",
+        "simple configuration tip",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no with justification"
+      ]
+    }
+  },
+  "Docker": {
+    "Docker Commands": {
+      "keywords": [
+        "docker cp",
+        "docker run",
+        "docker inspect",
+        "docker ps",
+        "docker commit",
+        "docker start",
+        "docker build",
+        "docker stop",
+        "docker top",
+        "docker rm",
+        "docker logs",
+        "docker attach",
+        "docker diff",
+        "docker exec",
+        "docker info",
+        "docker kill",
+        "docker stats",
+        "docker images",
+        "docker pull",
+        "docker push",
+        "docker tag",
+        "docker network",
+        "docker volume"
+      ],
+      "style_modifiers": [
+        "command comparison",
+        "command syntax",
+        "concept explanation",
+        "flag and option explanation",
+        "practical command construction",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Docker Architecture": {
+      "keywords": [
+        "Docker Engine",
+        "Docker shim",
+        "Docker daemon (dockerd)",
+        "Docker CLI",
+        "Docker registry",
+        "Docker Hub",
+        "Dockerfile",
+        "Docker network drivers",
+        "Docker storage",
+        "Docker logging drivers",
+        "Multi-stage build",
+        "Docker Compose",
+        "Docker Swarm",
+        ".dockerignore",
+        "Docker context"
+      ],
+      "style_modifiers": [
+        "component interaction",
+        "concept explanation",
+        "performance / security",
+        "system architecture explanation",
+        "tricky question",
+        "troubleshooting",
+        "what happens behind the scenes?",
+        "what is it?",
+        "workflow sequencing",
+        "yes or no + explanation"
+      ]
+    },
+    "Dockerfile Instructions": {
+      "keywords": [
+        "FROM instruction",
+        "RUN command",
+        "COPY vs ADD",
+        "WORKDIR setting",
+        "ENV variables",
+        "EXPOSE ports",
+        "CMD vs ENTRYPOINT",
+        "VOLUME mounts",
+        "USER switching",
+        "LABEL metadata",
+        "Multi-stage builds",
+        "ARG build arguments",
+        ".dockerignore file"
+      ],
+      "style_modifiers": [
+        "What is it?",
+        "write an instruction",
+        "simple example usage",
+        "comparison question",
+        "explain why it's used",
+        "Fix a dockerfile error",
+        "yes/no question",
+        "improve a dockerfile",
+        "order in Dockerfile"
+      ]
+    }
+  },
+  "Kubernetes Core": {
+    "Core Components": {
+      "keywords": [
+        "Kubernetes API",
+        "Container runtime",
+        "Pod",
+        "Deployment",
+        "Service",
+        "Ingress",
+        "ReplicaSet",
+        "Workload",
+        "ConfigMap",
+        "Secret",
+        "Namespace",
+        "Labels & Selectors",
+        "Job",
+        "CronJob",
+        "Init containers",
+        "Sidecar containers",
+        "Ephemeral containers"
+      ],
+      "style_modifiers": [
+        "code snippet",
+        "comparison with alternative components",
+        "component interaction scenario",
+        "core concept",
+        "resource definition and configuration",
+        "scaling considerations",
+        "security and access control",
+        "tricky question",
+        "troubleshooting component failure",
+        "use case implementation",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Operators & CRDs": {
+      "keywords": [
+        "Custom Resource Definition (CRD)",
+        "Custom Resource (CR)",
+        "Operator pattern",
+        "Operator SDK",
+        "Kubebuilder",
+        "Controller runtime",
+        "Reconciliation loop",
+        "Finalizers",
+        "Operator Lifecycle Manager (OLM)",
+        "OperatorHub",
+        "Level-based triggering",
+        "Edge-based triggering"
+      ],
+      "style_modifiers": [
+        "CRD creation workflow",
+        "concept explanation",
+        "operator design scenario",
+        "reconciliation logic explanation",
+        "tricky question",
+        "use case implementation",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Kubectl Commands": {
+      "keywords": [
+        "kubectl create",
+        "kubectl apply",
+        "kubectl run",
+        "kubectl describe",
+        "kubectl set",
+        "kubectl attach",
+        "kubectl get",
+        "kubectl top",
+        "kubectl delete",
+        "kubectl logs",
+        "kubectl cp",
+        "kubectl scale",
+        "kubectl expose",
+        "kubectl autoscale",
+        "kubectl port-forward",
+        "kubectl exec",
+        "kubectl patch",
+        "kubectl edit",
+        "kubectl drain",
+        "kubectl cordon",
+        "kubectl uncordon",
+        "kubectl rollout",
+        "kubectl debug"
+      ],
+      "style_modifiers": [
+        "command comparison and selection",
+        "concept explanation",
+        "debugging workflow",
+        "flag explanation and usage",
+        "tricky question",
+        "troubleshooting command sequence",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Troubleshooting": {
+      "keywords": [
+        "Root cause analysis",
+        "Logs",
+        "Events",
+        "Metrics",
+        "Debugging pods",
+        "CrashLoopBackOff",
+        "ImagePullBackOff",
+        "NodeNotReady",
+        "Networking issues",
+        "DNS resolution",
+        "Config errors",
+        "Resource exhaustion",
+        "OOMKill",
+        "Throttling"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "configuration misalignment analysis",
+        "environment comparison (dev/staging/prod)",
+        "failure investigation flow",
+        "logs and events interpretation",
+        "network debugging procedure",
+        "performance degradation diagnosis",
+        "step-by-step remediation plan",
+        "symptom-to-cause breakdown",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Control Plane": {
+      "keywords": [
+        "kube-apiserver",
+        "etcd",
+        "kube-scheduler",
+        "kube-controller-manager",
+        "cloud-controller-manager",
+        "API server",
+        "Cluster state",
+        "Leader election",
+        "etcd backup",
+        "etcd restore",
+        "Control plane high availability",
+        "Stacked etcd",
+        "External etcd"
+      ],
+      "style_modifiers": [
+        "component interaction",
+        "concept explanation",
+        "failure scenario",
+        "high availability design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Worker Node": {
+      "keywords": [
+        "kubelet",
+        "kube-proxy",
+        "Container runtime",
+        "Node registration",
+        "Node status",
+        "Node conditions",
+        "Node capacity",
+        "Node allocatable",
+        "Static pods",
+        "kubelet configuration",
+        "Node heartbeat",
+        "Node lease",
+        "Graceful node shutdown"
+      ],
+      "style_modifiers": [
+        "component responsibility",
+        "concept explanation",
+        "configuration scenario",
+        "tricky question",
+        "troubleshooting node issues",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Kubernetes Networking": {
+    "Kubernetes Networking": {
+      "keywords": [
+        "Network policies",
+        "CNI (Container Network Interface)",
+        "Service types",
+        "ClusterIP",
+        "NodePort",
+        "LoadBalancer",
+        "ExternalName",
+        "Headless service",
+        "Endpoints",
+        "EndpointSlices",
+        "Ingress controller",
+        "DNS",
+        "CoreDNS",
+        "TargetGroupBinding"
+      ],
+      "style_modifiers": [
+        "DNS resolution issues",
+        "concept explanation",
+        "connectivity troubleshooting",
+        "ingress controller setup",
+        "load balancing configuration",
+        "network policy design",
+        "security policy implementation",
+        "service discovery explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Gateway API": {
+      "keywords": [
+        "Gateway API",
+        "GatewayClass",
+        "Gateway resource",
+        "HTTPRoute",
+        "TCPRoute",
+        "TLSRoute",
+        "ReferenceGrant",
+        "BackendRef",
+        "Gateway API vs Ingress",
+        "Traffic splitting",
+        "Header-based routing",
+        "Gateway controller"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "migration from Ingress",
+        "routing configuration scenario",
+        "traffic management design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Consul": {
+      "keywords": [
+        "Service registration",
+        "Health checking",
+        "Service discovery",
+        "Key-Value store",
+        "Consul agent",
+        "Service mesh",
+        "Load balancing",
+        "DNS interface",
+        "ACL security",
+        "Multi-datacenter",
+        "Service intentions",
+        "Proxy configuration"
+      ],
+      "style_modifiers": [
+        "basic definition",
+        "common use case",
+        "compare with similar tool",
+        "diagram explanation",
+        "explain why it's used",
+        "list key features",
+        "simple example usage",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes/no question"
+      ]
+    }
+  },
+  "Kubernetes Storage": {
+    "Kubernetes Storage": {
+      "keywords": [
+        "PersistentVolume (PV)",
+        "PersistentVolumeClaim (PVC)",
+        "StorageClass",
+        "Volume types",
+        "CSI (Container Storage Interface)",
+        "Dynamic provisioning",
+        "Static provisioning",
+        "Volume snapshots",
+        "Volume expansion",
+        "EmptyDir",
+        "HostPath"
+      ],
+      "style_modifiers": [
+        "access control configuration",
+        "backup and recovery strategy",
+        "concept explanation",
+        "data persistence troubleshooting",
+        "migration procedures",
+        "performance optimization",
+        "storage class selection criteria",
+        "storage provisioning scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Envoy Proxy": {
+      "keywords": [
+        "Envoy proxy",
+        "Listeners",
+        "Clusters",
+        "Routes",
+        "Filters",
+        "xDS protocol",
+        "ADS (Aggregated Discovery Service)",
+        "EDS (Endpoint Discovery Service)",
+        "CDS (Cluster Discovery Service)",
+        "LDS (Listener Discovery Service)",
+        "Envoy configuration"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "performance optimization",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Service Mesh": {
+    "Service Mesh Basics": {
+      "keywords": [
+        "Service mesh",
+        "Sidecar proxy",
+        "Control plane",
+        "Data plane",
+        "Service discovery",
+        "Load balancing strategies",
+        "Circuit breaking",
+        "Retry policies",
+        "Timeout policies",
+        "Fault injection",
+        "Observability",
+        "Distributed tracing"
+      ],
+      "style_modifiers": [
+        "core concept and architecture",
+        "observability configuration",
+        "performance and security trade-offs",
+        "resilience pattern implementation",
+        "service mesh adoption rationale",
+        "traffic management scenario",
+        "tricky question",
+        "troubleshooting mesh connectivity",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Istio Architecture": {
+      "keywords": [
+        "Istio architecture",
+        "Deployment strategies with isto",
+        "Envoy proxy",
+        "Istiod",
+        "Pilot",
+        "Sidecar injection",
+        "Istio ingress gateway",
+        "Istio egress gateway",
+        "Telemetry v2",
+        "Istio CNI",
+        "Ambient mesh"
+      ],
+      "style_modifiers": [
+        "component interaction explanation",
+        "concept explanation",
+        "gateway setup and management",
+        "observability integration",
+        "tricky question",
+        "troubleshooting traffic flow",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Istio Traffic Management": {
+      "keywords": [
+        "Virtual Service",
+        "Destination Rule",
+        "Gateway",
+        "Service Entry",
+        "Sidecar resource",
+        "Traffic management",
+        "Traffic shifting",
+        "Request routing",
+        "Fault injection",
+        "Retries",
+        "Timeouts",
+        "Circuit breakers",
+        "Connection pools"
+      ],
+      "style_modifiers": [
+        "canary deployment scenario",
+        "concept explanation",
+        "mTLS configuration approach",
+        "security policy implementation",
+        "traffic routing configuration",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Linkerd": {
+      "keywords": [
+        "Linkerd",
+        "Linkerd control plane",
+        "Linkerd proxy",
+        "Service profiles",
+        "Traffic splits",
+        "Linkerd viz",
+        "Linkerd SMI",
+        "mTLS in Linkerd",
+        "Linkerd vs Istio"
+      ],
+      "style_modifiers": [
+        "comparison with Istio",
+        "configuration scenario",
+        "core concept",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Git & Version Control": {
+    "Git Basics": {
+      "keywords": [
+        "Version control system (VCS)",
+        "Source control management (SCM)",
+        "Local version control system",
+        "Centralized version control system",
+        "Distributed version control system",
+        "Branch strategy",
+        "Version scheme",
+        "Git repository",
+        "Remote repository",
+        "Clone",
+        "Fork",
+        "Pull request"
+      ],
+      "style_modifiers": [
+        "best practices discussion",
+        "collaboration use case",
+        "fundamental concept explanation",
+        "system comparison and differences",
+        "tool selection rationale",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Git Architecture": {
+      "keywords": [
+        "Working directory",
+        "Staging area",
+        "Committing",
+        "Branching",
+        "Merging",
+        "HEAD",
+        "Merge request",
+        "Merge conflict",
+        "Index",
+        "Repository",
+        "Remote tracking branch",
+        "Detached HEAD"
+      ],
+      "style_modifiers": [
+        "branch management workflow",
+        "conflict resolution strategy",
+        "core concept",
+        "internal workflow explanation",
+        "recovery operations",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Branching Strategies": {
+      "keywords": [
+        "GitFlow",
+        "GitHub Flow",
+        "GitLab Flow",
+        "Trunk-based development",
+        "Feature branches",
+        "Release branches",
+        "Hotfix branches",
+        "Main/Master branch",
+        "Develop branch",
+        "Long-lived branches",
+        "Short-lived branches",
+        "Branch protection rules",
+        "Merge strategies",
+        "Squash merge",
+        "Rebase vs merge"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "strategy selection rationale",
+        "team size considerations",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "workflow comparison",
+        "yes or no + explanation"
+      ]
+    },
+    "Git Commands": {
+      "keywords": [
+        "git fetch",
+        "git merge",
+        "git stash",
+        "git revert",
+        "git checkout",
+        "git diff",
+        "git tag",
+        "git reset",
+        "git rebase",
+        "git branch",
+        "git log",
+        "git clean",
+        "git pull",
+        "git push",
+        "git clone",
+        "git add",
+        "git commit",
+        "git status",
+        "git remote",
+        "git init"
+      ],
+      "style_modifiers": [
+        "command comparison and selection",
+        "command flags and optios",
+        "core concept",
+        "practical usage scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Monorepos & Polyrepos": {
+      "keywords": [
+        "Monorepo",
+        "Polyrepo",
+        "Multi-repo",
+        "Code sharing",
+        "Dependency management",
+        "Build optimization",
+        "Nx",
+        "Turborepo",
+        "Bazel",
+        "Lerna",
+        "Sparse checkout",
+        "Code ownership",
+        "CODEOWNERS",
+        "Atomic commits",
+        "Cross-project changes"
+      ],
+      "style_modifiers": [
+        "comparison question",
+        "concept explanation",
+        "scaling considerations",
+        "tooling selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Kubernetes Scheduling & Scaling": {
+    "Horizontal Pod Autoscaler (HPA)": {
+      "keywords": [
+        "Horizontal Pod Autoscaler (HPA)",
+        "Metrics Server",
+        "Custom metrics",
+        "External metrics",
+        "CPU utilization target",
+        "Memory utilization target",
+        "Scaling behavior",
+        "Scale up policies",
+        "Scale down policies",
+        "Stabilization window"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "metrics interpretation",
+        "performance optimization",
+        "tricky question",
+        "troubleshooting scaling issues",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Vertical Pod Autoscaler (VPA)": {
+      "keywords": [
+        "Vertical Pod Autoscaler (VPA)",
+        "VPA modes",
+        "Auto mode",
+        "Recreate mode",
+        "Initial mode",
+        "Off mode",
+        "Resource recommendations",
+        "VPA updater",
+        "VPA recommender",
+        "VPA admission controller"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "cost optimization analysis",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Cluster Autoscaler": {
+      "keywords": [
+        "Cluster Autoscaler",
+        "Node groups",
+        "Scale up triggers",
+        "Scale down triggers",
+        "Unschedulable pods",
+        "Node utilization threshold",
+        "Scale down delay",
+        "Pod disruption budget",
+        "Safe to evict annotation"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "cost optimization analysis",
+        "tricky question",
+        "troubleshooting scaling issues",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "KEDA": {
+      "keywords": [
+        "KEDA",
+        "ScaledObject",
+        "ScaledJob",
+        "TriggerAuthentication",
+        "Event-driven autoscaling",
+        "External scalers",
+        "Prometheus scaler",
+        "Kafka scaler",
+        "AWS SQS scaler",
+        "Cron scaler",
+        "Scaling to zero"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "event-driven scaling design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Karpenter": {
+      "keywords": [
+        "Karpenter",
+        "Provisioner",
+        "NodePool",
+        "EC2NodeClass",
+        "Just-in-time provisioning",
+        "Consolidation",
+        "Drift detection",
+        "Spot instances",
+        "On-demand instances",
+        "Instance type selection",
+        "Bin packing"
+      ],
+      "style_modifiers": [
+        "Karpenter vs Cluster Autoscaler",
+        "configuration scenario",
+        "core concept",
+        "cost optimization analysis",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Scheduling & Affinity": {
+      "keywords": [
+        "Node affinity",
+        "Pod affinity",
+        "Pod anti-affinity",
+        "Taints",
+        "Tolerations",
+        "Node selectors",
+        "Topology spread constraints",
+        "Priority classes",
+        "Preemption",
+        "Scheduler profiles"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "scheduling strategy design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Resource Quotas & LimitRanges": {
+      "keywords": [
+        "Resource quotas",
+        "LimitRange",
+        "Namespace quotas",
+        "CPU quota",
+        "Memory quota",
+        "Object count quota",
+        "Default limits",
+        "Default requests",
+        "Min/Max constraints"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "multi-tenancy design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "PodDisruptionBudgets": {
+      "keywords": [
+        "PodDisruptionBudget (PDB)",
+        "minAvailable",
+        "maxUnavailable",
+        "Voluntary disruptions",
+        "Involuntary disruptions",
+        "Eviction API",
+        "Drain operations",
+        "Rolling updates"
+      ],
+      "style_modifiers": [
+        "configuration scenario",
+        "core concept",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Kubernetes Security": {
+    "Resource Requests & Limits": {
+      "keywords": [
+        "Resource requests",
+        "Resource limits",
+        "Quality of Service (QoS)",
+        "Guaranteed QoS",
+        "Burstable QoS",
+        "BestEffort QoS",
+        "CPU requests",
+        "Memory requests",
+        "CPU limits",
+        "Memory limits",
+        "OOMKill",
+        "CPU throttling"
+      ],
+      "style_modifiers": [
+        "best practices implementation",
+        "configuration scenario",
+        "core concept",
+        "performance optimization",
+        "resource conflict resolution",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Kubernetes Security": {
+      "keywords": [
+        "RBAC",
+        "PodSecurity Standards (PSS)",
+        "NetworkPolicies",
+        "Secrets management",
+        "ServiceAccount",
+        "Admission controllers",
+        "TLS",
+        "mTLS",
+        "Image scanning",
+        "Runtime security",
+        "Audit logs",
+        "OIDC",
+        "IAM roles for service accounts (IRSA)"
+      ],
+      "style_modifiers": [
+        "compliance considerations",
+        "concept explanation",
+        "incident response guidance",
+        "least privilege design",
+        "misconfiguration detection",
+        "policy creation workflow",
+        "secure defaults explanation",
+        "security hardening steps",
+        "threat analysis",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Cloud Fundamentals": {
+    "Core Cloud Concepts": {
+      "keywords": [
+        "On-premise",
+        "Cloud Computing",
+        "Public cloud",
+        "Private cloud",
+        "Hybrid cloud",
+        "IaaS",
+        "PaaS",
+        "SaaS",
+        "Shared Responsibility Model",
+        "Cloud application",
+        "Scalability",
+        "Elasticity",
+        "GCP",
+        "Azure",
+        "OpenStack",
+        "Cloud governance"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "cost optimization scenario",
+        "deployment model selection",
+        "governance and compliance",
+        "migration strategy discussion",
+        "scaling requirements analysis",
+        "service model comparison",
+        "shared responsibility application",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Multi-Cloud Basics": {
+      "keywords": [
+        "Multi-cloud strategy",
+        "Cloud agnostic",
+        "Vendor lock-in",
+        "Cloud portability",
+        "GCP",
+        "Azure",
+        "AWS",
+        "Cross-cloud networking",
+        "Multi-cloud management"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "strategy design scenario",
+        "tricky question",
+        "vendor comparison",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "AWS Core Services": {
+    "AWS Basics": {
+      "keywords": [
+        "AWS",
+        "Global infrastructure",
+        "Region",
+        "Availability Zone",
+        "Edge location",
+        "AWS Management Console",
+        "AWS CLI",
+        "CloudShell",
+        "AWS SDK",
+        "Local Zones"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "global service",
+        "infrastructure design scenario",
+        "region and AZ selection rationale",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "AWS Compute": {
+      "keywords": [
+        "EC2",
+        "AMI",
+        "Instance types",
+        "Launch templates",
+        "Snapshots",
+        "Elastic Beanstalk",
+        "Lambda",
+        "Auto Scaling Groups",
+        "Elastic Load Balancer",
+        "Step Functions",
+        "Spot Instances",
+        "Reserved Instances",
+        "On-Demand Instances"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "cost-performance optimization",
+        "scaling configuration scenario",
+        "serverless architecture design",
+        "service selection rationale",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "AWS Storage": {
+      "keywords": [
+        "S3",
+        "S3 Glacier",
+        "EBS",
+        "EFS",
+        "S3 storage classes",
+        "S3 lifecycle policies",
+        "S3 versioning",
+        "S3 replication",
+        "EBS volume types",
+        "EBS snapshots",
+        "FSx"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "migration and backup strategy",
+        "performance troubleshooting",
+        "storage tier selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "AWS Networking": {
+      "keywords": [
+        "VPC",
+        "Subnets",
+        "Route tables",
+        "Internet Gateway",
+        "NAT Gateway",
+        "Security Groups",
+        "NACLs",
+        "VPC Peering",
+        "Transit Gateway",
+        "Route 53",
+        "Application Load Balancer (ALB)",
+        "Network Load Balancer (NLB)",
+        "CloudFront"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "connectivity troubleshooting",
+        "hybrid cloud connectivity",
+        "load balancer selection",
+        "network architecture design",
+        "performance optimization",
+        "routing and DNS configuration",
+        "security configuration scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "AWS Platforms & Security": {
+    "AWS Security & IAM": {
+      "keywords": [
+        "IAM",
+        "IAM Roles",
+        "IAM Policies",
+        "Identity-based policies",
+        "Resource-based policies",
+        "AWS Organizations",
+        "Service Control Policies (SCP)",
+        "AWS Shield",
+        "AWS WAF",
+        "KMS",
+        "Secrets Manager",
+        "Security Token Service (STS)"
+      ],
+      "style_modifiers": [
+        "access control implementation",
+        "compliance scenario",
+        "concept explanation",
+        "encryption configuration",
+        "incident response planning",
+        "organizational governance",
+        "policy creation and troubleshooting",
+        "security best practices",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "AWS Containers & Serverless": {
+      "keywords": [
+        "EKS (Elastic Kubernetes Service)",
+        "EKS Fargate",
+        "ECS (Elastic Container Service)",
+        "Fargate",
+        "App Runner",
+        "EKS managed node groups",
+        "EKS add-ons",
+        "ECR (Elastic Container Registry)",
+        "Lambda container images",
+        "Step Functions",
+        "EventBridge",
+        "SQS",
+        "SNS",
+        "API Gateway"
+      ],
+      "style_modifiers": [
+        "compare to another provider",
+        "comparison to similar service",
+        "concept explanation",
+        "service selection rationale",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "AWS Data Services": {
+      "keywords": [
+        "RDS",
+        "DynamoDB",
+        "Aurora",
+        "Redshift",
+        "ElastiCache",
+        "CloudWatch",
+        "CloudTrail",
+        "Kinesis",
+        "Athena",
+        "Glue",
+        "OpenSearch",
+        "DocumentDB"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "data migration strategy",
+        "database service selection",
+        "disaster recovery implementation",
+        "monitoring and alerting setup",
+        "performance monitoring",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Cloud Design & Architecture": {
+    "Solutions Architecture Patterns": {
+      "keywords": [
+        "Microservices architecture",
+        "Event-driven architecture",
+        "Serverless architecture",
+        "N-tier architecture",
+        "CQRS",
+        "Event sourcing",
+        "Saga pattern",
+        "Strangler Fig pattern",
+        "Anti-corruption layer",
+        "Bulkhead pattern",
+        "Queue-based load leveling",
+        "Cache-aside pattern",
+        "Circuit breaker pattern",
+        "Retry pattern"
+      ],
+      "style_modifiers": [
+        "anti-pattern identification",
+        "concept explanation",
+        "implementation scenario and design",
+        "migration strategy to pattern",
+        "pattern explanation and use case",
+        "pattern selection rationale",
+        "real-world application example",
+        "scalability and resilience benefits",
+        "trade-offs and considerations",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Migration Strategies": {
+      "keywords": [
+        "Cloud migration",
+        "Lift-and-shift",
+        "Replatforming",
+        "Refactoring",
+        "Data migration",
+        "Cutover strategy",
+        "Blue/green migration",
+        "Canary migration",
+        "Zero-downtime migration",
+        "Rollback planning",
+        "Stateful workload migration",
+        "Dependency mapping",
+        "Network migration",
+        "IAM migration",
+        "Hybrid migration approach"
+      ],
+      "style_modifiers": [
+        "brief risk summary",
+        "concept explanation",
+        "fast checklist-style response",
+        "one-step validation hint",
+        "quick difference explanation",
+        "short migration plan outline",
+        "short trade-off comparison",
+        "succinct recommendation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation",
+        "yes or no with short reasoning"
+      ]
+    },
+    "Hybrid & On-Prem Architecture": {
+      "keywords": [
+        "Hybrid cloud architecture",
+        "On-premises integration",
+        "Cloud bursting",
+        "Data residency requirements",
+        "Latency considerations",
+        "Hybrid connectivity",
+        "AWS Direct Connect",
+        "Azure ExpressRoute",
+        "VPN tunnels",
+        "Edge computing",
+        "Hybrid identity management",
+        "Workload placement",
+        "Data center infrastructure",
+        "Bare metal servers",
+        "Hypervisor",
+        "VMware vSphere",
+        "Proxmox",
+        "KVM"
+      ],
+      "style_modifiers": [
+        "compliance and data residency",
+        "concept explanation",
+        "connectivity solution selection",
+        "cost and latency trade-offs",
+        "hybrid architecture design scenario",
+        "identity and access management",
+        "migration and integration planning",
+        "performance optimization approach",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "workload placement strategy",
+        "yes or no + explanation"
+      ]
+    },
+    "Company Scenarios": {
+      "keywords": [
+        "Fintech startup",
+        "Gaming backend",
+        "E-commerce platform",
+        "SaaS B2B platform",
+        "Real-time chat application",
+        "AI/ML infrastructure",
+        "Media streaming platform",
+        "Healthcare SaaS system",
+        "Ride-sharing platform",
+        "IoT data ingestion platform",
+        "EdTech platform",
+        "Cybersecurity SaaS",
+        "Market trading platform",
+        "Social media application",
+        "Log analytics SaaS"
+      ],
+      "style_modifiers": [
+        "architecture improvement suggestion",
+        "caching strategy choice",
+        "concept explanation",
+        "cost optimization direction",
+        "database selection decision",
+        "high availability design check",
+        "infrastructure design choice",
+        "multi-region yes or no",
+        "scaling approach selection",
+        "security posture assessment",
+        "single vs multi-cluster decision",
+        "stateful vs stateless workload choice",
+        "what happens behind the scenes?",
+        "what is it?"
+      ]
+    },
+    "High Availability & DR": {
+      "keywords": [
+        "High availability (HA)",
+        "Disaster recovery (DR)",
+        "RTO (Recovery Time Objective)",
+        "RPO (Recovery Point Objective)",
+        "Fault tolerance",
+        "Geographic distribution",
+        "Multi-region deployment",
+        "Pilot light",
+        "Warm standby",
+        "Hot standby",
+        "Backup and restore"
+      ],
+      "style_modifiers": [
+        "HA and DR strategy implementation",
+        "architecture design scenario",
+        "concept explanation",
+        "multi-region deployment planning",
+        "resilience pattern implementation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "FinOps & Cost Management": {
+      "keywords": [
+        "FinOps",
+        "Cost allocation",
+        "Cost allocation tags",
+        "Reserved Instances",
+        "Savings Plans",
+        "Spot Instances",
+        "On-demand pricing",
+        "Right-sizing",
+        "AWS Cost Explorer",
+        "AWS Budgets",
+        "Kubecost",
+        "Cloud cost anomaly detection",
+        "Chargeback",
+        "Showback",
+        "Compute Optimizer"
+      ],
+      "style_modifiers": [
+        "budget alert configuration",
+        "concept explanation",
+        "cost optimization scenario",
+        "pricing model comparison",
+        "tagging strategy design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Backups & Disaster Recovery": {
+      "keywords": [
+        "Backup strategy",
+        "Full backup",
+        "Incremental backup",
+        "Differential backup",
+        "Backup retention policy",
+        "Backup encryption",
+        "Disaster recovery plan (DRP)",
+        "Business continuity",
+        "RTO (Recovery Time Objective)",
+        "RPO (Recovery Point Objective)",
+        "Failover",
+        "Failback",
+        "Hot site",
+        "Warm site",
+        "Cold site",
+        "DR testing",
+        "Velero"
+      ],
+      "style_modifiers": [
+        "RTO/RPO calculation scenario",
+        "backup strategy design",
+        "concept explanation",
+        "failover procedure design",
+        "recovery strategy selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "AI/ML for DevOps": {
+    "Model Context Protocol (MCP)": {
+      "keywords": [
+        "MCP host",
+        "MCP Server",
+        "MCP Client",
+        "Resource",
+        "Tool",
+        "Tool invocation",
+        "Context management",
+        "Agent integration",
+        "Prompt",
+        "Resource metadata",
+        "Resource contents",
+        "Session",
+        "Error handling",
+        "Content encoding",
+        "Transport layer",
+        "Authentication",
+        "Discoverability",
+        "Multi-turn interaction",
+        "MCP networking",
+        "Protocol versioning",
+        "Data streaming",
+        "Batch operations"
+      ],
+      "style_modifiers": [
+        "Networking",
+        "what is it?",
+        "what happens behind the scenes?",
+        "simple example usage",
+        "compare with similar concept",
+        "explain why it's used",
+        "basic flow explanation",
+        "yes/no question",
+        "common use case",
+        "troubleshoot error"
+      ]
+    },
+    "AI-Assisted Development": {
+      "keywords": [
+        "GitHub Copilot",
+        "AI code generation",
+        "LLM-assisted coding",
+        "AI code review",
+        "Prompt engineering",
+        "AI pair programming",
+        "Code completion",
+        "AI-powered debugging",
+        "ChatGPT for DevOps"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "limitations and risks",
+        "productivity improvement",
+        "tricky question",
+        "use case scenario",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "MLOps Basics": {
+      "keywords": [
+        "MLOps",
+        "ML pipeline",
+        "Model versioning",
+        "Model registry",
+        "Feature store",
+        "Experiment tracking",
+        "MLflow",
+        "Kubeflow",
+        "Model training",
+        "Data versioning",
+        "DVC"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "pipeline design scenario",
+        "tool comparison",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Model Serving & Inference": {
+      "keywords": [
+        "Model serving",
+        "Inference",
+        "Model deployment",
+        "A/B testing models",
+        "Canary model deployment",
+        "TensorFlow Serving",
+        "TorchServe",
+        "Triton Inference Server",
+        "KServe",
+        "Model latency",
+        "Batch inference",
+        "Real-time inference"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "deployment strategy selection",
+        "latency optimization",
+        "scaling scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "GPU Scheduling in Kubernetes": {
+      "keywords": [
+        "GPU scheduling",
+        "NVIDIA device plugin",
+        "GPU resource requests",
+        "GPU limits",
+        "Multi-GPU pods",
+        "GPU node pools",
+        "MIG (Multi-Instance GPU)",
+        "GPU time-slicing",
+        "CUDA",
+        "GPU monitoring"
+      ],
+      "style_modifiers": [
+        "GPU scheduling configuration",
+        "concept explanation",
+        "cost considerations",
+        "resource optimization",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "CI/CD Foundations": {
+    "DevOps Methodology": {
+      "keywords": [
+        "DevOps",
+        "SDLC",
+        "DevOps Lifecycle",
+        "Waterfall methodology",
+        "Agile methodology",
+        "SRE",
+        "SysOps",
+        "DevSecOps",
+        "Version control",
+        "Build automation",
+        "Configuration management",
+        "Infrastructure as code",
+        "Orchestration",
+        "Continuous monitoring",
+        "Microservices",
+        "Shift left",
+        "GitFlow",
+        "Trunk-based development",
+        "Feature flags",
+        "Chaos engineering"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "benefits and challenges",
+        "methodology comparison and selection",
+        "team collaboration optimization",
+        "tricky question",
+        "conflict resolution",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "CI Basics": {
+      "keywords": [
+        "Continuous Integration (CI)",
+        "Continuous Delivery (CD)",
+        "Continuous Deployment",
+        "Pipeline",
+        "Pipeline stages",
+        "Build server",
+        "CI server",
+        "Pipeline as code",
+        "Continuous Testing",
+        "Build triggers",
+        "Webhooks",
+        "Runners",
+        "Agents"
+      ],
+      "style_modifiers": [
+        "build optimization techniques",
+        "concept explanation",
+        "integration strategy implementation",
+        "pipeline design and configuration",
+        "testing integration approach",
+        "tricky question",
+        "troubleshooting pipeline failures",
+        "what happens behind the scenes?",
+        "what is it?",
+        "workflow automation scenario",
+        "yes or no + explanation"
+      ]
+    },
+    "CI Artifacting": {
+      "keywords": [
+        "Build artifacts",
+        "Artifact versioning",
+        "Artifact retention",
+        "Artifact signing",
+        "Artifact promotion",
+        "Release artifacts",
+        "Artifact repository",
+        "JFrog Artifactory",
+        "Nexus Repository",
+        "Docker Registry",
+        "Container registry",
+        "npm registry",
+        "PyPI",
+        "Maven Central",
+        "NuGet Gallery",
+        "GitHub Packages",
+        "GitLab Package Registry",
+        "AWS CodeArtifact",
+        "Azure Artifacts"
+      ],
+      "style_modifiers": [
+        "artifact management strategy",
+        "concept explanation",
+        "promotion pipeline design",
+        "repository selection and configuration",
+        "retention policy planning",
+        "security and signing workflow",
+        "storage optimization approach",
+        "tricky question",
+        "versioning scheme implementation",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Testing in DevOps": {
+      "keywords": [
+        "Unit testing",
+        "Integration testing",
+        "End-to-end testing",
+        "Test pyramid",
+        "Test automation",
+        "Load testing",
+        "Performance testing",
+        "k6",
+        "JMeter",
+        "Chaos engineering",
+        "Chaos Monkey",
+        "Smoke testing",
+        "Regression testing",
+        "Shift-left testing"
+      ],
+      "style_modifiers": [
+        "CI/CD integration",
+        "concept explanation",
+        "test strategy design",
+        "tool selection rationale",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "GitOps Principles": {
+      "keywords": [
+        "GitOps principles",
+        "Declarative infrastructure",
+        "Git as single source of truth",
+        "Pull-based deployment",
+        "Push-based deployment",
+        "Reconciliation loop",
+        "Drift detection",
+        "Self-healing systems",
+        "Infrastructure versioning",
+        "Automated rollback",
+        "Observability",
+        "Audit trail"
+      ],
+      "style_modifiers": [
+        "GitOps workflow implementation",
+        "concept explanation",
+        "deployment model selection",
+        "drift management approach",
+        "migration to GitOps planning",
+        "observability integration",
+        "reconciliation strategy design",
+        "tool comparison and selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Deployment Strategies": {
+      "keywords": [
+        "Canary deployment",
+        "Blue-green deployment",
+        "Rolling update",
+        "A/B testing",
+        "Feature flags",
+        "Argo Rollouts",
+        "Flagger",
+        "Traffic shifting",
+        "Analysis runs",
+        "Rollback triggers",
+        "Weighted routing",
+        "Header-based routing",
+        "Rollback strategies",
+        "Health checks",
+        "Analysis templates"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "deployment strategy selection",
+        "rollback scenario",
+        "traffic management design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "CI/CD Platforms": {
+    "GitHub Actions": {
+      "keywords": [
+        "GitHub Actions",
+        "Workflows",
+        "Jobs",
+        "Steps",
+        "Actions marketplace",
+        "GitHub-hosted runners",
+        "Self-hosted runners",
+        "Secrets",
+        "Environment variables",
+        "Matrix builds",
+        "Reusable workflows",
+        "Composite actions",
+        "GITHUB_TOKEN"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "matrix build design",
+        "secrets management approach",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "workflow configuration scenario",
+        "yes or no + explanation"
+      ]
+    },
+    "GitLab CI": {
+      "keywords": [
+        "GitLab CI/CD",
+        ".gitlab-ci.yml",
+        "GitLab Runner",
+        "Stages",
+        "Jobs",
+        "Artifacts",
+        "Cache",
+        "Variables",
+        "Environments",
+        "Auto DevOps",
+        "Merge request pipelines",
+        "Parent-child pipelines",
+        "Multi-project pipelines"
+      ],
+      "style_modifiers": [
+        "caching strategy",
+        "concept explanation",
+        "pipeline configuration scenario",
+        "runner configuration",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Jenkins": {
+      "keywords": [
+        "Jenkins",
+        "Jenkinsfile",
+        "Declarative pipeline",
+        "Scripted pipeline",
+        "Jenkins agents",
+        "Jenkins controller",
+        "Jenkins plugins",
+        "Shared libraries",
+        "Jenkins X",
+        "Multibranch pipeline",
+        "Jenkins credentials"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "pipeline design scenario",
+        "plugin configuration",
+        "shared library usage",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Spinnaker": {
+      "keywords": [
+        "Spinnaker",
+        "Pipelines",
+        "Stages",
+        "Deployment strategies",
+        "Canary analysis",
+        "Clusters",
+        "Server groups",
+        "Load balancers",
+        "Security groups",
+        "Spinnaker operators"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "deployment strategy design",
+        "pipeline configuration",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Helm & Kustomize": {
+    "Helm Architecture": {
+      "keywords": [
+        "Helm chart",
+        "Chart.yaml",
+        "values.yaml",
+        "templates/ directory",
+        "Release",
+        "Chart repository",
+        "Helm Hub (Artifact Hub)",
+        "Chart dependencies",
+        "Helm hooks",
+        "Subchart",
+        "Parent chart",
+        "Chart versioning",
+        ".helmignore"
+      ],
+      "style_modifiers": [
+        "chart organization best practices",
+        "chart structure explanation",
+        "concept explanation",
+        "hook implementation scenario",
+        "release management workflow",
+        "templating strategy design",
+        "tricky question",
+        "versioning scheme implementation",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Helm Hands-On": {
+      "keywords": [
+        "deployment templates",
+        "statefulset templates",
+        "daemonset templates",
+        "service templates",
+        "ingress templates",
+        "configmap templates",
+        "secret templates",
+        "serviceaccount templates",
+        "role and rolebinding templates",
+        "values.yaml structure",
+        "default values",
+        "nginx configuration",
+        "resource requests and limits",
+        "storage and persistentvolumeclaim",
+        "init containers",
+        "liveness and readiness probes",
+        "helpers.tpl",
+        "template functions",
+        "conditionals and loops",
+        "chart dependencies"
+      ],
+      "styles": [
+        "write a helm template",
+        "fix helm syntax",
+        "find and explain the mistake",
+        "improve template structure",
+        "refactor using values.yaml",
+        "best practices review",
+        "compare two helm approaches",
+        "debug rendering issue"
+      ]
+    },
+    "Helm Commands": {
+      "keywords": [
+        "helm install",
+        "helm upgrade",
+        "helm rollback",
+        "helm list",
+        "helm uninstall",
+        "helm repo add",
+        "helm repo update",
+        "helm search repo",
+        "helm search hub",
+        "helm show",
+        "helm create",
+        "helm package",
+        "helm dependency",
+        "helm test",
+        "helm get values"
+      ],
+      "style_modifiers": [
+        "command flags and options",
+        "command syntax and usage",
+        "concept explanation",
+        "tricky question",
+        "troubleshooting command sequence",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Kustomize": {
+      "keywords": [
+        "Kustomize",
+        "kustomization.yaml",
+        "Overlays",
+        "Base",
+        "Patches",
+        "Strategic merge patch",
+        "JSON patch",
+        "Generators",
+        "ConfigMap generator",
+        "Secret generator",
+        "Components",
+        "Transformers"
+      ],
+      "style_modifiers": [
+        "Kustomize vs Helm comparison",
+        "concept explanation",
+        "overlay structure design",
+        "patch implementation scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "ArgoCD & Flux": {
+    "ArgoCD Architecture": {
+      "keywords": [
+        "Application Controller",
+        "Repository Server",
+        "API Server",
+        "Redis",
+        "ApplicationSet",
+        "App of Apps pattern",
+        "Sync strategies",
+        "Sync phases",
+        "Sync waves",
+        "Sync hooks",
+        "Health status",
+        "ArgoCD CRDs",
+        "Projects",
+        "Multi-tenancy"
+      ],
+      "style_modifiers": [
+        "architecture design scenario",
+        "component interaction explanation",
+        "concept explanation",
+        "high availability setup",
+        "multi-tenancy configuration",
+        "pattern application use case",
+        "sync strategy implementation",
+        "tricky question",
+        "troubleshooting component issues",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "ArgoCD Commands": {
+      "keywords": [
+        "argocd app create",
+        "argocd app sync",
+        "argocd app get",
+        "argocd app list",
+        "argocd app delete",
+        "argocd app set",
+        "argocd app diff",
+        "argocd app rollback",
+        "argocd app history",
+        "argocd repo add",
+        "argocd cluster add",
+        "argocd login",
+        "argocd project create",
+        "argocd app wait",
+        "argocd app manifests"
+      ],
+      "style_modifiers": [
+        "cluster management task",
+        "command flags and options",
+        "command usage and syntax",
+        "concept explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "ArgoCD Concepts": {
+      "keywords": [
+        "Application manifest",
+        "Sync status",
+        "Out of sync",
+        "Sync policy",
+        "Auto-sync",
+        "Self-heal",
+        "Prune resources",
+        "Refresh",
+        "SSO integration",
+        "Notification system",
+        "Resource hooks"
+      ],
+      "style_modifiers": [
+        "automation strategy design",
+        "concept definition and usage",
+        "configuration scenario",
+        "resource management workflow",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "FluxCD": {
+      "keywords": [
+        "FluxCD",
+        "Flux v2",
+        "GitRepository",
+        "Kustomization",
+        "HelmRepository",
+        "HelmRelease",
+        "Source Controller",
+        "Kustomize Controller",
+        "Helm Controller",
+        "Notification Controller",
+        "Image Automation Controller"
+      ],
+      "style_modifiers": [
+        "FluxCD vs ArgoCD comparison",
+        "configuration scenario",
+        "core concept",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Platform Engineering": {
+    "Platform Engineering Concepts": {
+      "keywords": [
+        "Internal Developer Platform (IDP)",
+        "Platform team",
+        "Platform as a Product",
+        "Self-service infrastructure",
+        "Developer experience (DevEx)",
+        "Cognitive load reduction",
+        "Paved roads",
+        "Platform maturity model"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "platform design scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Internal Developer Platforms": {
+      "keywords": [
+        "Internal Developer Platform",
+        "Developer portal",
+        "Service catalog",
+        "Software templates",
+        "Scaffolding",
+        "API abstractions",
+        "Resource provisioning"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "developer experience improvement",
+        "platform design scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Backstage": {
+      "keywords": [
+        "Backstage",
+        "Software catalog",
+        "TechDocs",
+        "Scaffolder",
+        "Backstage plugins",
+        "Entity model",
+        "catalog-info.yaml",
+        "Backstage templates"
+      ],
+      "style_modifiers": [
+        "catalog design",
+        "concept explanation",
+        "configuration scenario",
+        "plugin development",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Developer Experience (DevEx)": {
+      "keywords": [
+        "Developer experience",
+        "Developer productivity",
+        "DORA metrics",
+        "Deployment frequency",
+        "Lead time for changes",
+        "Change failure rate",
+        "Mean time to recovery",
+        "Developer surveys",
+        "Friction reduction"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "improvement scenario",
+        "metrics interpretation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Self-Service Infrastructure": {
+      "keywords": [
+        "Self-service",
+        "Infrastructure APIs",
+        "Provisioning automation",
+        "Guardrails",
+        "Policy enforcement",
+        "Resource templates",
+        "Approval workflows"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "guardrail implementation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "workflow design scenario",
+        "yes or no + explanation"
+      ]
+    },
+    "Golden Paths & Templates": {
+      "keywords": [
+        "Golden paths",
+        "Paved roads",
+        "Project templates",
+        "Starter kits",
+        "Best practice enforcement",
+        "Standardization",
+        "Template versioning"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "standardization strategy",
+        "template design scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Networking Fundamentals": {
+    "Protocols": {
+      "keywords": [
+        "QUIC",
+        "Webhook",
+        "TCP",
+        "UDP",
+        "HTTP",
+        "HTTPS",
+        "gRPC",
+        "WebSocket",
+        "ICMP",
+        "ARP",
+        "DHCP",
+        "DNS protocol",
+        "FTP",
+        "SSH protocol",
+        "SMTP"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "performance and reliability",
+        "protocol comparison and selection",
+        "protocol explanation and characteristics",
+        "tricky question",
+        "troubleshooting connectivity issues",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "OSI Model": {
+      "keywords": [
+        "Application layer (Layer 7)",
+        "Presentation layer (Layer 6)",
+        "Session layer (Layer 5)",
+        "Transport layer (Layer 4)",
+        "Network layer (Layer 3)",
+        "Data link layer (Layer 2)",
+        "Physical layer (Layer 1)",
+        "Encapsulation",
+        "De-encapsulation",
+        "PDU (Protocol Data Unit)"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "layer responsibility and function",
+        "protocol mapping to layers",
+        "tricky question",
+        "troubleshooting layer-specific issues",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "TCP/IP": {
+      "keywords": [
+        "Three-way handshake",
+        "TCP flags (SYN, ACK, FIN)",
+        "Connection establishment",
+        "TCP passthrough",
+        "Connection termination",
+        "TCP window size",
+        "Congestion control",
+        "Flow control",
+        "TCP segments",
+        "Retransmission timeout",
+        "Keep-alive packets",
+        "TCP state diagram",
+        "Half-open connection",
+        "Full-duplex"
+      ],
+      "style_modifiers": [
+        "concept explanation and usage",
+        "tricky question",
+        "troubleshooting connection issues",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "HTTP & HTTPS": {
+      "keywords": [
+        "API",
+        "HTTP methods",
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS",
+        "HEAD",
+        "HTTP status codes",
+        "HTTP headers",
+        "Cookies",
+        "HTTP/2",
+        "HTTP/3",
+        "CORS",
+        "Content negotiation",
+        "RESTful API",
+        "GraphQL",
+        "gRPC API",
+        "API versioning",
+        "Rate limiting",
+        "API authentication",
+        "OpenAPI Specification",
+        "Swagger"
+      ],
+      "style_modifiers": [
+        "RESTful API design consideration",
+        "caching strategy configuration",
+        "concept explanation and usage",
+        "security header implementation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "DNS": {
+      "keywords": [
+        "DNS resolution",
+        "A record",
+        "AAAA record",
+        "CNAME record",
+        "MX record",
+        "TXT record",
+        "PTR record",
+        "/etc/resolve.conf",
+        "NS record",
+        "SOA record",
+        "Authoritative nameserver",
+        "Recursive resolver",
+        "DNS cache",
+        "TTL (Time To Live)",
+        "DNS zones",
+        "DNSSEC"
+      ],
+      "style_modifiers": [
+        "DNSSEC implementation approach",
+        "TTL optimization strategy",
+        "caching behavior analysis",
+        "concept explanation and usage",
+        "high availability DNS design",
+        "resolution process explanation",
+        "tricky question",
+        "troubleshooting resolution failures",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation",
+        "zone management scenario"
+      ]
+    },
+    "Load Balancing Concepts": {
+      "keywords": [
+        "Load balancer",
+        "Layer 4 load balancing",
+        "Layer 7 load balancing",
+        "Round robin",
+        "Least connections",
+        "Weighted round robin",
+        "IP hash",
+        "Health checks",
+        "Session persistence",
+        "Sticky sessions",
+        "SSL termination",
+        "SSL passthrough",
+        "Connection draining",
+        "Cross-zone load balancing",
+        "Global load balancing"
+      ],
+      "style_modifiers": [
+        "architecture design scenario",
+        "concept explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Proxies & Reverse Proxies": {
+      "keywords": [
+        "Proxy server",
+        "Reverse proxy",
+        "Forward proxy",
+        "Nginx",
+        "HAProxy",
+        "Traefik",
+        "Envoy",
+        "Apache HTTP Server",
+        "Caching proxy",
+        "SSL offloading",
+        "Request routing",
+        "Rate limiting",
+        "Connection pooling",
+        "Upstream servers",
+        "Proxy protocol"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "configuration scenario",
+        "proxy vs reverse proxy comparison",
+        "tricky question",
+        "use case selection",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Physical & On-Prem Networking": {
+      "keywords": [
+        "VLAN",
+        "Trunk ports",
+        "Access ports",
+        "Layer 2 switching",
+        "Layer 3 routing",
+        "Physical firewalls",
+        "ACLs",
+        "Load balancer appliances",
+        "DHCP server",
+        "DNS server",
+        "Spanning Tree Protocol (STP)",
+        "Port channels",
+        "Static routes",
+        "BGP",
+        "OSPF",
+        "Physical cabling",
+        "Rack networking",
+        "Patch panels"
+      ],
+      "style_modifiers": [
+        "brief failure cause highlight",
+        "concept explanation",
+        "concise performance impact note",
+        "fast connectivity validation",
+        "quick cloud vs on-prem comparison",
+        "short configuration explanation",
+        "simple design recommendation",
+        "tricky question",
+        "troubleshooting step",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no with brief justification"
+      ]
+    }
+  },
+  "Network Tools & Troubleshooting": {
+    "Linux Networking Commands": {
+      "keywords": [
+        "netcat",
+        "ping",
+        "traceroute",
+        "netstat",
+        "nslookup",
+        "dig",
+        "curl",
+        "wget",
+        "telnet",
+        "ssh",
+        "nc (netcat)",
+        "tcpdump",
+        "wireshark",
+        "iptables",
+        "ip route",
+        "ifconfig"
+      ],
+      "style_modifiers": [
+        "command flags and options",
+        "command syntax and usage",
+        "concept explanation",
+        "diagnostic command sequence",
+        "network debugging approach",
+        "output interpretation and analysis",
+        "practical troubleshooting example",
+        "tricky question",
+        "troubleshooting workflow scenario",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Network Troubleshooting": {
+      "keywords": [
+        "Packet loss",
+        "High latency",
+        "DNS failures",
+        "Service unreachable",
+        "Port blocking",
+        "Firewall rules",
+        "Routing issues",
+        "Connection reset",
+        "TCP retransmissions",
+        "TLS handshake failure",
+        "Misconfigured load balancer",
+        "CNI plugin errors",
+        "Pod-to-pod connectivity",
+        "Node network issues"
+      ],
+      "style_modifiers": [
+        "brief misconfiguration highlight",
+        "concept explanation",
+        "fast checklist-style response",
+        "one-step diagnostic hint",
+        "quick difference explanation",
+        "short root cause summary",
+        "short validation step",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation",
+        "yes or no answer with brief justification"
+      ]
+    },
+    "Packet Analysis": {
+      "keywords": [
+        "Packet capture",
+        "tcpdump",
+        "Wireshark",
+        "tshark",
+        "pcap files",
+        "BPF filters",
+        "Packet headers",
+        "TCP flags analysis",
+        "Payload inspection",
+        "Protocol dissection",
+        "Network forensics",
+        "Traffic analysis",
+        "Packet sniffing",
+        "Capture filters vs display filters"
+      ],
+      "style_modifiers": [
+        "capture filter construction",
+        "concept explanation",
+        "traffic analysis scenario",
+        "tricky question",
+        "troubleshooting with packet capture",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Network Infrastructure": {
+    "Modern Networking (SDN, NFV)": {
+      "keywords": [
+        "eBPF",
+        "Cilium",
+        "Cilium Network Policies",
+        "Hubble",
+        "Falco",
+        "Zero Trust Networking",
+        "Zero Trust Architecture",
+        "Linkerd",
+        "Consul Connect",
+        "mTLS implementation",
+        "Service mesh comparison",
+        "Identity-based networking"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "eBPF use case explanation",
+        "network observability design",
+        "service mesh selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation",
+        "zero trust implementation"
+      ]
+    },
+    "API Gateways": {
+      "keywords": [
+        "API Gateway",
+        "Kong",
+        "AWS API Gateway",
+        "Apigee",
+        "Ambassador",
+        "Tyk",
+        "Rate limiting",
+        "Authentication",
+        "Authorization",
+        "Request transformation",
+        "Response transformation",
+        "API versioning",
+        "Throttling",
+        "Circuit breaker",
+        "Caching",
+        "Request routing"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "configuration scenario",
+        "gateway selection rationale",
+        "security implementation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "CDN & Edge": {
+      "keywords": [
+        "CDN (Content Delivery Network)",
+        "Edge locations",
+        "PoP (Point of Presence)",
+        "CloudFront",
+        "Cloudflare",
+        "Akamai",
+        "Fastly",
+        "Cache invalidation",
+        "Cache TTL",
+        "Origin server",
+        "Edge computing",
+        "Edge functions",
+        "Lambda@Edge",
+        "Cloudflare Workers",
+        "Geo-routing",
+        "DDoS protection"
+      ],
+      "style_modifiers": [
+        "CDN selection rationale",
+        "caching strategy design",
+        "concept explanation",
+        "performance",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Security Foundations": {
+    "Security Basics": {
+      "keywords": [
+        "Principle of least privilege",
+        "Authentication",
+        "Authorization",
+        "Asymmetric encryption",
+        "Symmetric encryption",
+        "SSH Keys",
+        "SSH Security Configurations",
+        "Access Token",
+        "SSO",
+        "OAuth2",
+        "OIDC",
+        "Opaque Tokens",
+        "JWT Tokens",
+        "RBAC",
+        "ABAC",
+        "MFA (Multi-Factor Authentication)",
+        "Certificate-based authentication",
+        "API Keys",
+        "Secrets rotation"
+      ],
+      "style_modifiers": [
+        "access control design",
+        "authentication flow scenario",
+        "authorization model implementation",
+        "concept explanation",
+        "credential management best practices",
+        "encryption method selection",
+        "security principle application",
+        "token type comparison",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "SSL/TLS & Certificates": {
+      "keywords": [
+        "SSL / TLS",
+        "TLS Handshake Process",
+        "SAN (Subject Alternative Name)",
+        "SSL Certificate types",
+        "Private CA",
+        "Public CA",
+        "SSL Validation",
+        "SSL Validation Levels",
+        "Certificate Chain",
+        "Code Signing Certificates",
+        "Digital Signatures",
+        "Certificate Expiration",
+        "CRL",
+        "OCSP",
+        "PFS (Perfect Forward Secrecy)",
+        "Let's Encrypt",
+        "cert-manager"
+      ],
+      "style_modifiers": [
+        "certificate configuration scenario",
+        "certificate lifecycle management",
+        "concept explanation",
+        "encryption protocol selection",
+        "handshake process explanation",
+        "security vulnerability analysis",
+        "tricky question",
+        "troubleshooting connection issues",
+        "validation and trust chain",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "mTLS & Zero Trust": {
+      "keywords": [
+        "mTLS (mutual TLS)",
+        "Zero Trust Architecture",
+        "Zero Trust principles",
+        "Identity verification",
+        "Service-to-service authentication",
+        "SPIFFE",
+        "SPIRE",
+        "Workload identity",
+        "Network segmentation",
+        "Microsegmentation",
+        "Never trust always verify"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "identity verification design",
+        "mTLS configuration",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation",
+        "zero trust implementation scenario"
+      ]
+    },
+    "Cloud Security": {
+      "keywords": [
+        "Cloud SIEM",
+        "CASB (Cloud Access Security Broker)",
+        "Cloud workload protection",
+        "Secrets management",
+        "Cloud compliance (SOC2, ISO 27001)",
+        "Data encryption at rest",
+        "Data encryption in transit",
+        "CSPM (Cloud Security Posture Management)",
+        "CWPP (Cloud Workload Protection Platform)"
+      ],
+      "style_modifiers": [
+        "compliance requirement mapping",
+        "concept explanation",
+        "encryption strategy design",
+        "incident response planning",
+        "security posture assessment",
+        "security tool selection rationale",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Network Security": {
+      "keywords": [
+        "Firewall rules",
+        "IDS/IPS",
+        "VPN tunneling",
+        "Network segmentation",
+        "DMZ",
+        "DDoS protection",
+        "Port security",
+        "Packet filtering",
+        "Proxy servers",
+        "Bastion host",
+        "Jump box",
+        "WAF rules"
+      ],
+      "style_modifiers": [
+        "DDoS mitigation strategy",
+        "VPN tunnel configuration",
+        "access control implementation",
+        "concept explanation",
+        "firewall rule configuration",
+        "intrusion detection scenario",
+        "network segmentation design",
+        "secure network architecture",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Secrets & Policy": {
+    "Secrets Management": {
+      "keywords": [
+        "Secrets management",
+        "HashiCorp Vault",
+        "AWS Secrets Manager",
+        "Azure Key Vault",
+        "External Secrets Operator",
+        "Sealed Secrets",
+        "SOPS",
+        "Secrets rotation",
+        "Dynamic secrets",
+        "Secret injection",
+        "Kubernetes secrets"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "rotation strategy",
+        "secrets architecture design",
+        "tool comparison",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Policy as Code (OPA, Kyverno)": {
+      "keywords": [
+        "Policy as Code (PaC)",
+        "Open Policy Agent (OPA)",
+        "Rego policy language",
+        "Gatekeeper",
+        "Kyverno",
+        "Kyverno policies",
+        "ClusterPolicy",
+        "Validating policies",
+        "Mutating policies",
+        "Policy validation",
+        "Policy enforcement",
+        "Compliance as Code",
+        "Admission controllers"
+      ],
+      "style_modifiers": [
+        "OPA vs Kyverno comparison",
+        "compliance as code implementation",
+        "concept explanation",
+        "governance automation design",
+        "integration with CI/CD pipeline",
+        "policy enforcement strategy",
+        "policy rule creation scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "AppSec & Supply Chain": {
+    "Supply Chain Security": {
+      "keywords": [
+        "Software supply chain",
+        "SBOM (Software Bill of Materials)",
+        "Sigstore",
+        "Cosign",
+        "Image signing",
+        "Attestations",
+        "Provenance",
+        "SLSA framework",
+        "Dependency scanning",
+        "Trusted registries",
+        "Image verification"
+      ],
+      "style_modifiers": [
+        "SBOM implementation scenario",
+        "concept explanation",
+        "signing workflow",
+        "supply chain security design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Container Image Scanning": {
+      "keywords": [
+        "Container image scanning",
+        "Trivy",
+        "Grype",
+        "Snyk",
+        "Clair",
+        "Vulnerability scanning",
+        "CVE databases",
+        "Base image selection",
+        "Distroless images",
+        "Image hardening"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "scanning integration scenario",
+        "tool comparison",
+        "tricky question",
+        "vulnerability remediation",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "SAST & DAST": {
+      "keywords": [
+        "SAST (Static Application Security Testing)",
+        "DAST (Dynamic Application Security Testing)",
+        "SonarQube",
+        "Checkmarx",
+        "OWASP ZAP",
+        "Burp Suite",
+        "Code review for security",
+        "Penetration testing",
+        "Fuzz testing",
+        "Security testing in CI/CD"
+      ],
+      "style_modifiers": [
+        "SAST vs DAST comparison",
+        "concept explanation",
+        "results interpretation",
+        "testing integration in SDLC",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Metrics & Visualization": {
+    "Observability Concepts": {
+      "keywords": [
+        "Observability",
+        "Three pillars of observability",
+        "Metrics",
+        "Logs",
+        "Traces",
+        "APM (Application Performance Monitoring)",
+        "Real User Monitoring (RUM)",
+        "Synthetic monitoring",
+        "Golden signals",
+        "RED metrics",
+        "USE method"
+      ],
+      "style_modifiers": [
+        "Define the following observability concept",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Metrics & Dashboards": {
+      "keywords": [
+        "Time-series metrics",
+        "Counter",
+        "Gauge",
+        "Histogram",
+        "Summary",
+        "Cardinality",
+        "Dashboard design",
+        "Custom metrics",
+        "Composite metrics",
+        "Threshold alerts",
+        "Dashboard best practices"
+      ],
+      "style_modifiers": [
+        "Define the following metrics or dashboard concept",
+        "dashboard design scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Prometheus Stack": {
+      "keywords": [
+        "Prometheus",
+        "PromQL",
+        "Prometheus exporters",
+        "Time-series database",
+        "Scraping",
+        "Service discovery",
+        "Alertmanager",
+        "Recording rules",
+        "Alerting rules",
+        "Pushgateway",
+        "Node exporter",
+        "Blackbox exporter",
+        "Federation",
+        "Thanos",
+        "Cortex",
+        "VictoriaMetrics"
+      ],
+      "style_modifiers": [
+        "Explain the following Prometheus stack component",
+        "PromQL query construction",
+        "alerting configuration",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Grafana": {
+      "keywords": [
+        "Grafana",
+        "Grafana dashboards",
+        "Data sources",
+        "Panels",
+        "Variables",
+        "Annotations",
+        "Grafana alerting",
+        "Grafana Loki",
+        "Grafana Tempo",
+        "Grafana Mimir",
+        "Grafana Cloud"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "dashboard design scenario",
+        "data source configuration",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Logging": {
+    "Logging Fundamentals": {
+      "keywords": [
+        "Centralized logging",
+        "Log levels (DEBUG, INFO, WARN, ERROR)",
+        "Structured logging",
+        "Log rotation",
+        "Log retention",
+        "Syslog",
+        "Fluentd",
+        "Fluent Bit",
+        "Log shipping",
+        "Log correlation",
+        "Log analysis",
+        "Application logs"
+      ],
+      "style_modifiers": [
+        "Explain the following logging concept",
+        "log aggregation design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "ELK Stack": {
+      "keywords": [
+        "ELK Stack",
+        "Elasticsearch",
+        "Logstash",
+        "Kibana",
+        "Filebeat",
+        "Metricbeat",
+        "Beats family",
+        "Index patterns",
+        "Elasticsearch queries",
+        "Kibana dashboards",
+        "Log aggregation",
+        "Log parsing",
+        "Elastic APM"
+      ],
+      "style_modifiers": [
+        "Define the following ELK stack component",
+        "index management scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Loki": {
+      "keywords": [
+        "Grafana Loki",
+        "LogQL",
+        "Log labels",
+        "Promtail",
+        "Log streams",
+        "Loki vs Elasticsearch",
+        "Label cardinality",
+        "Loki storage",
+        "Loki architecture"
+      ],
+      "style_modifiers": [
+        "LogQL query construction",
+        "architecture explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Tracing & Telemetry": {
+    "OpenTelemetry": {
+      "keywords": [
+        "OpenTelemetry",
+        "OTel Collector",
+        "Instrumentation",
+        "Auto-instrumentation",
+        "OTLP protocol",
+        "Spans",
+        "Traces",
+        "Metrics",
+        "Logs",
+        "Context propagation",
+        "Baggage",
+        "OTel SDK"
+      ],
+      "style_modifiers": [
+        "collector configuration",
+        "concept explanation",
+        "instrumentation scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Distributed Tracing": {
+      "keywords": [
+        "Distributed tracing",
+        "Trace ID",
+        "Span ID",
+        "Parent span",
+        "Child span",
+        "Trace context",
+        "W3C Trace Context",
+        "Jaeger",
+        "Zipkin",
+        "Tempo",
+        "Sampling strategies",
+        "Head-based sampling",
+        "Tail-based sampling"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "sampling strategy selection",
+        "trace analysis scenario",
+        "tracing architecture design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Reliability & On-Call": {
+    "Alerting & On-Call": {
+      "keywords": [
+        "Alerting",
+        "Alert fatigue",
+        "Alert routing",
+        "Escalation policies",
+        "On-call rotation",
+        "PagerDuty",
+        "Opsgenie",
+        "VictorOps",
+        "Incident management",
+        "Runbooks",
+        "Alert grouping",
+        "Alert silencing"
+      ],
+      "style_modifiers": [
+        "alerting strategy design",
+        "concept explanation",
+        "on-call workflow scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "SLIs, SLOs & Error Budgets": {
+      "keywords": [
+        "SLI (Service Level Indicator)",
+        "SLO (Service Level Objective)",
+        "SLA (Service Level Agreement)",
+        "Error budget",
+        "Error budget policy",
+        "Burn rate",
+        "MTTR (Mean Time To Recovery)",
+        "MTTF (Mean Time To Failure)",
+        "Availability targets",
+        "Latency targets"
+      ],
+      "style_modifiers": [
+        "SLO definition scenario",
+        "concept explanation",
+        "error budget calculation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Chaos Engineering": {
+      "keywords": [
+        "Chaos engineering",
+        "Chaos Monkey",
+        "Litmus Chaos",
+        "Gremlin",
+        "Chaos Mesh",
+        "Fault injection",
+        "Game days",
+        "Blast radius",
+        "Steady state hypothesis",
+        "Chaos experiments"
+      ],
+      "style_modifiers": [
+        "chaos experiment design",
+        "concept explanation",
+        "failure scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Relational DB's and Scaling": {
+    "Database Scaling & Replication": {
+      "keywords": [
+        "Horizontal scaling",
+        "Vertical scaling",
+        "Sharding",
+        "Partitioning",
+        "Read replicas",
+        "Master-slave replication",
+        "Master-master replication",
+        "Synchronous replication",
+        "Asynchronous replication",
+        "Replication lag",
+        "Failover",
+        "Connection pooling",
+        "PgBouncer",
+        "ProxySQL",
+        "Database clustering",
+        "Split-brain"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "failover scenario",
+        "replication architecture design",
+        "scaling strategy selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "SQL Structure": {
+      "keywords": [
+        "Database",
+        "DBMS",
+        "Transaction",
+        "Query",
+        "Nested query",
+        "Schema",
+        "RDBMS",
+        "ACID vs BASE",
+        "SQL",
+        "Row",
+        "Column",
+        "Table",
+        "View",
+        "Unique key",
+        "Primary key",
+        "Foreign key",
+        "Data normalization"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "database design scenario",
+        "relationship modeling",
+        "schema design critique",
+        "transaction management",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "SQL Commands": {
+      "keywords": [
+        "SELECT",
+        "DISTINCT",
+        "ALTER",
+        "INSERT",
+        "LIMIT",
+        "CREATE",
+        "UPDATE",
+        "COUNT",
+        "DROP",
+        "DELETE",
+        "MAX / MIN",
+        "GRANT / REVOKE",
+        "WHERE",
+        "AVG",
+        "SUM",
+        "ORDER BY",
+        "GROUP BY",
+        "LIKE",
+        "DESC",
+        "BETWEEN",
+        "JOIN",
+        "VIEW",
+        "UNION"
+      ],
+      "style_modifiers": [
+        "code snippet",
+        "core concept",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "SQL Databases": {
+      "keywords": [
+        "PostgreSQL",
+        "MySQL",
+        "Microsoft SQL Server",
+        "Oracle Database",
+        "MariaDB",
+        "SQLite",
+        "Amazon RDS",
+        "Amazon Aurora"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "database selection rationale",
+        "managed service considerations",
+        "migration challenges",
+        "performance characteristics comparison",
+        "scaling strategy discussion",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "NoSQL & Caching": {
+    "NoSQL Architecture": {
+      "keywords": [
+        "NoSQL database",
+        "Document database",
+        "Key-value store",
+        "Column-family store",
+        "Graph database",
+        "CAP theorem",
+        "Eventual consistency",
+        "Strong consistency",
+        "Sharding",
+        "Replication",
+        "Horizontal scaling",
+        "Schema-less design",
+        "Indexing strategies",
+        "Aggregation",
+        "TTL (Time To Live)"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "data modeling scenario",
+        "replication strategy",
+        "scaling strategy implementation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "MongoDB": {
+      "keywords": [
+        "MongoDB",
+        "Collections",
+        "Documents",
+        "BSON",
+        "Replica sets",
+        "Primary node",
+        "Secondary nodes",
+        "Sharding",
+        "mongod",
+        "mongos",
+        "Config servers",
+        "Aggregation framework",
+        "Change streams",
+        "GridFS",
+        "MongoDB Compass",
+        "mongoimport",
+        "mongoexport",
+        "mongodump",
+        "mongorestore"
+      ],
+      "style_modifiers": [
+        "aggregation pipeline construction",
+        "backup and recovery procedures",
+        "concept explanation",
+        "data migration workflow",
+        "document design scenario",
+        "performance optimization",
+        "replica set configuration",
+        "sharding strategy implementation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Redis & Key-Value Stores": {
+      "keywords": [
+        "Redis",
+        "In-memory database",
+        "Key-value pairs",
+        "Redis data structures",
+        "Cache eviction policies",
+        "Redis persistence (RDB/AOF)",
+        "Redis Cluster",
+        "Redis Sentinel",
+        "Pub/Sub",
+        "TTL expiration",
+        "Memcached",
+        "DynamoDB as Key-Value"
+      ],
+      "style_modifiers": [
+        "caching strategy implementation",
+        "cluster setup and management",
+        "concept explanation",
+        "data structure selection",
+        "memory management strategy",
+        "performance optimization scenario",
+        "persistence configuration",
+        "tricky question",
+        "use case suitability analysis",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Messaging & Streaming": {
+    "Message Queues Concepts": {
+      "keywords": [
+        "Message queue",
+        "Producer",
+        "Consumer",
+        "Broker",
+        "Queue",
+        "Topic",
+        "Publish-subscribe",
+        "Point-to-point",
+        "Message acknowledgment",
+        "Dead letter queue",
+        "Message TTL",
+        "Backpressure"
+      ],
+      "style_modifiers": [
+        "architecture design scenario",
+        "core concept",
+        "messaging pattern selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "RabbitMQ": {
+      "keywords": [
+        "RabbitMQ",
+        "AMQP",
+        "Exchange types",
+        "Direct exchange",
+        "Fanout exchange",
+        "Topic exchange",
+        "Headers exchange",
+        "Bindings",
+        "Routing keys",
+        "RabbitMQ clustering",
+        "Mirrored queues",
+        "Quorum queues"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "exchange configuration scenario",
+        "high availability setup",
+        "routing design",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Kafka Architecture": {
+      "keywords": [
+        "Apache Kafka",
+        "Kafka broker",
+        "Kafka topic",
+        "Partitions",
+        "Replication factor",
+        "Leader and follower",
+        "Consumer groups",
+        "Offset",
+        "ZooKeeper",
+        "KRaft",
+        "Log compaction",
+        "Retention policies"
+      ],
+      "style_modifiers": [
+        "architecture explanation",
+        "partition strategy design",
+        "replication configuration",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Kafka Operations": {
+      "keywords": [
+        "kafka-topics.sh",
+        "kafka-console-producer.sh",
+        "kafka-console-consumer.sh",
+        "kafka-consumer-groups.sh",
+        "Kafka Connect",
+        "Kafka Streams",
+        "ksqlDB",
+        "Schema Registry",
+        "Confluent Platform",
+        "Kafka monitoring"
+      ],
+      "style_modifiers": [
+        "command syntax and usage",
+        "concept explanation",
+        "connector configuration",
+        "stream processing scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "AWS SQS & SNS": {
+      "keywords": [
+        "Amazon SQS",
+        "Amazon SNS",
+        "Standard queue",
+        "FIFO queue",
+        "Visibility timeout",
+        "Long polling",
+        "Short polling",
+        "Message deduplication",
+        "SNS topics",
+        "SNS subscriptions",
+        "Fan-out pattern",
+        "EventBridge"
+      ],
+      "style_modifiers": [
+        "SQS vs SNS comparison",
+        "concept explanation",
+        "fan-out architecture design",
+        "queue configuration scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Delivery Semantics & Ordering": {
+      "keywords": [
+        "At-most-once delivery",
+        "At-least-once delivery",
+        "Exactly-once delivery",
+        "Message ordering",
+        "Idempotency",
+        "Message deduplication",
+        "Partition ordering",
+        "Global ordering",
+        "Transactional messaging"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "delivery guarantee selection",
+        "idempotency implementation",
+        "ordering requirement analysis",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Event-Driven Architecture": {
+      "keywords": [
+        "Event-driven architecture",
+        "Event sourcing",
+        "CQRS",
+        "Event store",
+        "Event replay",
+        "Eventual consistency",
+        "Saga pattern",
+        "Choreography",
+        "Orchestration",
+        "Domain events"
+      ],
+      "style_modifiers": [
+        "architecture design scenario",
+        "concept explanation",
+        "consistency model explanation",
+        "pattern selection rationale",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Big Data Systems": {
+      "keywords": [
+        "Hadoop ecosystem",
+        "HDFS",
+        "MapReduce",
+        "Apache Spark",
+        "Data lake",
+        "Data warehouse",
+        "ETL (Extract Transform Load)",
+        "Data pipeline",
+        "Batch processing",
+        "Stream processing",
+        "Apache Kafka",
+        "Data partitioning",
+        "Apache Flink"
+      ],
+      "style_modifiers": [
+        "architecture design scenario",
+        "concept explanation",
+        "data pipeline construction",
+        "performance optimization",
+        "processing paradigm selection",
+        "real-time vs batch processing",
+        "scaling strategy implementation",
+        "storage format selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "Terraform": {
+    "Terraform Concepts": {
+      "keywords": [
+        "Terraform",
+        "Terragrunt",
+        "Immutable infrastructure paradigm",
+        "Providers",
+        "Resources",
+        "Terraform configuration",
+        "Tainted resource",
+        "Terraform variables",
+        "Default values",
+        "Output values",
+        "Local values",
+        "Validation block",
+        "count",
+        "for_each",
+        "Conditional Expressions",
+        "Terraform Modules",
+        "Data sources",
+        "Dynamic blocks",
+        "Provisioners",
+        "local-exec",
+        "remote-exec"
+      ],
+      "style_modifiers": [
+        "comparison with alternatives",
+        "concept explanation and usage",
+        "conditional logic implementation",
+        "module design best practices",
+        "resource configuration scenario",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Terraform Hands-On & Authoring": {
+      "keywords": [
+        "provider configuration",
+        "required_providers",
+        "terraform block",
+        "backend configuration",
+        "resource definitions",
+        "data sources",
+        "modules",
+        "module inputs and outputs",
+        "variables.tf structure",
+        "terraform.tfvars",
+        "locals",
+        "dynamic blocks",
+        "count and for_each",
+        "depends_on usage",
+        "lifecycle rules",
+        "state management",
+        "remote state",
+        "outputs",
+        "workspaces",
+        "resource naming conventions"
+      ],
+      "styles": [
+        "write terraform configuration",
+        "fix terraform syntax",
+        "find and explain the mistake",
+        "improve configuration structure",
+        "refactor using modules",
+        "best practices review",
+        "compare two terraform approaches",
+        "debug plan or apply failure"
+      ]
+    },
+    "Terraform Commands": {
+      "keywords": [
+        "terraform plan",
+        "terraform init",
+        "terraform validate",
+        "terraform show",
+        "terraform destroy",
+        "terraform apply",
+        "terraform fmt",
+        "terraform state list",
+        "terraform import",
+        "terraform output",
+        "terraform refresh",
+        "terraform taint",
+        "terraform workspace",
+        "terraform graph",
+        "terraform console"
+      ],
+      "style_modifiers": [
+        "command flags and options",
+        "command syntax and usage",
+        "concept explanation",
+        "state manipulation operations",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Terraform State & Backends": {
+      "keywords": [
+        "State file",
+        "Terraform backend",
+        "Remote state",
+        "S3 backend",
+        "DynamoDB locking",
+        "State locking",
+        "State encryption",
+        "terraform state mv",
+        "terraform state rm",
+        "terraform state pull",
+        "terraform state push",
+        "State file corruption",
+        "State file migration"
+      ],
+      "style_modifiers": [
+        "backend configuration scenario",
+        "concept explanation",
+        "state management strategy",
+        "tricky question",
+        "troubleshooting state conflicts",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Terragrunt": {
+      "keywords": [
+        "Terragrunt",
+        "DRY Terraform",
+        "terragrunt.hcl",
+        "include block",
+        "dependency block",
+        "dependencies block",
+        "inputs block",
+        "generate block",
+        "remote_state block",
+        "run_all",
+        "terragrunt apply-all",
+        "terragrunt plan-all",
+        "terragrunt output",
+        "before_hook",
+        "after_hook",
+        "Terragrunt cache",
+        "Terraform wrapper",
+        "Multi-environment configuration",
+        "Hierarchical configuration"
+      ],
+      "style_modifiers": [
+        "Terragrunt vs plain Terraform",
+        "concept explanation",
+        "configuration scenario",
+        "dependency management",
+        "multi-environment setup",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "IaC & Config Management": {
+    "CloudFormation": {
+      "keywords": [
+        "AWS CloudFormation",
+        "Stack",
+        "Template",
+        "Resources section",
+        "Parameters",
+        "Outputs",
+        "Mappings",
+        "Conditions",
+        "Intrinsic functions",
+        "Change sets",
+        "StackSets",
+        "Drift detection"
+      ],
+      "style_modifiers": [
+        "change set validation workflow",
+        "concept explanation",
+        "cross-stack reference implementation",
+        "intrinsic function usage",
+        "multi-region deployment with StackSets",
+        "parameter configuration approach",
+        "stack design scenario",
+        "template structure explanation",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Pulumi": {
+      "keywords": [
+        "Pulumi",
+        "Infrastructure as Software",
+        "Pulumi stack",
+        "Pulumi state",
+        "Pulumi backend",
+        "Programming languages support",
+        "Pulumi resources",
+        "Pulumi outputs",
+        "Pulumi config",
+        "Pulumi preview"
+      ],
+      "style_modifiers": [
+        "comparison with alternatives",
+        "concept and architecture explanation",
+        "multi-language implementation scenario",
+        "resource definition in code",
+        "stack configuration strategy",
+        "state management approach",
+        "testing infrastructure code",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Ansible": {
+      "keywords": [
+        "Ansible",
+        "Control node",
+        "Managed node",
+        "Host inventory",
+        "/etc/ansible/ansible.cfg",
+        "Ad hoc commands",
+        "Playbook",
+        "Task",
+        "Idempotence",
+        "Role",
+        "Block",
+        "Templates",
+        "Handlers",
+        "Strategy",
+        "Ansible debugger"
+      ],
+      "style_modifiers": [
+        "concept definition",
+        "idempotent task implementation",
+        "inventory management approach",
+        "playbook design scenario",
+        "role organization strategy",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
+    "Atlantis": {
+      "keywords": [
+        "Atlantis",
+        "Terraform automation",
+        "Pull request workflow",
+        "atlantis.yaml",
+        "Plan approval",
+        "Apply approval",
+        "Locking",
+        "Webhooks",
+        "Multi-environment"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "workflow configuration scenario",
+        "yes or no + explanation"
+      ]
+    },
+    "Crossplane": {
+      "keywords": [
+        "Crossplane",
+        "Providers",
+        "Managed Resources",
+        "Composite Resources",
+        "Compositions",
+        "XRDs (CompositeResourceDefinitions)",
+        "Claims",
+        "ProviderConfig",
+        "Control plane"
+      ],
+      "style_modifiers": [
+        "Crossplane vs Terraform comparison",
+        "composition design scenario",
+        "core concept",
+        "tricky question",
+        "what happens behind the scenes?",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  }
+}

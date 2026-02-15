@@ -1,0 +1,62 @@
+# MongoDB Initialization Job Configuration
+
+# Job configuration
+job:
+  enabled: true
+  
+  # Backoff limit for failed attempts
+  backoffLimit: 3
+  
+  # TTL (time to live) for completed jobs - cleanup after success (1 hour)
+  ttlSecondsAfterFinished: 3600
+  
+  # Job restart policy
+  restartPolicy: OnFailure
+
+# MongoDB connection
+mongodb:
+  # MongoDB service details
+  host: "mongodb.mongodb.svc.cluster.local"
+  port: 27017
+  database: "quizdb"
+  
+  # Authentication
+  auth:
+    enabled: true
+    # Secret containing MongoDB credentials
+    existingSecret: "mongodb"
+    userKey: "mongodb-root-user"
+    passwordKey: "mongodb-root-password"
+
+# Image used to run the init script
+image:
+  repository: mongo
+  tag: "7.0"
+  pullPolicy: IfNotPresent
+
+# Resources for the init job
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod annotations
+podAnnotations: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}

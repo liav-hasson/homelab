@@ -1,0 +1,116 @@
+{{- if .Values.job.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mongodb-init.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mongodb-init.labels" . | nindent 4 }}
+
+spec:
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  {{- if .Values.job.ttlSecondsAfterFinished }}
+  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "mongodb-init.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: init-job
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "mongodb-init.serviceAccountName" . }}
+      restartPolicy: {{ .Values.job.restartPolicy }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: mongodb-init
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - /bin/bash
+          - -c
+          - |
+            set -e
+            echo "=== MongoDB Initialization Job Starting ==="
+            echo "Connecting to: {{ .Values.mongodb.host }}:{{ .Values.mongodb.port }}"
+            
+            # Wait for MongoDB to be ready
+            {{- if .Values.mongodb.auth.enabled }}
+            until mongosh --host {{ .Values.mongodb.host }} \
+                         --port {{ .Values.mongodb.port }} \
+                         --username "$MONGODB_USER" \
+                         --password "$MONGODB_PASSWORD" \
+                         --authenticationDatabase admin \
+                         --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
+              echo "Waiting for MongoDB to be ready..."
+              sleep 5
+            done
+            {{- else }}
+            until mongosh --host {{ .Values.mongodb.host }} \
+                         --port {{ .Values.mongodb.port }} \
+                         --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
+              echo "Waiting for MongoDB to be ready..."
+              sleep 5
+            done
+            {{- end }}
+            
+            echo "MongoDB is ready. Running initialization script..."
+            
+            # Run the initialization script
+            {{- if .Values.mongodb.auth.enabled }}
+            mongosh --host {{ .Values.mongodb.host }} \
+                   --port {{ .Values.mongodb.port }} \
+                   --username "$MONGODB_USER" \
+                   --password "$MONGODB_PASSWORD" \
+                   --authenticationDatabase admin \
+                   {{ .Values.mongodb.database }} \
+                   /scripts/init-mongodb.js
+            {{- else }}
+            mongosh --host {{ .Values.mongodb.host }} \
+                   --port {{ .Values.mongodb.port }} \
+                   {{ .Values.mongodb.database }} \
+                   /scripts/init-mongodb.js
+            {{- end }}
+            
+            echo "=== MongoDB Initialization Job Completed ==="
+        env:
+          {{- if .Values.mongodb.auth.enabled }}
+          - name: MONGODB_USER
+            value: "root"  # MongoDB root user is always "root"
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.mongodb.auth.existingSecret }}
+                key: {{ .Values.mongodb.auth.passwordKey }}
+          {{- end }}
+        volumeMounts:
+          - name: init-script
+            mountPath: /scripts
+            readOnly: true
+          - name: init-data
+            mountPath: /init-data
+            readOnly: true
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+        - name: init-script
+          configMap:
+            name: {{ include "mongodb-init.fullname" . }}-scripts
+        - name: init-data
+          configMap:
+            name: {{ include "mongodb-init.fullname" . }}-data
+{{- end }}

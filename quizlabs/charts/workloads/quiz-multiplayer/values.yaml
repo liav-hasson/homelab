@@ -1,0 +1,65 @@
+nameOverride: ""
+fullnameOverride: "quiz-multiplayer"
+
+image:
+  repository: liavvv/quiz-multiplayer
+  tag: "v2.0.3"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 5001
+
+# Environment variables
+env:
+  - name: FLASK_ENV
+    value: "production"
+  - name: PYTHONUNBUFFERED
+    value: "1"
+  - name: FLASK_PORT
+    value: "5001"
+  - name: REQUIRE_AUTHENTICATION
+    value: "true"
+  # API server connection (for internal service calls)
+  - name: API_HOST
+    value: "quiz-backend.quiz-backend.svc.cluster.local"
+  - name: API_PORT
+    value: "5000"
+  # Redis connection (required for WebSocket pub/sub)
+  - name: REDIS_HOST
+    value: "redis.redis.svc.cluster.local"
+  - name: REDIS_PORT
+    value: "6379"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Probes
+probes:
+  enabled: true
+
+  liveness:
+    httpGet:
+      path: /api/health
+      port: 5001
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  readiness:
+    httpGet:
+      path: /api/health
+      port: 5001
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# Service account
+serviceAccount:
+  create: true
+  name: ""

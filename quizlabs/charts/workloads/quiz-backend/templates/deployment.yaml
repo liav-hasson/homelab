@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "quiz-backend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "quiz-backend.labels" . | nindent 4 }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "quiz-backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "quiz-backend.selectorLabels" . | nindent 8 }}
+
+    spec:
+      serviceAccountName: {{ include "quiz-backend.serviceAccountName" . }}
+
+      # wait for MongoDB before starting
+      initContainers:
+        - name: wait-for-mongodb
+          image: busybox:1.36
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Waiting for MongoDB to be ready..."
+              until nc -z {{ .Values.mongodb.host }} {{ .Values.mongodb.port }}; do
+                echo "MongoDB not ready yet, waiting 5 seconds..."
+                sleep 5
+              done
+              echo "MongoDB is ready!"
+
+      containers:
+        - name: quiz-backend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+            # Secrets (injected from K8s Secret)
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-backend-secrets
+                  key: OPENAI_API_KEY
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-backend-secrets
+                  key: MONGODB_PASSWORD
+            - name: INTERNAL_SERVICE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-backend-secrets
+                  key: INTERNAL_SERVICE_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-backend-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-backend-secrets
+                  key: GOOGLE_CLIENT_SECRET
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: quiz-backend-secrets
+                  key: JWT_SECRET
+            # MongoDB connection
+            - name: MONGODB_HOST
+              value: {{ .Values.mongodb.host | quote }}
+            - name: MONGODB_PORT
+              value: {{ .Values.mongodb.port | quote }}
+            - name: MONGODB_USERNAME
+              value: "root"
+            # Redis connection
+            {{- if .Values.redis }}
+            - name: REDIS_HOST
+              value: {{ .Values.redis.host | quote }}
+            - name: REDIS_PORT
+              value: {{ .Values.redis.port | quote }}
+            {{- end }}
+            # Disable auto-migration (mongodb-init Job handles initialization)
+            - name: AUTO_MIGRATE_DB
+              value: "false"
+
+          # probes
+          {{- if .Values.probes.enabled }}
+
+          livenessProbe:
+            {{- toYaml .Values.probes.liveness | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.probes.readiness | nindent 12 }}
+
+          {{- end }}
+
+          # requests and limits
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

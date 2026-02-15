@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mongodb-init.fullname" . }}-scripts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mongodb-init.labels" . | nindent 4 }}
+data:
+  init-mongodb.js: |
+{{ .Files.Get "files/init-mongodb.js" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mongodb-init.fullname" . }}-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mongodb-init.labels" . | nindent 4 }}
+data:
+  db.json: |
+{{ .Files.Get "files/db.json" | indent 4 }}
