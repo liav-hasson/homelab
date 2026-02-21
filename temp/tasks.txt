@@ -1,0 +1,22 @@
+homelab TODO
+
+1. MISSING SECRET MANAGER + CREATE SECRETS (use SOPS + age)
+    keys to fill:
+    1. mongodb
+        key: mongodb-root-password, value:   # generate a strong password
+
+    2. quiz-backend-secrets
+        key: OPENAI_API_KEY                  # dont set, users create their own
+        key: MONGODB_PASSWORD, value:        # same as mongodb
+        key: INTERNAL_SERVICE_SECRET, value: # generate any strong key
+        key: GOOGLE_CLIENT_ID, value:        # grab from google
+        key: GOOGLE_CLIENT_SECRET, value:    # grab from google
+        key: JWT_SECRET, value:              # generate any strong key
+
+    3. quiz-multiplayer-secrets
+        key: JWT_SECRET, value:              # same key as backend
+        key: INTERNAL_SERVICE_SECRET, value: # same key as backend
+
+2. CREATE PROPER ENVOY INGRESS RESOURCES
+
+3. MISSING CLODFLARE TUNNEL - RUN AS DEPLOYNENT

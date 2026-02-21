@@ -35,6 +35,8 @@ releases:
     chart: ./stateful/mongodb
     values: 
       - ./stateful/mongodb/values.yaml
+    secrets:
+      - ./stateful/mongodb/secrets.yaml
     needs: 
       - openebs
 
@@ -60,6 +62,8 @@ releases:
     chart: ./workloads/quiz-backend
     values: 
       - ./workloads/quiz-backend/values.yaml
+    secrets:
+      - ./workloads/quiz-backend/secrets.yaml
     needs: 
       - mongodb
       - mongodb-init
@@ -70,6 +74,8 @@ releases:
     chart: ./workloads/quiz-multiplayer
     values: 
       - ./workloads/quiz-multiplayer/values.yaml
+    secrets:
+      - ./workloads/quiz-multiplayer/secrets.yaml
     needs: 
       - mongodb
       - mongodb-init
