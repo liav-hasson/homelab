@@ -17,6 +17,9 @@ homelab TODO
         key: JWT_SECRET, value:              # same key as backend
         key: INTERNAL_SERVICE_SECRET, value: # same key as backend
 
+    * use quizlabs email for google credentials
+    
 2. CREATE PROPER ENVOY INGRESS RESOURCES
 
 3. MISSING CLODFLARE TUNNEL - RUN AS DEPLOYNENT
+    * use quizlabs email for cloudflare
