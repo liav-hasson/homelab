@@ -34,14 +34,19 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
 
           # Configure SSH to proxy through cloudflared for ssh.quizlabs.org
+          # cloudflared reads service tokens from env vars, so we inline them
+          # in the ProxyCommand since SSH doesn't pass env to subprocesses.
           cat >> ~/.ssh/config <<EOF
           Host ssh.quizlabs.org
             User liav
             IdentityFile ~/.ssh/id_ed25519
             StrictHostKeyChecking no
-            ProxyCommand cloudflared access ssh --hostname %h --id ${CF_ACCESS_CLIENT_ID} --secret ${CF_ACCESS_CLIENT_SECRET}
+            ProxyCommand bash -c 'CF_ACCESS_CLIENT_ID=${CF_ACCESS_CLIENT_ID} CF_ACCESS_CLIENT_SECRET=${CF_ACCESS_CLIENT_SECRET} cloudflared access ssh --hostname %h'
           EOF
 
       - name: Deploy via helmfile
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
           ssh ssh.quizlabs.org "cd ~/github/homelab/quizlabs/charts && helmfile apply --concurrency 1"
