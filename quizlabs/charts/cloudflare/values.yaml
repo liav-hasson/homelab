@@ -11,6 +11,9 @@ cloudflare:
   ingress:
     - hostname: quizlabs.org
       service: http://envoy-gateway-proxy.envoy-gateway-system.svc.cluster.local:80
+    # SSH access to the homelab host for CI/CD (protected by Cloudflare Access)
+    - hostname: ssh.quizlabs.org
+      service: ssh://192.168.68.64:22
 
 image:
   repository: cloudflare/cloudflared

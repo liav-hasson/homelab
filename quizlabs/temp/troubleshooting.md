@@ -63,6 +63,12 @@ service to persist it across reboots:
 /etc/iptables-calico-fix.sh
 ```
 
+**Post-reboot regression:** The initial systemd unit only had
+`After=network.target containerd.service`, so it ran *before* Docker.
+Docker starts and resets the FORWARD policy to DROP, undoing the fix.
+Updated the unit to include `After=docker.service` so it always runs
+after Docker sets its iptables rules.
+
 **Why this matters for Calico eBPF:** If you run Calico in eBPF mode on a
 host that previously had Docker installed (or anything else that sets
 FORWARD to DROP), you must ensure the FORWARD chain allows traffic.
