@@ -1,0 +1,47 @@
+name: Deploy Helm Charts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "quizlabs/charts/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cloudflared
+        run: |
+          curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb \
+            -o cloudflared.deb
+          sudo dpkg -i cloudflared.deb
+
+      - name: Configure SSH over Cloudflare tunnel
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          # Set up SSH key
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # Configure SSH to proxy through cloudflared for ssh.quizlabs.org
+          cat >> ~/.ssh/config <<EOF
+          Host ssh.quizlabs.org
+            User liav
+            IdentityFile ~/.ssh/id_ed25519
+            StrictHostKeyChecking no
+            ProxyCommand cloudflared access ssh --hostname %h --id ${CF_ACCESS_CLIENT_ID} --secret ${CF_ACCESS_CLIENT_SECRET}
+          EOF
+
+      - name: Deploy via helmfile
+        run: |
+          ssh ssh.quizlabs.org "cd ~/github/homelab/quizlabs/charts && helmfile apply --concurrency 1"
