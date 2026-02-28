@@ -22,31 +22,23 @@ jobs:
             -o cloudflared.deb
           sudo dpkg -i cloudflared.deb
 
-      - name: Configure SSH over Cloudflare tunnel
+      - name: Configure SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
-          # Set up SSH key
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-
-          # Configure SSH to proxy through cloudflared for ssh.quizlabs.org
-          # cloudflared reads service tokens from env vars, so we inline them
-          # in the ProxyCommand since SSH doesn't pass env to subprocesses.
-          cat >> ~/.ssh/config <<EOF
-          Host ssh.quizlabs.org
-            User liav
-            IdentityFile ~/.ssh/id_ed25519
-            StrictHostKeyChecking no
-            ProxyCommand bash -c 'CF_ACCESS_CLIENT_ID=${CF_ACCESS_CLIENT_ID} CF_ACCESS_CLIENT_SECRET=${CF_ACCESS_CLIENT_SECRET} cloudflared access ssh --hostname %h'
-          EOF
 
       - name: Deploy via helmfile
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
-          ssh ssh.quizlabs.org "cd ~/github/homelab/quizlabs/charts && helmfile apply --concurrency 1"
+          # Start cloudflared TCP proxy in background (forwards localhost:2222 → ssh.quizlabs.org via tunnel)
+          cloudflared access tcp --hostname ssh.quizlabs.org --url localhost:2222 &
+          sleep 3
+
+          # SSH through the local proxy
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 -p 2222 liav@localhost \
+            "cd ~/github/homelab/quizlabs/charts && helmfile apply --concurrency 1"
