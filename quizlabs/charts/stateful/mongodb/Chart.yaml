@@ -4,6 +4,3 @@ description: Simple MongoDB StatefulSet with pre-created PVC support
 type: application
 version: 1.0.0
 appVersion: "7.0"
-maintainers:
-  - name: Liav
-

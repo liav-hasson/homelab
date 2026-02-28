@@ -1,0 +1,25 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "quiz-platform.fullname" . }}-httproute
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "quiz-platform.labels" . | nindent 4 }}
+spec:
+  hostnames:
+    - {{ .Values.hostname | quote }}
+  parentRefs:
+    - name: {{ .Values.gateway.name }}
+  rules:
+  {{- range .Values.routes }}
+    - {{- if .pathPrefix }}
+      matches:
+        - path:
+            type: PathPrefix
+            value: {{ .pathPrefix }}
+      {{- end }}
+      backendRefs:
+        - name: {{ .service.name }}
+          namespace: {{ .service.namespace }}
+          port: {{ .service.port }}
+  {{- end }}

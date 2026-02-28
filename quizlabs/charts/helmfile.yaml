@@ -15,19 +15,45 @@ helmDefaults:
 # global labels for all charts
 commonLabels:
   projectName: Quizlabs
-  managedBy: Liav
+  maintainers: Liav
 
 # --- all releases for quizlabs --- #
 releases:
-  # deploy envoy api gateway  
+  # deploy envoy gateway controller and crd's
   - name: envoy-gateway
     namespace: envoy-gateway-system
     chart: oci://docker.io/envoyproxy/gateway-helm
+
+  # deploy envoy gateway cr's after controller is created
+  - name: platform
+    # when renaming this namespace, the cloudflare ingress URL 
+    # and ReferenceGrant namespaces need to match.
+    namespace: platform
+    chart: ./platform
+    values: 
+      - ./platform/values.yaml
+    needs:
+      - envoy-gateway-system/envoy-gateway
+    
+  # deploy cloudflare tunnel 
+  - name: cloudflare-tunnel
+    namespace: cloudflare
+    chart: ./cloudflare
+    values: 
+      - ./cloudflare/values.yaml
+    # helmfile uses the helm-secrets plugin to decrypt them at 
+    # deply time using the private key on the machine 
+    secrets:
+      - ./cloudflare/secrets.yaml
+    needs:
+      - envoy-gateway-system/envoy-gateway  
 
   # storage driver for stateful
   - name: openebs
     namespace: openebs
     chart: openebs/openebs
+    values:
+      - ./vendor/openebs-values.yaml
 
   # stateful setup (mongo + redis)
   - name: mongodb
@@ -38,7 +64,7 @@ releases:
     secrets:
       - ./stateful/mongodb/secrets.yaml
     needs: 
-      - openebs
+      - openebs/openebs
 
   - name: mongodb-init
     namespace: mongodb
@@ -46,7 +72,7 @@ releases:
     values: 
       - ./stateful/mongodb-init/values.yaml
     needs: 
-      - mongodb
+      - mongodb/mongodb
 
   - name: redis
     namespace: redis
@@ -54,7 +80,7 @@ releases:
     values: 
       - ./stateful/redis/values.yaml
     needs: 
-      - openebs
+      - openebs/openebs
 
   # quizlabs backend workloads, depends on stateful releases
   - name: quiz-backend
@@ -65,9 +91,9 @@ releases:
     secrets:
       - ./workloads/quiz-backend/secrets.yaml
     needs: 
-      - mongodb
-      - mongodb-init
-      - redis
+      - mongodb/mongodb
+      - mongodb/mongodb-init
+      - redis/redis
   
   - name: quiz-multiplayer
     namespace: quiz-multiplayer
@@ -77,9 +103,9 @@ releases:
     secrets:
       - ./workloads/quiz-multiplayer/secrets.yaml
     needs: 
-      - mongodb
-      - mongodb-init
-      - redis
+      - mongodb/mongodb
+      - mongodb/mongodb-init
+      - redis/redis
   
   # quizlabs frontend workloads, depends on backend releases
   - name: quiz-frontend
@@ -88,5 +114,5 @@ releases:
     values: 
       - ./workloads/quiz-frontend/values.yaml
     needs: 
-      - quiz-backend
-      - quiz-multiplayer
+      - quiz-backend/quiz-backend
+      - quiz-multiplayer/quiz-multiplayer

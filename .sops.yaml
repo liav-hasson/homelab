@@ -1,5 +1,5 @@
 # SOPS encryption rules for quizlabs secrets
-# age public key: to be implemented (run: age-keygen -o ~/sops-age-key.txt)
 creation_rules:
   - path_regex: .*secrets\.yaml$
-    age: "<YOUR_AGE_PUBLIC_KEY_HERE>"
+    # public key for encryption, safe to commit
+    age: "age12t2lrvjt7r8k7sx2ef0q5wc9xj8kk3upxzr0kx3mqgya557z0uxsvna00u"

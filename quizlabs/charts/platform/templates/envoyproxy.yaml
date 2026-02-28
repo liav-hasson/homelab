@@ -1,0 +1,26 @@
+# EnvoyProxy configures the data-plane proxy that Envoy Gateway creates for
+# our GatewayClass. By default, Envoy Gateway auto-generates the proxy Service
+# name with a hash suffix (e.g. envoy-platform-quiz-gateway-8dff7555), derived
+# from sha256("<gateway-namespace>/<gateway-name>")[:8]. That name is stable
+# for a given Gateway, but is not human-friendly and makes it hard to reference
+# from other resources (like the Cloudflare tunnel ingress config).
+#
+# This resource overrides the generated Service name with a predictable one
+# and sets the type to ClusterIP (instead of the default LoadBalancer) since
+# external traffic enters through the Cloudflare tunnel, not a cloud LB.
+#
+# The GatewayClass references this resource via spec.parametersRef.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: {{ .Values.gateway.proxyName }}
+  namespace: envoy-gateway-system
+  labels:
+    {{- include "quiz-platform.labels" . | nindent 4 }}
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        name: {{ .Values.gateway.serviceName }}
+        type: ClusterIP

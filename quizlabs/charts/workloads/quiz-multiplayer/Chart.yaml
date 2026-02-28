@@ -4,5 +4,3 @@ description: Multiplayer quiz service with WebSocket support
 type: application
 version: 0.1.0
 appVersion: "v2.0.3"
-maintainers:
-  - name: Liav

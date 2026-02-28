@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Values.gateway.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "quiz-platform.labels" . | nindent 4 }}
+spec:
+  gatewayClassName: {{ .Values.gateway.className }}
+  listeners:
+    - name: http
+      port: {{ .Values.gateway.listener.port }}
+      protocol: {{ .Values.gateway.listener.protocol }}
+      allowedRoutes:
+        namespaces:
+          # works because httproute is in the same namespace
+          from: Same

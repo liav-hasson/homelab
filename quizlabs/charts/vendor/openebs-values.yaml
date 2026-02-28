@@ -1,0 +1,33 @@
+# overriding default installations (runs too many unnecessary pods)
+# only the localpv hostpath provisioner is needed for this homelab
+engines:
+  local:
+    lvm:
+      enabled: false
+    zfs:
+      enabled: false
+  replicated:
+    mayastor:
+      enabled: false
+
+openebs-crds:
+  csi:
+    volumeSnapshots:
+      enabled: false
+
+lvm-localpv:
+  enabled: false
+
+zfs-localpv:
+  enabled: false
+
+# disable observability stack (loki, minio, alloy)
+loki:
+  enabled: false
+
+alloy:
+  enabled: false
+
+localpv-provisioner:
+  hostpathClass:
+    isDefaultClass: true

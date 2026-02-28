@@ -27,13 +27,7 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          env:
-            # Backend service URL for nginx proxy
-            - name: BACKEND_URL
-              value: "{{ .Values.backend.serviceName }}.{{ .Values.backend.namespace }}.svc.cluster.local:{{ .Values.backend.port }}"
-            # Multiplayer service URL for nginx websocket proxy
-            - name: MULTIPLAYER_URL
-              value: "{{ .Values.multiplayer.serviceName }}.{{ .Values.multiplayer.namespace }}.svc.cluster.local:{{ .Values.multiplayer.port }}"
+
 
           # probes
           {{- if .Values.probes.enabled }}

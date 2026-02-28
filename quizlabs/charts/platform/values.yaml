@@ -1,0 +1,37 @@
+nameOverride: ""
+fullnameOverride: "quiz-platform"
+
+# domain for HTTPRoute hostname matching
+hostname: "quizlabs.org"
+
+# gateway configuration
+gateway:
+  name: quiz-gateway
+  className: quiz-gatewayclass
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  proxyName: quiz-proxy-config
+  serviceName: envoy-gateway-proxy
+  listener:
+    port: 80
+    protocol: HTTP
+
+# routing rules - maps path prefixes to backend services
+routes:
+  - name: api
+    pathPrefix: /api
+    service:
+      name: quiz-backend
+      namespace: quiz-backend
+      port: 5000
+  - name: websocket
+    pathPrefix: /socket.io
+    service:
+      name: quiz-multiplayer
+      namespace: quiz-multiplayer
+      port: 5001
+  # catch-all must be last (no pathPrefix = default)
+  - name: frontend
+    service:
+      name: quiz-frontend
+      namespace: quiz-frontend
+      port: 80

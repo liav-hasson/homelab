@@ -3,7 +3,7 @@ fullnameOverride: "quiz-frontend"
 
 image:
   repository: liavvv/quiz-app-front
-  tag: "v2.0.3"
+  tag: "v2.0.5"
   pullPolicy: IfNotPresent
 
 replicaCount: 1
@@ -11,18 +11,6 @@ replicaCount: 1
 service:
   type: ClusterIP
   port: 80
-
-# Backend service configuration for nginx proxy
-backend:
-  serviceName: quiz-backend
-  namespace: quiz-backend
-  port: 5000
-
-# Multiplayer service configuration for nginx websocket proxy
-multiplayer:
-  serviceName: quiz-multiplayer
-  namespace: quiz-multiplayer
-  port: 5001
 
 resources:
   requests:
