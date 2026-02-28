@@ -41,4 +41,4 @@ jobs:
 
           # SSH through the local proxy
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 -p 2222 liav@localhost \
-            "cd ~/github/homelab/quizlabs/charts && helmfile apply --concurrency 1"
+            "cd ~/github/homelab && git pull && cd quizlabs/charts && helmfile apply --concurrency 1"
