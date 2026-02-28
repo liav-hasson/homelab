@@ -32,8 +32,8 @@ jobs:
 
       - name: Deploy via helmfile
         env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          TUNNEL_SERVICE_TOKEN_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          TUNNEL_SERVICE_TOKEN_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
           # Start cloudflared TCP proxy in background (forwards localhost:2222 → ssh.quizlabs.org via tunnel)
           cloudflared access tcp --hostname ssh.quizlabs.org --url localhost:2222 &
