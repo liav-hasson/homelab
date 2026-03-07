@@ -3,7 +3,7 @@ fullnameOverride: "quiz-backend"
 
 image:
   repository: liavvv/quiz-app
-  tag: "v2.1.5"
+  tag: "v2.1.6"
   pullPolicy: IfNotPresent
 
 replicaCount: 1
@@ -19,7 +19,7 @@ env:
   - name: PYTHONUNBUFFERED
     value: "1"
   - name: APP_VERSION
-    value: "v2.1.5"
+    value: "v2.1.6"
 
 # MongoDB connection
 mongodb:
