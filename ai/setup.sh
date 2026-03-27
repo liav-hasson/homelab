@@ -4,8 +4,13 @@
 # =============================================================================
 # Usage: paste the raw GitHub URL of this file into RunPod's
 #        "On-Start Script" field when launching your pod.
-#
+# 
 # Assumed base image: comfyui-latest (ComfyUI lives at /workspace/ComfyUI)
+#
+# Test script locally:
+# mkdir -p ~/comfyui-test
+# curl -o ~/comfyui-test/setup.sh https://raw.githubusercontent.com/liav-hasson/homelab/main/ai/setup.sh
+# COMFY_DIR=~/comfyui-test bash ~/comfyui-test/setup.sh
 # =============================================================================
 
 set -e  # exit on any error
@@ -35,7 +40,6 @@ wget -q --show-progress \
 #   -O "$MODELS_DIR/checkpoints/another_model.safetensors" \
 #   "https://civitai.com/api/download/models/XXXXXX"
 
-
 # =============================================================================
 # 2. VAE
 # =============================================================================
@@ -52,7 +56,6 @@ wget -q --show-progress \
 # wget -q --show-progress \
 #   -O "$MODELS_DIR/vae/other_vae.safetensors" \
 #   "https://huggingface.co/AUTHOR/REPO/resolve/main/FILE.safetensors"
-
 
 # =============================================================================
 # 3. LORAS  (uncomment and fill in when you have some)
@@ -114,7 +117,6 @@ git clone https://github.com/ltdrdata/ComfyUI-Manager.git
 
 # WAS Node Suite — extra utility nodes
 # git clone https://github.com/WASasquatch/was-node-suite-comfyui.git
-
 
 # =============================================================================
 # 7. COMFYUI CONFIG
