@@ -3,7 +3,7 @@ fullnameOverride: "quiz-multiplayer"
 
 image:
   repository: liavvv/quiz-multiplayer
-  tag: "v2.0.23"
+  tag: "v2.0.24"
   pullPolicy: IfNotPresent
 
 replicaCount: 1
@@ -19,7 +19,7 @@ env:
   - name: PYTHONUNBUFFERED
     value: "1"
   - name: APP_VERSION
-    value: "v2.0.23"
+    value: "v2.0.24"
   - name: FLASK_PORT
     value: "5001"
   - name: REQUIRE_AUTHENTICATION
