@@ -3,7 +3,7 @@ fullnameOverride: "quiz-frontend"
 
 image:
   repository: liavvv/quiz-app-front
-  tag: "v2.2.22"
+  tag: "v2.2.23"
   pullPolicy: IfNotPresent
 
 replicaCount: 1
