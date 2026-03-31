@@ -80,7 +80,7 @@ if ! skip_if_exists "$MODELS_DIR/checkpoints/model.safetensors"; then
     }
   echo "✓ Installed base model"
 fi
-# NOTE - grabbed the install URL from browser console when clicked download
+# NOTE - Grabbed the install URL from browser console when clicked download
 
 # =============================================================================
 # 2. VAE
@@ -125,7 +125,6 @@ fi
 # curl "${CURL_OPTS[@]}" \
 #   -o "$MODELS_DIR/controlnet/control-lora-canny-rank256.safetensors" \
 #   "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank256/control-lora-canny-rank256.safetensors"
-
 
 # =============================================================================
 # 6. CUSTOM NODES
