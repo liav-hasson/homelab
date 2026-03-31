@@ -21,14 +21,14 @@ echo ""
 echo "Running pre-script setup..."
 echo "============================================"
 
-# set COMFY_DIR to a local path for local testing only
+# Allow COMFY_DIR to be a local path for local testing
+# Default terminal spawn is `/workspace/runpod-slim/`, where ComfyUI is
 if [[ -z "$COMFY_DIR" ]]; then
-  echo "NOTE: COMFY_DIR is not set. Defaulting to /workspace/ComfyUI"
-  COMFY_DIR=/workspace/ComfyUI
+  echo "NOTE: COMFY_DIR is not set. Defaulting to ./ComfyUI"
+  COMFY_DIR=ComfyUI
 else
   echo "Received COMFY_DIR environment variable: \"$COMFY_DIR\""
 fi
-COMFY_DIR="$(cd "$COMFY_DIR" && pwd)" # make sure to use absolute path
 
 # CIVITAI_KEY must be provided via environment variable 
 if [[ -z "$CIVITAI_KEY" ]]; then
@@ -42,6 +42,8 @@ fi
 # create necessary sub directories
 mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes,user}
 MODELS_DIR="$COMFY_DIR/models"
+
+COMFY_DIR="$(cd "$COMFY_DIR" && pwd)" # make sure to use absolute path
 
 # Curl options for consistent retries and resume capability
 CURL_OPTS=(-L --progress-bar --retry 3 --retry-delay 10 -C -)
