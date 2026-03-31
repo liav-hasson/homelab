@@ -6,20 +6,13 @@
 
 ```bash
 # Create a local test workspace
-mkdir -p ~/comfyui-test
+mkdir -p ~/comfyui-test && cd ~/comfyui-test
 
 # Download the script
-curl -o ~/comfyui-test/setup.sh https://raw.githubusercontent.com/liav-hasson/homelab/main/ai/setup.sh
+curl -o ./setup.sh https://raw.githubusercontent.com/liav-hasson/homelab/main/ai/setup.sh
 
-# Override the path and run
-COMFY_DIR=~/comfyui-test bash ~/comfyui-test/setup.sh
+# Run the script with env vars
+CIVITAI_KEY=your-api-key COMFY_DIR=./ bash setup.sh
 ```
 
 ### Start a pod with the init script
-
-1. **Get the scripts `githubusercontent` url**: `https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/BRANCH/PATH/TO/FILE`
-
-    ```txt
-    https://raw.githubusercontent.com/liav-hasson/homelab/main/ai/setup.sh
-    ```
-
