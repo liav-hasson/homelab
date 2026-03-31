@@ -28,6 +28,7 @@ if [[ -z "$COMFY_DIR" ]]; then
 else
   echo "Received COMFY_DIR environment variable: \"$COMFY_DIR\""
 fi
+COMFY_DIR="$(cd "$COMFY_DIR" && pwd)" # make sure to use absolute path
 
 # CIVITAI_KEY must be provided via environment variable 
 if [[ -z "$CIVITAI_KEY" ]]; then
@@ -39,7 +40,7 @@ else
 fi
 
 # create necessary sub directories
-mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes}
+mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes,user}
 MODELS_DIR="$COMFY_DIR/models"
 
 # Curl options for consistent retries and resume capability
@@ -53,9 +54,10 @@ skip_if_exists() {
   local install_path="$1"
   
   if [[ -e "$install_path" ]]; then
-    echo "✓ Already exists at: $install_path"
-    echo "  Skipping installation..."
+    echo "✓ Already exists, Skipping installation..."
     return 0  # signal to skip this installation
+  else
+    echo "✗ Not found, installing..."
   fi
   
   return 1  # signal to proceed with installation
@@ -132,18 +134,11 @@ echo ""
 echo "Downloading custom nodes..."
 echo "============================================"
 
-cd "$COMFY_DIR/custom_nodes"
-
 # ComfyUI Manager — lets you install more nodes from the UI
-if ! skip_if_exists "ComfyUI-Manager"; then
-  git clone https://github.com/ltdrdata/ComfyUI-Manager.git
+if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
+  git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_DIR/custom_nodes/"
   echo "✓ Installed custom nodes"
 fi
-
-# ComfyUI Impact Pack — useful for face detailing etc.
-# if ! skip_if_exists "ComfyUI-Impact-Pack"; then
-#   git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git
-# fi
 
 # =============================================================================
 # 7. COMFYUI CONFIG
@@ -152,9 +147,9 @@ echo ""
 echo "Pulling ComfyUI config from GitHub repo..."
 echo "============================================"
 
-if ! skip_if_exists "$COMFY_DIR/extra_model_paths.yaml"; then
+if ! skip_if_exists "$COMFY_DIR/user/comfyui-config.json"; then
   curl "${CURL_OPTS[@]}" \
-    -o "$COMFY_DIR/extra_model_paths.yaml" \
+    -o "$COMFY_DIR/user/comfyui-config.json" \
     "https://raw.githubusercontent.com/liav-hasson/homelab/main/ai/comfyui-config.json" || {
       echo "ERROR: Failed to download config"
       exit 1
