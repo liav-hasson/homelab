@@ -13,6 +13,8 @@ set -e  # exit on any error
 echo "============================================"
 echo "  Starting ComfyUI Setup Script..."
 echo "============================================"
+echo ""
+echo "* NOTE: The script may take a few minutes to finish."
 
 # =============================================================================
 # 1. Pre-script setup 
@@ -22,7 +24,8 @@ echo "Running pre-script setup..."
 echo "============================================"
 
 # Allow COMFY_DIR to be a local path for local testing
-# Default terminal spawn is `/workspace/runpod-slim/`, where ComfyUI is
+# Default terminal spawn is `/workspace/runpod-slim/`
+# The script must be executed one directory above ComfyUI (if COMFY_DIR not set)
 if [[ -z "$COMFY_DIR" ]]; then
   echo "NOTE: COMFY_DIR is not set. Defaulting to ./ComfyUI"
   COMFY_DIR=ComfyUI
@@ -66,7 +69,7 @@ skip_if_exists() {
 }
 
 # =============================================================================
-# 1. CHECKPOINTS (base models)
+# 1. CHECKPOINTS (base models - NoobAI-XL - vPred1.0)
 # =============================================================================
 echo ""
 echo "Downloading base model..."
@@ -142,15 +145,15 @@ if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
 fi
 
 # =============================================================================
-# 7. COMFYUI CONFIG
+# 7. COMFYUI WORKFLOW CONFIG
 # =============================================================================
 echo ""
-echo "Pulling ComfyUI config from GitHub repo..."
+echo "Pulling ComfyUI workflow config from GitHub repo..."
 echo "============================================"
 
-if ! skip_if_exists "$COMFY_DIR/user/comfyui-config.json"; then
+if ! skip_if_exists "$COMFY_DIR/user/default/workflows/comfyui-config.json"; then
   curl "${CURL_OPTS[@]}" \
-    -o "$COMFY_DIR/user/comfyui-config.json" \
+    -o "$COMFY_DIR/user/default/workflows/comfyui-config.json" \
     "https://raw.githubusercontent.com/liav-hasson/homelab/main/ai/comfyui-config.json" || {
       echo "ERROR: Failed to download config"
       exit 1
