@@ -619,17 +619,14 @@
         "Reconciliation loop",
         "Finalizers",
         "Operator Lifecycle Manager (OLM)",
-        "OperatorHub",
-        "Level-based triggering",
-        "Edge-based triggering"
+        "OperatorHub"
       ],
       "style_modifiers": [
         "CRD creation workflow",
         "concept explanation",
-        "operator design scenario",
-        "reconciliation logic explanation",
+        "reconciliation",
         "tricky question",
-        "use case implementation",
+        "use case",
         "what happens behind the scenes?",
         "what is it?",
         "yes or no + explanation"
@@ -726,6 +723,7 @@
         "component interaction",
         "concept explanation",
         "failure scenario",
+        "debugging scenerio",
         "high availability design",
         "tricky question",
         "what happens behind the scenes?",
@@ -762,10 +760,11 @@
     }
   },
   "Kubernetes Networking": {
-    "Kubernetes Networking": {
+    "Basic Networking": {
       "keywords": [
         "Network policies",
         "CNI (Container Network Interface)",
+        "kube-proxy",
         "Service types",
         "ClusterIP",
         "NodePort",
@@ -775,23 +774,25 @@
         "Endpoints",
         "EndpointSlices",
         "Ingress controller",
-        "DNS",
         "CoreDNS",
-        "TargetGroupBinding"
+        "Pod CIDR",
+        "Service CIDR",
+        "ExternalTrafficPolicy",
+        "SessionAffinity",
+        "TargetGroupBinding",
+        "Dual-stack (IPv4/IPv6)"
       ],
       "style_modifiers": [
-        "DNS resolution issues",
-        "concept explanation",
-        "connectivity troubleshooting",
-        "ingress controller setup",
-        "load balancing configuration",
-        "network policy design",
-        "security policy implementation",
-        "service discovery explanation",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "when would you use it?",
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "give a real-world example",
+        "true or false + explanation",
+        "fill in the blank",
+        "which option is correct?",
+        "what happens when...?",
+        "what does this config do?"
       ]
     },
     "Gateway API": {
@@ -802,105 +803,140 @@
         "HTTPRoute",
         "TCPRoute",
         "TLSRoute",
+        "GRPCRoute",
         "ReferenceGrant",
         "BackendRef",
+        "ParentReference",
         "Gateway API vs Ingress",
         "Traffic splitting",
         "Header-based routing",
         "Gateway controller"
       ],
       "style_modifiers": [
-        "concept explanation",
-        "migration from Ingress",
-        "routing configuration scenario",
-        "traffic management design",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "how does it work?",
+        "what does this config do?",
+        "which option is correct?",
+        "give a real-world example",
+        "true or false + explanation"
       ]
     },
-    "Consul": {
+    "Advanced Networking": {
       "keywords": [
-        "Service registration",
-        "Health checking",
-        "Service discovery",
-        "Key-Value store",
-        "Consul agent",
-        "Service mesh",
-        "Load balancing",
-        "DNS interface",
-        "ACL security",
-        "Multi-datacenter",
-        "Service intentions",
-        "Proxy configuration"
+        "eBPF-based networking",
+        "IPVS mode",
+        "iptables mode",
+        "Overlay networks (VXLAN, Geneve)",
+        "Underlay networking",
+        "MTU configuration",
+        "BGP routing",
+        "Direct server return (DSR)",
+        "Egress gateway",
+        "Multi-cluster networking",
+        "Cluster mesh",
+        "NetworkPolicy (egress rules)",
+        "NetworkPolicy (ingress rules)",
+        "FQDN-based policies",
+        "WireGuard encryption",
+        "Node-local DNSCache",
+        "Custom DNS resolvers"
       ],
       "style_modifiers": [
-        "basic definition",
-        "common use case",
-        "compare with similar tool",
-        "diagram explanation",
-        "explain why it's used",
-        "list key features",
-        "simple example usage",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes/no question"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation"
+      ]
+    },
+    "CNI (Container Network Interface)": {
+      "keywords": [
+        "CNI specification",
+        "CNI plugin",
+        "Pod network",
+        "Calico",
+        "Flannel",
+        "Cilium",
+        "Network policy",
+        "eBPF",
+        "eBPF-based networking",
+        "kube-proxy replacement"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "CNI plugin selection",
+        "troubleshooting pod networking",
+        "tricky question",
+        "what happens behind the scenes?",
+        "yes or no + explanation"
       ]
     }
   },
   "Kubernetes Storage": {
-    "Kubernetes Storage": {
+    "Basic Storage": {
       "keywords": [
         "PersistentVolume (PV)",
         "PersistentVolumeClaim (PVC)",
         "StorageClass",
-        "Volume types",
         "CSI (Container Storage Interface)",
         "Dynamic provisioning",
         "Static provisioning",
-        "Volume snapshots",
-        "Volume expansion",
         "EmptyDir",
-        "HostPath"
+        "HostPath",
+        "ConfigMap as volume",
+        "Secret as volume",
+        "Volume mounts",
+        "Access modes (RWO, ROX, RWX, RWOP)",
+        "Reclaim policy (Retain, Delete, Recycle)",
+        "Volume binding mode",
+        "Storage capacity"
       ],
       "style_modifiers": [
-        "access control configuration",
-        "backup and recovery strategy",
-        "concept explanation",
-        "data persistence troubleshooting",
-        "migration procedures",
-        "performance optimization",
-        "storage class selection criteria",
-        "storage provisioning scenario",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?",
+        "fill in the blank"
       ]
     },
-    "Envoy Proxy": {
+    "Advanced Storage": {
       "keywords": [
-        "Envoy proxy",
-        "Listeners",
-        "Clusters",
-        "Routes",
-        "Filters",
-        "xDS protocol",
-        "ADS (Aggregated Discovery Service)",
-        "EDS (Endpoint Discovery Service)",
-        "CDS (Cluster Discovery Service)",
-        "LDS (Listener Discovery Service)",
-        "Envoy configuration"
+        "Volume snapshots",
+        "Volume expansion (online vs offline)",
+        "Volume cloning",
+        "Generic ephemeral volumes",
+        "CSI driver architecture",
+        "CSI node plugins",
+        "CSI controller plugins",
+        "Volume health monitoring",
+        "ReadWriteOncePod (RWOP)",
+        "StatefulSet volume claim templates",
+        "Volume population",
+        "Data source refs",
+        "Cross-namespace data sources",
+        "Node affinity for volumes",
+        "Topology-aware provisioning"
       ],
       "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "performance optimization",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     }
   },
@@ -911,6 +947,7 @@
         "Sidecar proxy",
         "Control plane",
         "Data plane",
+        "mTLS",
         "Service discovery",
         "Load balancing strategies",
         "Circuit breaking",
@@ -918,96 +955,143 @@
         "Timeout policies",
         "Fault injection",
         "Observability",
-        "Distributed tracing"
+        "Distributed tracing",
+        "Service mesh vs API gateway",
+        "Sidecar vs sidecarless"
       ],
       "style_modifiers": [
-        "core concept and architecture",
-        "observability configuration",
-        "performance and security trade-offs",
-        "resilience pattern implementation",
-        "service mesh adoption rationale",
-        "traffic management scenario",
-        "tricky question",
-        "troubleshooting mesh connectivity",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?",
+        "what does this config do?"
       ]
     },
-    "Istio Architecture": {
+    "Istio": {
       "keywords": [
-        "Istio architecture",
-        "Deployment strategies with isto",
-        "Envoy proxy",
         "Istiod",
         "Pilot",
-        "Sidecar injection",
+        "Envoy sidecar injection",
+        "Istio CNI plugin",
+        "Ambient mesh",
+        "Waypoint proxy",
         "Istio ingress gateway",
         "Istio egress gateway",
-        "Telemetry v2",
-        "Istio CNI",
-        "Ambient mesh"
-      ],
-      "style_modifiers": [
-        "component interaction explanation",
-        "concept explanation",
-        "gateway setup and management",
-        "observability integration",
-        "tricky question",
-        "troubleshooting traffic flow",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
-    "Istio Traffic Management": {
-      "keywords": [
-        "Virtual Service",
-        "Destination Rule",
-        "Gateway",
-        "Service Entry",
+        "VirtualService",
+        "DestinationRule",
+        "Gateway resource",
+        "ServiceEntry",
         "Sidecar resource",
-        "Traffic management",
+        "PeerAuthentication",
+        "AuthorizationPolicy",
+        "RequestAuthentication",
         "Traffic shifting",
-        "Request routing",
+        "Header-based routing",
         "Fault injection",
-        "Retries",
-        "Timeouts",
-        "Circuit breakers",
-        "Connection pools"
+        "Circuit breaker (outlier detection)",
+        "Connection pool settings",
+        "Telemetry API",
+        "Istio vs Ambient mode"
       ],
       "style_modifiers": [
-        "canary deployment scenario",
-        "concept explanation",
-        "mTLS configuration approach",
-        "security policy implementation",
-        "traffic routing configuration",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     },
     "Linkerd": {
       "keywords": [
-        "Linkerd",
         "Linkerd control plane",
-        "Linkerd proxy",
+        "Linkerd proxy (linkerd2-proxy)",
         "Service profiles",
         "Traffic splits",
-        "Linkerd viz",
-        "Linkerd SMI",
+        "Linkerd viz extension",
+        "Linkerd SMI support",
         "mTLS in Linkerd",
-        "Linkerd vs Istio"
+        "Linkerd vs Istio",
+        "Per-route metrics",
+        "Automatic retries and timeouts",
+        "Linkerd multicluster"
       ],
       "style_modifiers": [
-        "comparison with Istio",
-        "configuration scenario",
-        "core concept",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation"
+      ]
+    },
+    "Consul": {
+      "keywords": [
+        "Consul agent",
+        "Service registration",
+        "Health checking",
+        "Service discovery",
+        "Key-value store",
+        "Connect (sidecar proxy)",
+        "Service intentions",
+        "ACL system",
+        "Multi-datacenter federation",
+        "DNS interface",
+        "Consul vs Kubernetes native discovery",
+        "Proxy configuration",
+        "Namespace isolation"
+      ],
+      "style_modifiers": [
+        "what is it?",
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
+      ]
+    },
+    "Envoy Proxy": {
+      "keywords": [
+        "Listeners",
+        "Clusters",
+        "Routes",
+        "Filter chains",
+        "HTTP filters",
+        "Network filters",
+        "xDS protocol",
+        "LDS (Listener Discovery Service)",
+        "RDS (Route Discovery Service)",
+        "CDS (Cluster Discovery Service)",
+        "EDS (Endpoint Discovery Service)",
+        "ADS (Aggregated Discovery Service)",
+        "Health checking (active/passive)",
+        "Circuit breaking",
+        "Rate limiting",
+        "Retry policies",
+        "Access logging",
+        "Tracing integration (Zipkin/Jaeger)",
+        "Envoy as a sidecar vs standalone"
+      ],
+      "style_modifiers": [
+        "what is it?",
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation"
       ]
     }
   },
@@ -1015,55 +1099,54 @@
     "Git Basics": {
       "keywords": [
         "Version control system (VCS)",
-        "Source control management (SCM)",
-        "Local version control system",
-        "Centralized version control system",
-        "Distributed version control system",
-        "Branch strategy",
-        "Version scheme",
+        "Distributed version control",
+        "Centralized version control",
         "Git repository",
         "Remote repository",
         "Clone",
         "Fork",
-        "Pull request"
+        "Pull request",
+        "Branch strategy",
+        "Version scheme",
+        "Git vs other VCS",
+        "Monorepo vs polyrepo"
       ],
       "style_modifiers": [
-        "best practices discussion",
-        "collaboration use case",
-        "fundamental concept explanation",
-        "system comparison and differences",
-        "tool selection rationale",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "fill in the blank"
       ]
     },
     "Git Architecture": {
       "keywords": [
         "Working directory",
-        "Staging area",
-        "Committing",
-        "Branching",
-        "Merging",
+        "Staging area (index)",
+        "Object store",
+        "Blob object",
+        "Tree object",
+        "Commit object",
+        "Tag object",
         "HEAD",
-        "Merge request",
-        "Merge conflict",
-        "Index",
-        "Repository",
+        "Detached HEAD",
         "Remote tracking branch",
-        "Detached HEAD"
+        "Refs and reflog",
+        "Pack files",
+        "Merge conflict",
+        "Fast-forward merge",
+        "Three-way merge"
       ],
       "style_modifiers": [
-        "branch management workflow",
-        "conflict resolution strategy",
-        "core concept",
-        "internal workflow explanation",
-        "recovery operations",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "what happens when...?",
+        "true or false + explanation",
+        "which option is correct?",
+        "fill in the blank"
       ]
     },
     "Branching Strategies": {
@@ -1075,160 +1158,204 @@
         "Feature branches",
         "Release branches",
         "Hotfix branches",
-        "Main/Master branch",
-        "Develop branch",
-        "Long-lived branches",
-        "Short-lived branches",
+        "Long-lived vs short-lived branches",
         "Branch protection rules",
-        "Merge strategies",
         "Squash merge",
-        "Rebase vs merge"
+        "Rebase vs merge",
+        "Cherry-pick",
+        "Tag-based releases",
+        "Merge freeze"
       ],
       "style_modifiers": [
-        "concept explanation",
-        "strategy selection rationale",
-        "team size considerations",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "workflow comparison",
-        "yes or no + explanation"
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     },
     "Git Commands": {
       "keywords": [
-        "git fetch",
-        "git merge",
-        "git stash",
-        "git revert",
-        "git checkout",
-        "git diff",
-        "git tag",
-        "git reset",
-        "git rebase",
-        "git branch",
-        "git log",
-        "git clean",
-        "git pull",
-        "git push",
+        "git init",
         "git clone",
         "git add",
         "git commit",
         "git status",
+        "git diff",
+        "git log",
+        "git branch",
+        "git checkout / git switch",
+        "git merge",
+        "git rebase",
+        "git pull",
+        "git push",
+        "git fetch",
+        "git stash",
+        "git reset",
+        "git revert",
+        "git tag",
         "git remote",
-        "git init"
+        "git clean",
+        "git restore",
+        "git cherry-pick",
+        "git bisect"
       ],
       "style_modifiers": [
-        "command comparison and selection",
-        "command flags and optios",
-        "core concept",
-        "practical usage scenario",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
+        "what does this command do?",
+        "what is the difference between X and Y?",
+        "which command would you use?",
+        "what happens when...?",
+        "what does this flag do?",
+        "true or false + explanation",
+        "fill in the blank"
       ]
     },
-    "Monorepos & Polyrepos": {
+    "Git Exercises": {
       "keywords": [
-        "Monorepo",
-        "Polyrepo",
-        "Multi-repo",
-        "Code sharing",
-        "Dependency management",
-        "Build optimization",
-        "Nx",
-        "Turborepo",
-        "Bazel",
-        "Lerna",
-        "Sparse checkout",
-        "Code ownership",
-        "CODEOWNERS",
-        "Atomic commits",
-        "Cross-project changes"
+        "Resolve a merge conflict",
+        "Recover a deleted branch",
+        "Undo the last commit (keep changes)",
+        "Undo the last commit (discard changes)",
+        "Unstage a file",
+        "Restore a deleted file",
+        "Revert a pushed commit",
+        "Squash the last N commits",
+        "Move commits to a new branch",
+        "Remove a file from history",
+        "Find the commit that introduced a bug",
+        "Apply a commit from another branch",
+        "Sync a fork with upstream",
+        "Stash changes and reapply",
+        "Reset to a specific commit",
+        "Rename a branch locally and remotely",
+        "Pull with rebase instead of merge",
+        "Amend the last commit message",
+        "Create and apply a patch file",
+        "Interactively rebase the last N commits"
       ],
       "style_modifiers": [
-        "comparison question",
-        "concept explanation",
-        "scaling considerations",
-        "tooling selection",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
+        "write the exact command",
+        "what is the correct sequence of commands?",
+        "which command would you use?",
+        "what does this command sequence do?",
+        "what happens when...?",
+        "spot the mistake",
+        "fill in the blank"
       ]
     }
   },
   "Kubernetes Scheduling & Scaling": {
+    "Scheduling Basics": {
+      "keywords": [
+        "Resource requests",
+        "Resource limits",
+        "Quality of Service (QoS)",
+        "OOMKill",
+        "CPU throttling",
+        "LimitRange",
+        "ResourceQuota",
+        "Namespace quotas",
+        "Object count quota",
+        "PodDisruptionBudget (PDB)",
+        "minAvailable",
+        "maxUnavailable",
+        "Voluntary vs involuntary disruptions",
+        "Eviction API",
+        "Priority classes",
+        "Preemption",
+        "Node selectors",
+        "Taints and tolerations",
+        "Node affinity",
+        "Pod affinity",
+        "Pod anti-affinity",
+        "Topology spread constraints",
+        "Scheduler profiles"
+      ],
+      "style_modifiers": [
+        "what is it?",
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
+      ]
+    },
     "Horizontal Pod Autoscaler (HPA)": {
       "keywords": [
         "Horizontal Pod Autoscaler (HPA)",
         "Metrics Server",
-        "Custom metrics",
-        "External metrics",
         "CPU utilization target",
         "Memory utilization target",
-        "Scaling behavior",
+        "Custom metrics (Prometheus adapter)",
+        "External metrics",
         "Scale up policies",
         "Scale down policies",
-        "Stabilization window"
+        "Stabilization window",
+        "HPA v2 behavior",
+        "Min/max replicas"
       ],
       "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "metrics interpretation",
-        "performance optimization",
-        "tricky question",
-        "troubleshooting scaling issues",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "what does this config do?",
+        "when would you use it?",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     },
     "Vertical Pod Autoscaler (VPA)": {
       "keywords": [
         "Vertical Pod Autoscaler (VPA)",
-        "VPA modes",
+        "VPA recommender",
+        "VPA updater",
+        "VPA admission controller",
         "Auto mode",
         "Recreate mode",
         "Initial mode",
         "Off mode",
-        "Resource recommendations",
-        "VPA updater",
-        "VPA recommender",
-        "VPA admission controller"
+        "VPA vs HPA",
+        "VPA with HPA (compatibility)",
+        "Resource recommendations"
       ],
       "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "cost optimization analysis",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     },
     "Cluster Autoscaler": {
       "keywords": [
         "Cluster Autoscaler",
         "Node groups",
-        "Scale up triggers",
-        "Scale down triggers",
-        "Unschedulable pods",
+        "Unschedulable pods trigger",
         "Node utilization threshold",
         "Scale down delay",
-        "Pod disruption budget",
-        "Safe to evict annotation"
+        "Safe-to-evict annotation",
+        "Expander strategies",
+        "Cluster Autoscaler vs Karpenter",
+        "Cloud provider integration",
+        "Pod disruption budget interaction"
       ],
       "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "cost optimization analysis",
-        "tricky question",
-        "troubleshooting scaling issues",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     },
     "KEDA": {
@@ -1237,173 +1364,123 @@
         "ScaledObject",
         "ScaledJob",
         "TriggerAuthentication",
+        "ClusterTriggerAuthentication",
         "Event-driven autoscaling",
-        "External scalers",
+        "Scaling to zero",
         "Prometheus scaler",
         "Kafka scaler",
         "AWS SQS scaler",
         "Cron scaler",
-        "Scaling to zero"
+        "External scalers",
+        "KEDA vs HPA",
+        "Cooldown period"
       ],
       "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "event-driven scaling design",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     },
     "Karpenter": {
       "keywords": [
         "Karpenter",
-        "Provisioner",
         "NodePool",
+        "NodeClaim",
         "EC2NodeClass",
         "Just-in-time provisioning",
         "Consolidation",
         "Drift detection",
+        "Disruption budgets",
         "Spot instances",
         "On-demand instances",
         "Instance type selection",
-        "Bin packing"
-      ],
-      "style_modifiers": [
+        "Bin packing",
         "Karpenter vs Cluster Autoscaler",
-        "configuration scenario",
-        "core concept",
-        "cost optimization analysis",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
-    "Scheduling & Affinity": {
-      "keywords": [
-        "Node affinity",
-        "Pod affinity",
-        "Pod anti-affinity",
-        "Taints",
-        "Tolerations",
-        "Node selectors",
-        "Topology spread constraints",
-        "Priority classes",
-        "Preemption",
-        "Scheduler profiles"
+        "Expiration (TTL)"
       ],
       "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "scheduling strategy design",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
-      ]
-    },
-    "Resource Quotas & LimitRanges": {
-      "keywords": [
-        "Resource quotas",
-        "LimitRange",
-        "Namespace quotas",
-        "CPU quota",
-        "Memory quota",
-        "Object count quota",
-        "Default limits",
-        "Default requests",
-        "Min/Max constraints"
-      ],
-      "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "multi-tenancy design",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
-    "PodDisruptionBudgets": {
-      "keywords": [
-        "PodDisruptionBudget (PDB)",
-        "minAvailable",
-        "maxUnavailable",
-        "Voluntary disruptions",
-        "Involuntary disruptions",
-        "Eviction API",
-        "Drain operations",
-        "Rolling updates"
-      ],
-      "style_modifiers": [
-        "configuration scenario",
-        "core concept",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     }
   },
   "Kubernetes Security": {
-    "Resource Requests & Limits": {
-      "keywords": [
-        "Resource requests",
-        "Resource limits",
-        "Quality of Service (QoS)",
-        "Guaranteed QoS",
-        "Burstable QoS",
-        "BestEffort QoS",
-        "CPU requests",
-        "Memory requests",
-        "CPU limits",
-        "Memory limits",
-        "OOMKill",
-        "CPU throttling"
-      ],
-      "style_modifiers": [
-        "best practices implementation",
-        "configuration scenario",
-        "core concept",
-        "performance optimization",
-        "resource conflict resolution",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
-    "Kubernetes Security": {
+    "Basic Security": {
       "keywords": [
         "RBAC",
-        "PodSecurity Standards (PSS)",
-        "NetworkPolicies",
-        "Secrets management",
+        "Role",
+        "ClusterRole",
+        "RoleBinding",
+        "ClusterRoleBinding",
         "ServiceAccount",
-        "Admission controllers",
-        "TLS",
-        "mTLS",
+        "ServiceAccount token",
+        "Pod Security Standards (PSS)",
+        "Pod Security Admission (PSA)",
+        "Privileged / Baseline / Restricted profiles",
+        "Secrets management",
+        "Secret encryption at rest",
+        "ImagePullPolicy",
         "Image scanning",
-        "Runtime security",
-        "Audit logs",
-        "OIDC",
-        "IAM roles for service accounts (IRSA)"
+        "Namespace isolation",
+        "NetworkPolicy",
+        "TLS termination",
+        "Audit logs"
       ],
       "style_modifiers": [
-        "compliance considerations",
-        "concept explanation",
-        "incident response guidance",
-        "least privilege design",
-        "misconfiguration detection",
-        "policy creation workflow",
-        "secure defaults explanation",
-        "security hardening steps",
-        "threat analysis",
-        "tricky question",
-        "what happens behind the scenes?",
         "what is it?",
-        "yes or no + explanation"
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
+      ]
+    },
+    "Advanced Security": {
+      "keywords": [
+        "Admission controllers",
+        "Validating admission webhook",
+        "Mutating admission webhook",
+        "OPA / Gatekeeper",
+        "Kyverno",
+        "OIDC authentication",
+        "IAM roles for service accounts (IRSA)",
+        "Workload identity",
+        "mTLS",
+        "Certificate management (cert-manager)",
+        "Sealed Secrets",
+        "External Secrets Operator",
+        "Falco (runtime security)",
+        "AppArmor profiles",
+        "Linux capabilities (drop/add)",
+        "Read-only root filesystem",
+        "Non-root containers",
+        "Supply chain security (SBOM, Sigstore)",
+        "CIS Kubernetes benchmark"
+      ],
+      "style_modifiers": [
+        "what is it?",
+        "how does it work?",
+        "what is the difference between X and Y?",
+        "when would you use it?",
+        "what does this config do?",
+        "give a real-world example",
+        "which option is correct?",
+        "true or false + explanation",
+        "what happens when...?"
       ]
     }
   },
@@ -1664,39 +1741,6 @@
     }
   },
   "Cloud Design & Architecture": {
-    "Solutions Architecture Patterns": {
-      "keywords": [
-        "Microservices architecture",
-        "Event-driven architecture",
-        "Serverless architecture",
-        "N-tier architecture",
-        "CQRS",
-        "Event sourcing",
-        "Saga pattern",
-        "Strangler Fig pattern",
-        "Anti-corruption layer",
-        "Bulkhead pattern",
-        "Queue-based load leveling",
-        "Cache-aside pattern",
-        "Circuit breaker pattern",
-        "Retry pattern"
-      ],
-      "style_modifiers": [
-        "anti-pattern identification",
-        "concept explanation",
-        "implementation scenario and design",
-        "migration strategy to pattern",
-        "pattern explanation and use case",
-        "pattern selection rationale",
-        "real-world application example",
-        "scalability and resilience benefits",
-        "trade-offs and considerations",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
     "Migration Strategies": {
       "keywords": [
         "Cloud migration",
@@ -1859,32 +1903,30 @@
         "yes or no + explanation"
       ]
     },
-    "Backups & Disaster Recovery": {
+    "CDN & Edge": {
       "keywords": [
-        "Backup strategy",
-        "Full backup",
-        "Incremental backup",
-        "Differential backup",
-        "Backup retention policy",
-        "Backup encryption",
-        "Disaster recovery plan (DRP)",
-        "Business continuity",
-        "RTO (Recovery Time Objective)",
-        "RPO (Recovery Point Objective)",
-        "Failover",
-        "Failback",
-        "Hot site",
-        "Warm site",
-        "Cold site",
-        "DR testing",
-        "Velero"
+        "CDN (Content Delivery Network)",
+        "Edge locations",
+        "PoP (Point of Presence)",
+        "CloudFront",
+        "Cloudflare",
+        "Akamai",
+        "Fastly",
+        "Cache invalidation",
+        "Cache TTL",
+        "Origin server",
+        "Edge computing",
+        "Edge functions",
+        "Lambda@Edge",
+        "Cloudflare Workers",
+        "Geo-routing",
+        "DDoS protection"
       ],
       "style_modifiers": [
-        "RTO/RPO calculation scenario",
-        "backup strategy design",
+        "CDN selection rationale",
+        "caching strategy design",
         "concept explanation",
-        "failover procedure design",
-        "recovery strategy selection",
+        "performance",
         "tricky question",
         "what happens behind the scenes?",
         "what is it?",
@@ -2029,8 +2071,8 @@
       ]
     }
   },
-  "CI/CD Foundations": {
-    "DevOps Methodology": {
+  "DevOps Methodology": {
+    "DevOps Principles": {
       "keywords": [
         "DevOps",
         "SDLC",
@@ -2063,71 +2105,33 @@
         "what is it?",
         "yes or no + explanation"
       ]
-    },
-    "CI Basics": {
+    }
+  },
+  "CI/CD Methodology": {
+    "CI Methodology": {
       "keywords": [
-        "Continuous Integration (CI)",
-        "Continuous Delivery (CD)",
-        "Continuous Deployment",
+        "Continuous Integration",
+        "Continuous Delivery",
         "Pipeline",
         "Pipeline stages",
         "Build server",
-        "CI server",
         "Pipeline as code",
-        "Continuous Testing",
         "Build triggers",
         "Webhooks",
         "Runners",
-        "Agents"
-      ],
-      "style_modifiers": [
-        "build optimization techniques",
-        "concept explanation",
-        "integration strategy implementation",
-        "pipeline design and configuration",
-        "testing integration approach",
-        "tricky question",
-        "troubleshooting pipeline failures",
-        "what happens behind the scenes?",
-        "what is it?",
-        "workflow automation scenario",
-        "yes or no + explanation"
-      ]
-    },
-    "CI Artifacting": {
-      "keywords": [
+        "Agents",
         "Build artifacts",
         "Artifact versioning",
         "Artifact retention",
-        "Artifact signing",
         "Artifact promotion",
-        "Release artifacts",
-        "Artifact repository",
-        "JFrog Artifactory",
-        "Nexus Repository",
-        "Docker Registry",
-        "Container registry",
-        "npm registry",
-        "PyPI",
-        "Maven Central",
-        "NuGet Gallery",
-        "GitHub Packages",
-        "GitLab Package Registry",
-        "AWS CodeArtifact",
-        "Azure Artifacts"
+        "Immutable artifacts"
       ],
       "style_modifiers": [
-        "artifact management strategy",
         "concept explanation",
-        "promotion pipeline design",
-        "repository selection and configuration",
-        "retention policy planning",
-        "security and signing workflow",
-        "storage optimization approach",
+        "pipeline design scenario",
+        "artifact promotion strategy",
         "tricky question",
-        "versioning scheme implementation",
         "what happens behind the scenes?",
-        "what is it?",
         "yes or no + explanation"
       ]
     },
@@ -2138,83 +2142,47 @@
         "End-to-end testing",
         "Test pyramid",
         "Test automation",
-        "Load testing",
+        "Contract testing",
+        "Security testing (SAST/DAST)",
         "Performance testing",
-        "k6",
-        "JMeter",
+        "Load testing",
         "Chaos engineering",
-        "Chaos Monkey",
         "Smoke testing",
-        "Regression testing",
-        "Shift-left testing"
+        "Regression testing"
       ],
       "style_modifiers": [
-        "CI/CD integration",
         "concept explanation",
         "test strategy design",
-        "tool selection rationale",
+        "CI/CD integration approach",
+        "flaky test mitigation",
         "tricky question",
         "what happens behind the scenes?",
-        "what is it?",
         "yes or no + explanation"
       ]
     },
-    "GitOps Principles": {
+    "CD Methodology": {
       "keywords": [
-        "GitOps principles",
+        "GitOps",
         "Declarative infrastructure",
         "Git as single source of truth",
         "Pull-based deployment",
-        "Push-based deployment",
         "Reconciliation loop",
         "Drift detection",
-        "Self-healing systems",
-        "Infrastructure versioning",
-        "Automated rollback",
-        "Observability",
-        "Audit trail"
-      ],
-      "style_modifiers": [
-        "GitOps workflow implementation",
-        "concept explanation",
-        "deployment model selection",
-        "drift management approach",
-        "migration to GitOps planning",
-        "observability integration",
-        "reconciliation strategy design",
-        "tool comparison and selection",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
-    "Deployment Strategies": {
-      "keywords": [
         "Canary deployment",
         "Blue-green deployment",
         "Rolling update",
-        "A/B testing",
         "Feature flags",
-        "Argo Rollouts",
-        "Flagger",
-        "Traffic shifting",
-        "Analysis runs",
-        "Rollback triggers",
-        "Weighted routing",
-        "Header-based routing",
         "Rollback strategies",
         "Health checks",
-        "Analysis templates"
+        "Traffic shifting"
       ],
       "style_modifiers": [
         "concept explanation",
         "deployment strategy selection",
+        "drift detection scenario",
         "rollback scenario",
-        "traffic management design",
         "tricky question",
         "what happens behind the scenes?",
-        "what is it?",
         "yes or no + explanation"
       ]
     }
@@ -2299,23 +2267,34 @@
         "yes or no + explanation"
       ]
     },
-    "Spinnaker": {
+    "Azure DevOps": {
       "keywords": [
-        "Spinnaker",
-        "Pipelines",
+        "Azure Pipelines",
+        "Microsoft-hosted agents",
+        "Self-hosted agents",
+        "Agent pools",
+        "Jobs",
         "Stages",
-        "Deployment strategies",
-        "Canary analysis",
-        "Clusters",
-        "Server groups",
-        "Load balancers",
-        "Security groups",
-        "Spinnaker operators"
+        "Steps",
+        "Tasks",
+        "Variables",
+        "Library",
+        "Service connections",
+        "Artifacts",
+        "Triggers",
+        "Environments",
+        "Approvals",
+        "Checks",
+        "Deployment jobs",
+        "Multi-stage pipelines",
+        "Template expressions"
       ],
       "style_modifiers": [
-        "core concept",
-        "deployment strategy design",
-        "pipeline configuration",
+        "concept explanation",
+        "pipeline configuration scenario",
+        "agent configuration",
+        "task usage",
+        "template reuse",
         "tricky question",
         "what happens behind the scenes?",
         "what is it?",
@@ -2683,14 +2662,10 @@
     }
   },
   "Networking Fundamentals": {
-    "Protocols": {
+    "Extra Protocols": {
       "keywords": [
         "QUIC",
-        "Webhook",
-        "TCP",
-        "UDP",
-        "HTTP",
-        "HTTPS",
+        "Webhooks",
         "gRPC",
         "WebSocket",
         "ICMP",
@@ -2871,7 +2846,6 @@
         "HAProxy",
         "Traefik",
         "Envoy",
-        "Apache HTTP Server",
         "Caching proxy",
         "SSL offloading",
         "Request routing",
@@ -2882,8 +2856,7 @@
       ],
       "style_modifiers": [
         "concept explanation",
-        "configuration scenario",
-        "proxy vs reverse proxy comparison",
+        "comparison question",
         "tricky question",
         "use case selection",
         "what happens behind the scenes?",
@@ -2903,33 +2876,27 @@
         "Load balancer appliances",
         "DHCP server",
         "DNS server",
-        "Spanning Tree Protocol (STP)",
         "Port channels",
         "Static routes",
-        "BGP",
-        "OSPF",
-        "Physical cabling",
-        "Rack networking",
-        "Patch panels"
+        "Physical cabling"
       ],
       "style_modifiers": [
         "brief failure cause highlight",
         "concept explanation",
-        "concise performance impact note",
-        "fast connectivity validation",
-        "quick cloud vs on-prem comparison",
-        "short configuration explanation",
-        "simple design recommendation",
+        "connectivity validation",
+        "cloud vs on-prem",
+        "configuration explanation",
+        "design recommendation",
         "tricky question",
         "troubleshooting step",
         "what happens behind the scenes?",
         "what is it?",
-        "yes or no with brief justification"
+        "yes or no + explanation"
       ]
     }
   },
   "Network Tools & Troubleshooting": {
-    "Linux Networking Commands": {
+    "Networking Commands": {
       "keywords": [
         "netcat",
         "ping",
@@ -2981,18 +2948,14 @@
         "Node network issues"
       ],
       "style_modifiers": [
-        "brief misconfiguration highlight",
+        "misconfiguration",
         "concept explanation",
-        "fast checklist-style response",
         "one-step diagnostic hint",
-        "quick difference explanation",
-        "short root cause summary",
+        "incident scenario",
+        "root cause",
         "short validation step",
         "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation",
-        "yes or no answer with brief justification"
+        "what is it?"
       ]
     },
     "Packet Analysis": {
@@ -3018,95 +2981,6 @@
         "traffic analysis scenario",
         "tricky question",
         "troubleshooting with packet capture",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    }
-  },
-  "Network Infrastructure": {
-    "Modern Networking (SDN, NFV)": {
-      "keywords": [
-        "eBPF",
-        "Cilium",
-        "Cilium Network Policies",
-        "Hubble",
-        "Falco",
-        "Zero Trust Networking",
-        "Zero Trust Architecture",
-        "Linkerd",
-        "Consul Connect",
-        "mTLS implementation",
-        "Service mesh comparison",
-        "Identity-based networking"
-      ],
-      "style_modifiers": [
-        "concept explanation",
-        "eBPF use case explanation",
-        "network observability design",
-        "service mesh selection",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation",
-        "zero trust implementation"
-      ]
-    },
-    "API Gateways": {
-      "keywords": [
-        "API Gateway",
-        "Kong",
-        "AWS API Gateway",
-        "Apigee",
-        "Ambassador",
-        "Tyk",
-        "Rate limiting",
-        "Authentication",
-        "Authorization",
-        "Request transformation",
-        "Response transformation",
-        "API versioning",
-        "Throttling",
-        "Circuit breaker",
-        "Caching",
-        "Request routing"
-      ],
-      "style_modifiers": [
-        "concept explanation",
-        "configuration scenario",
-        "gateway selection rationale",
-        "security implementation",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
-    "CDN & Edge": {
-      "keywords": [
-        "CDN (Content Delivery Network)",
-        "Edge locations",
-        "PoP (Point of Presence)",
-        "CloudFront",
-        "Cloudflare",
-        "Akamai",
-        "Fastly",
-        "Cache invalidation",
-        "Cache TTL",
-        "Origin server",
-        "Edge computing",
-        "Edge functions",
-        "Lambda@Edge",
-        "Cloudflare Workers",
-        "Geo-routing",
-        "DDoS protection"
-      ],
-      "style_modifiers": [
-        "CDN selection rationale",
-        "caching strategy design",
-        "concept explanation",
-        "performance",
-        "tricky question",
         "what happens behind the scenes?",
         "what is it?",
         "yes or no + explanation"
@@ -3310,13 +3184,9 @@
         "Admission controllers"
       ],
       "style_modifiers": [
-        "OPA vs Kyverno comparison",
-        "compliance as code implementation",
+        "policy as code implementation",
         "concept explanation",
-        "governance automation design",
         "integration with CI/CD pipeline",
-        "policy enforcement strategy",
-        "policy rule creation scenario",
         "tricky question",
         "what happens behind the scenes?",
         "what is it?",
@@ -3324,7 +3194,7 @@
       ]
     }
   },
-  "AppSec & Supply Chain": {
+  "Security Testing": {
     "Supply Chain Security": {
       "keywords": [
         "Software supply chain",
@@ -3395,6 +3265,64 @@
         "tricky question",
         "what happens behind the scenes?",
         "what is it?",
+        "yes or no + explanation"
+      ]
+    }
+  },
+  "SSO & OIDC": {
+    "SSO (Single Sign-On)": {
+      "keywords": [
+        "Single Sign-On",
+        "SSO",
+        "Identity provider (IdP)",
+        "Service provider (SP)",
+        "Federation",
+        "SAML",
+        "OAuth 2.0",
+        "OpenID Connect (OIDC)",
+        "Kerberos",
+        "LDAP integration",
+        "Auth0",
+        "AWS IAM Identity Center (SSO)",
+        "Azure AD SSO",
+        "Google Workspace SSO",
+        "Keycloak",
+        "SSO session"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "SSO integration scenario",
+        "identity provider selection",
+        "tricky question",
+        "what happens behind the scenes?",
+        "yes or no + explanation"
+      ]
+    },
+    "OpenID Connect (OIDC)": {
+      "keywords": [
+        "OpenID Connect",
+        "OIDC",
+        "ID token",
+        "JWT",
+        "Claims",
+        "UserInfo endpoint",
+        "OAuth 2.0 vs OIDC",
+        "Authorization code flow",
+        "OIDC flow types",
+        "OIDC discovery",
+        ".well-known/openid-configuration",
+        "Keycloak OIDC",
+        "AWS Cognito OIDC",
+        "IDP initiated logout",
+        "RP initiated logout",
+        "OIDC provider"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "OIDC flow",
+        "token validation scenario",
+        "tricky question",
+        "what happens behind the scenes?",
         "yes or no + explanation"
       ]
     }
@@ -3625,7 +3553,7 @@
       ]
     }
   },
-  "Reliability & On-Call": {
+  "Reliability & Alerting": {
     "Alerting & On-Call": {
       "keywords": [
         "Alerting",
@@ -3698,7 +3626,96 @@
       ]
     }
   },
-  "Relational DB's and Scaling": {
+  "Databases Basics": {
+    "ACID & Transactions": {
+      "keywords": [
+        "Atomicity",
+        "Consistency",
+        "Isolation",
+        "Durability",
+        "Transaction",
+        "Commit",
+        "Rollback",
+        "Savepoint",
+        "ACID vs BASE",
+        "Isolation levels",
+        "Read uncommitted",
+        "Read committed",
+        "Repeatable read",
+        "Serializable"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "isolation level scenario",
+        "transaction failure handling",
+        "tricky question",
+        "what happens behind the scenes?",
+        "yes or no + explanation"
+      ]
+    },
+    "Indexing & Performance": {
+      "keywords": [
+        "Index",
+        "Primary index",
+        "Secondary index",
+        "Clustered index",
+        "Non-clustered index",
+        "B-Tree",
+        "Hash index",
+        "Bitmap index",
+        "Composite index",
+        "Covering index",
+        "Partial index",
+        "Index scan",
+        "Table scan",
+        "Cardinality",
+        "Selectivity",
+        "Query plan",
+        "EXPLAIN",
+        "Index fragmentation",
+        "Slow query log"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "index selection scenario",
+        "query optimization approach",
+        "tricky question",
+        "what happens behind the scenes?",
+        "yes or no + explanation"
+      ]
+    },
+    "Database Architecture": {
+      "keywords": [
+        "Database",
+        "DBMS",
+        "Transaction",
+        "Query",
+        "Nested query",
+        "Schema",
+        "RDBMS",
+        "DBMS",
+        "ACID vs BASE",
+        "SQL",
+        "Row",
+        "Column",
+        "Table",
+        "View",
+        "Unique key",
+        "Primary key",
+        "Foreign key",
+        "Data normalization"
+      ],
+      "style_modifiers": [
+        "core concept",
+        "database design scenario",
+        "database selection scenario",
+        "schema design",
+        "transaction management",
+        "tricky question",
+        "what is it?",
+        "yes or no + explanation"
+      ]
+    },
     "Database Scaling & Replication": {
       "keywords": [
         "Horizontal scaling",
@@ -3728,39 +3745,9 @@
         "what is it?",
         "yes or no + explanation"
       ]
-    },
-    "SQL Structure": {
-      "keywords": [
-        "Database",
-        "DBMS",
-        "Transaction",
-        "Query",
-        "Nested query",
-        "Schema",
-        "RDBMS",
-        "ACID vs BASE",
-        "SQL",
-        "Row",
-        "Column",
-        "Table",
-        "View",
-        "Unique key",
-        "Primary key",
-        "Foreign key",
-        "Data normalization"
-      ],
-      "style_modifiers": [
-        "core concept",
-        "database design scenario",
-        "relationship modeling",
-        "schema design critique",
-        "transaction management",
-        "tricky question",
-        "what happens behind the scenes?",
-        "what is it?",
-        "yes or no + explanation"
-      ]
-    },
+    }
+  },
+  "Relational DB's and Scaling": {
     "SQL Commands": {
       "keywords": [
         "SELECT",
