@@ -34,12 +34,35 @@ CIVITAI_KEY=your-api-key COMFY_DIR=test-dir bash setup.sh
 
 #### Prompts structure
 
-**Follow this order**: [subject], [character details], [scene], [quality tags], [aesthetic tags]  
-**Example**: masterpiece, best quality, newest, absurdres, highres, very awa,
-1girl, long silver hair, blue eyes, school uniform, cherry blossoms,
-looking at viewer, soft smile, detailed face, bokeh background
+**Follow this order**: [quality tags], [subject], [character details], [scene], [aesthetic tags]
 
-**For negative prompts**: follow official recommended negatives.  
-**Example**: nsfw, worst quality, old, early, low quality, lowres, signature,
-username, logo, bad hands, mutated hands, mammal, anthro, furry,
-ambiguous form, feral, semi-anthro
+#### Base positive prompt (NoobAI-XL)
+
+```
+score_9, score_8_up, score_7_up, masterpiece, best quality, newest, absurdres, highres, very awa, source_anime,
+<your subject and scene here>
+```
+
+#### Base negative prompt (NoobAI-XL)
+
+```
+score_4, score_5, score_6, nsfw, worst quality, old, early, low quality, lowres, signature, username, logo,
+(bad hands:1.4), (extra fingers:1.4), (missing fingers:1.4), (deformed hands:1.3), (malformed hands:1.3), fused fingers,
+mammal, anthro, furry, ambiguous form, feral, semi-anthro
+```
+
+#### Tips
+
+- When hands are visible in the scene, strengthen with: `(detailed hands:1.2), (anatomically correct:1.1), five fingers`
+- Score tags (`score_9` etc.) are mandatory for NoobAI-XL — they replace `masterpiece`-style tags from older models
+- `very awa` is a NoobAI-specific aesthetic tag that improves overall quality
+
+#### KSampler settings (NoobAI-XL vPred)
+
+| Parameter | Value |
+|---|---|
+| Steps | 32 |
+| CFG | 5 |
+| Sampler | dpmpp_2m |
+| Scheduler | karras |
+| control_after_generate | randomize |

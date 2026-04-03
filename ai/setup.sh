@@ -140,8 +140,25 @@ echo "============================================"
 
 # ComfyUI Manager — lets you install more nodes from the UI
 if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
-  git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_DIR/custom_nodes/"
-  echo "✓ Installed custom nodes"
+  git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_DIR/custom_nodes/ComfyUI-Manager"
+  echo "✓ Installed ComfyUI-Manager"
+
+  # Set ComfyUI-Manager security level to normal so nodes can be installed via UI
+  MANAGER_CONFIG="$COMFY_DIR/custom_nodes/ComfyUI-Manager/config.ini"
+  if [[ -f "$MANAGER_CONFIG" ]]; then
+    sed -i 's/security_level = strong/security_level = normal/' "$MANAGER_CONFIG"
+    echo "✓ Set ComfyUI-Manager security level to normal"
+  else
+    echo "NOTE: $MANAGER_CONFIG was not found."
+    echo "ComfyUI-Manager security level was not changed, this may block Github node downloads."
+  fi
+fi
+
+# ADetailer — face and hand inpainting post-process pass
+if ! skip_if_exists "$COMFY_DIR/custom_nodes/comfyui-adetailer"; then
+  git clone https://github.com/Bing-su/adetailer.git "$COMFY_DIR/custom_nodes/comfyui-adetailer"
+  pip install -r "$COMFY_DIR/custom_nodes/comfyui-adetailer/requirements.txt" -q
+  echo "✓ Installed ADetailer"
 fi
 
 # =============================================================================
