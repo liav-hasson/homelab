@@ -43,7 +43,7 @@ else
 fi
 
 # create necessary sub directories
-mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes,user}
+mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes,user/default/workflows}
 MODELS_DIR="$COMFY_DIR/models"
 
 COMFY_DIR="$(cd "$COMFY_DIR" && pwd)" # make sure to use absolute path
