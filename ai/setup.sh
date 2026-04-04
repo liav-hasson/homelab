@@ -8,7 +8,8 @@
 # Assumed base image: comfyui-latest (ComfyUI lives at /workspace/ComfyUI)
 # =============================================================================
 
-set -e  # exit on any error
+# NOTE: Intentionally no `set -e` — we want to continue on failure and
+#       report a summary at the end instead of aborting mid-setup.
 
 echo "============================================"
 echo "  Starting ComfyUI Setup Script..."
@@ -42,7 +43,7 @@ else
   echo "Received CIVITAI_KEY environment variable: \"${CIVITAI_KEY:0:5}...\""
 fi
 
-# create necessary sub directories and environment vars
+# Make sure necessary sub directories exist and set environment vars
 CURL_OPTS=(-L --progress-bar --retry 3 --retry-delay 10 -C -) # common curl flags
 COMFY_DIR="$(cd "$COMFY_DIR" && pwd)"                         # make sure to use absolute path
 
@@ -50,23 +51,34 @@ MODELS_DIR="$COMFY_DIR/models"
 MANAGER_CONFIG_DIR="$COMFY_DIR/user/__manager"
 MANAGER_CONFIG="$MANAGER_CONFIG_DIR/config.ini"
 
-mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes,user/__manager}
+mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,ultralytics/bbox,custom_nodes},custom_nodes,user/__manager}
 
 # =============================================================================
-# UTILITY FUNCTION: Skip installation if file exists
+# UTILITY FUNCTIONS
 # =============================================================================
 
+# Tracks any installs that failed during the run
+FAILED_INSTALLS=()
+
+# Call at the end of an install block on failure.
+# Usage: mark_failed "Human-readable name"
+mark_failed() {
+  local name="$1"
+  echo "✗ FAILED: $name — skipping and continuing..."
+  FAILED_INSTALLS+=("$name")
+}
+
+# Returns 0 (skip) if the path already exists, 1 (proceed) if it doesn't.
 skip_if_exists() {
   local install_path="$1"
   
   if [[ -e "$install_path" ]]; then
-    echo "✓ Already exists, Skipping installation..."
-    return 0  # signal to skip this installation
+    echo "✓ Already exists, skipping installation..."
+    return 0  # signal to skip
   else
     echo "✗ Not found, installing..."
+    return 1  # signal to proceed
   fi
-  
-  return 1  # signal to proceed with installation
 }
 
 # =============================================================================
@@ -80,11 +92,9 @@ if ! skip_if_exists "$MODELS_DIR/checkpoints/model.safetensors"; then
   curl "${CURL_OPTS[@]}" \
     -H "Authorization: Bearer $CIVITAI_KEY" \
     -o "$MODELS_DIR/checkpoints/model.safetensors" \
-    "https://civitai.com/api/download/models/1190596?type=Model&format=SafeTensor&size=full&fp=bf16" || {
-      echo "ERROR: Failed to download checkpoint (NoobAI-XL vPred 1.0)"
-      exit 1
-    }
-  echo "✓ Installed checkpoint: NoobAI-XL vPred 1.0"
+    "https://civitai.com/api/download/models/1190596?type=Model&format=SafeTensor&size=full&fp=bf16" \
+  && echo "✓ Installed checkpoint: NoobAI-XL vPred 1.0" \
+  || mark_failed "Checkpoint: NoobAI-XL vPred 1.0"
 fi
 # NOTE - Grabbed the install URL from browser console when clicked download
 
@@ -98,11 +108,9 @@ echo "============================================"
 if ! skip_if_exists "$MODELS_DIR/vae/sdxl.vae.safetensors"; then
   curl "${CURL_OPTS[@]}" \
     -o "$MODELS_DIR/vae/sdxl.vae.safetensors" \
-    "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors" || {
-      echo "ERROR: Failed to download VAE (sdxl-vae-fp16-fix)"
-      exit 1
-    }
-  echo "✓ Installed VAE: sdxl-vae-fp16-fix"
+    "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors" \
+  && echo "✓ Installed VAE: sdxl-vae-fp16-fix" \
+  || mark_failed "VAE: sdxl-vae-fp16-fix"
 fi
 
 # =============================================================================
@@ -113,33 +121,89 @@ echo "Downloading custom nodes..."
 echo "============================================"
 
 # 1. ComfyUI Manager — lets you install more nodes from the UI
+echo "Installing ComfyUI-Manager..."
 if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
-  git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_DIR/custom_nodes/ComfyUI-Manager"
-  echo "✓ Installed ComfyUI-Manager"
+  if git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
+    echo "✓ Installed ComfyUI-Manager"
+
+    # Set ComfyUI-Manager security level to weak so git URL installs are allowed via UI
+    if [[ -f "$MANAGER_CONFIG" ]]; then
+      sed -i 's/security_level = .*/security_level = weak/' "$MANAGER_CONFIG"
+    fi
+    echo "✓ ComfyUI-Manager: security level set to weak (allows git URL installs)"
+  else
+    mark_failed "Custom Node: ComfyUI-Manager"
+  fi
 fi
 
-# Set ComfyUI-Manager security level to weak so git URL installs are allowed via UI
-# Since v3.38, config.ini lives in ComfyUI/user/__manager/ (not in custom_nodes)
-# "Install via git URL" is a high-risk feature, requires security_level = weak
-if [[ -f "$MANAGER_CONFIG" ]]; then
-  sed -i 's/security_level = .*/security_level = weak/' "$MANAGER_CONFIG"
-else
-  echo -e "[default]\nsecurity_level = weak" > "$MANAGER_CONFIG"
-fi
-echo "✓ ComfyUI-Manager: security level set to weak (allows git URL installs)"
-
-# ComfyUI-Impact-Pack — FaceDetailer and hand detection nodes (ADetailer equivalent for ComfyUI)
+# 2. ComfyUI-Impact-Pack — FaceDetailer and hand detection nodes
+echo ""
+echo "Installing ComfyUI-Impact-Pack..."
 if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack"; then
-  git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack"
-  pip install -r "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack/requirements.txt" -q
-  (cd "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack" && python3 install.py)
-  echo "✓ Installed ComfyUI-Impact-Pack (FaceDetailer)"
+  if git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack" \
+    && pip install -r "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack/requirements.txt" -q \
+    && (cd "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack" && python3 install.py); then
+    echo "✓ Installed ComfyUI-Impact-Pack (FaceDetailer)"
+  else
+    mark_failed "Custom Node: ComfyUI-Impact-Pack"
+  fi
+fi
+
+# 3. ComfyUI-Impact-Subpack — required for UltralyticsDetectorProvider (YOLO detectors)
+#    This is separate from Impact-Pack since v8.0 and must be installed manually.
+echo ""
+echo "Installing ComfyUI-Impact-Subpack..."
+if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack"; then
+  if git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack" \
+    && pip install -r "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack/requirements.txt" -q \
+    && (cd "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack" && python3 install.py); then
+    echo "✓ Installed ComfyUI-Impact-Subpack (UltralyticsDetectorProvider)"
+  else
+    mark_failed "Custom Node: ComfyUI-Impact-Subpack"
+  fi
 fi
 
 # =============================================================================
-#   DONE
+#   ULTRALYTICS DETECTION MODELS (YOLO)
+# =============================================================================
+echo ""
+echo "Downloading YOLO detection models..."
+echo "============================================"
+
+# Face detector — used by FaceDetailer for face region detection + refinement
+echo "Downloading face_yolov8n.pt..."
+if ! skip_if_exists "$MODELS_DIR/ultralytics/bbox/face_yolov8n.pt"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/ultralytics/bbox/face_yolov8n.pt" \
+    "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.pt" \
+  && echo "✓ Installed face_yolov8n.pt" \
+  || mark_failed "YOLO: face_yolov8n.pt"
+fi
+
+# Hand detector — used by FaceDetailer (hand pass) to detect and refine hands/fingers
+echo "Downloading hand_yolov8n.pt..."
+if ! skip_if_exists "$MODELS_DIR/ultralytics/bbox/hand_yolov8n.pt"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/ultralytics/bbox/hand_yolov8n.pt" \
+    "https://huggingface.co/Bingsu/adetailer/resolve/main/hand_yolov8n.pt" \
+  && echo "✓ Installed hand_yolov8n.pt" \
+  || mark_failed "YOLO: hand_yolov8n.pt"
+fi
+
+# =============================================================================
+#   SUMMARY
 # =============================================================================
 echo ""
 echo "============================================"
-echo "  ComfyUI is ready. Happy generating!"
+if [[ ${#FAILED_INSTALLS[@]} -eq 0 ]]; then
+  echo "  ✓ All installs completed successfully."
+  echo "  ComfyUI is ready. Happy generating!"
+else
+  echo "  NOTE: Setup finished with ${#FAILED_INSTALLS[@]} failed install(s):"
+  for item in "${FAILED_INSTALLS[@]}"; do
+    echo "    - $item"
+  done
+  echo ""
+  echo "  ComfyUI may still work — check above for details."
+fi
 echo "============================================"

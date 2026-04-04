@@ -1,476 +1,1069 @@
-{
-  "id": "1760de0b-5e24-4e35-9491-2e349cf4fc11",
-  "revision": 0,
-  "last_node_id": 16,
-  "last_link_id": 21,
-  "nodes": [
-    {
-      "id": 14,
-      "type": "VAELoader",
-      "pos": [
-        52.00009567161578,
-        472.00013392776077
-      ],
-      "size": [
-        360,
-        82.65625
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            20
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "VAELoader"
-      },
-      "widgets_values": [
-        "sdxl.vae.safetensors"
-      ]
-    },
-    {
-      "id": 15,
-      "type": "ModelSamplingDiscrete",
-      "pos": [
-        501.72084847847464,
-        539.1509115268607
-      ],
-      "size": [
-        360,
-        130.390625
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 4
-        }
-      ],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            15
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "ModelSamplingDiscrete"
-      },
-      "widgets_values": [
-        "v_prediction",
-        true
-      ]
-    },
-    {
-      "id": 7,
-      "type": "VAEDecode",
-      "pos": [
-        1648.0002437518958,
-        352.00004140950534
-      ],
-      "size": [
-        252,
-        72
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "samples",
-          "type": "LATENT",
-          "link": 8
-        },
-        {
-          "name": "vae",
-          "type": "VAE",
-          "link": 20
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            21
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "VAEDecode"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 5,
-      "type": "EmptyLatentImage",
-      "pos": [
-        494.5699425558382,
-        717.4754058939542
-      ],
-      "size": [
-        360,
-        144
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "LATENT",
-          "type": "LATENT",
-          "links": [
-            7
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "EmptyLatentImage"
-      },
-      "widgets_values": [
-        1024,
-        1024,
-        1
-      ]
-    },
-    {
-      "id": 1,
-      "type": "CheckpointLoaderSimple",
-      "pos": [
-        52.00009567161578,
-        291.9999951503776
-      ],
-      "size": [
-        360,
-        130.65625
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            4
-          ]
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            1,
-            2
-          ]
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": []
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "CheckpointLoaderSimple"
-      },
-      "widgets_values": [
-        "model.safetensors"
-      ]
-    },
-    {
-      "id": 4,
-      "type": "CLIPTextEncode",
-      "pos": [
-        496.00012374036555,
-        352.00004140950534
-      ],
-      "size": [
-        600,
-        144
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 2
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            6
-          ]
-        }
-      ],
-      "title": "Negative",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "score_4, score_5, score_6, nsfw, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, extra fingers, missing fingers, mammal, anthro, furry, feral, (bad hands:1.4), (extra fingers:1.4), (missing fingers:1.4), (deformed hands:1.3), (malformed hands:1.3), fused fingers"
-      ],
-      "color": "#322",
-      "bgcolor": "#533"
-    },
-    {
-      "id": 16,
-      "type": "SaveImage",
-      "pos": [
-        1960.0000653009658,
-        352.00004140950534
-      ],
-      "size": [
-        687.09375,
-        754.515625
-      ],
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 21
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2"
-      },
-      "widgets_values": [
-        "ComfyUI"
-      ],
-      "color": "#222",
-      "bgcolor": "#000"
-    },
-    {
-      "id": 6,
-      "type": "KSampler",
-      "pos": [
-        1169.4302294460651,
-        343.4189543023417
-      ],
-      "size": [
-        408,
-        324
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 15
-        },
-        {
-          "name": "positive",
-          "type": "CONDITIONING",
-          "link": 5
-        },
-        {
-          "name": "negative",
-          "type": "CONDITIONING",
-          "link": 6
-        },
-        {
-          "name": "latent_image",
-          "type": "LATENT",
-          "link": 7
-        }
-      ],
-      "outputs": [
-        {
-          "name": "LATENT",
-          "type": "LATENT",
-          "links": [
-            8
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "KSampler"
-      },
-      "widgets_values": [
-        468750691416121,
-        "randomize",
-        32,
-        5,
-        "dpmpp_2m",
-        "karras",
-        1
-      ]
-    },
-    {
-      "id": 3,
-      "type": "CLIPTextEncode",
-      "pos": [
-        496.00012374036555,
-        88.00002118114062
-      ],
-      "size": [
-        600,
-        216
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 1
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            5
-          ]
-        }
-      ],
-      "title": "Positive",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.17.2",
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "score_9, score_8_up, score_7_up, masterpiece, best quality, newest, absurdres, highres, very awa, source_anime, (detailed hands:1.2), (anatomically correct:1.1), five fingers, 1girl, brown hair, ponytail, school uniform, pleated skirt, full body, standing, arms at sides, simple background, white background"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    }
-  ],
-  "links": [
-    [
-      1,
-      1,
-      1,
-      3,
-      0,
-      "CLIP"
-    ],
-    [
-      2,
-      1,
-      1,
-      4,
-      0,
-      "CLIP"
-    ],
-    [
-      4,
-      1,
-      0,
-      15,
-      0,
-      "MODEL"
-    ],
-    [
-      5,
-      3,
-      0,
-      6,
-      1,
-      "CONDITIONING"
-    ],
-    [
-      6,
-      4,
-      0,
-      6,
-      2,
-      "CONDITIONING"
-    ],
-    [
-      7,
-      5,
-      0,
-      6,
-      3,
-      "LATENT"
-    ],
-    [
-      8,
-      6,
-      0,
-      7,
-      0,
-      "LATENT"
-    ],
-    [
-      15,
-      15,
-      0,
-      6,
-      0,
-      "MODEL"
-    ],
-    [
-      20,
-      14,
-      0,
-      7,
-      1,
-      "VAE"
-    ],
-    [
-      21,
-      7,
-      0,
-      16,
-      0,
-      "IMAGE"
-    ]
-  ],
-  "groups": [],
-  "config": {},
-  "extra": {
-    "workflowRendererVersion": "Vue",
-    "ds": {
-      "scale": 0.6992121074020052,
-      "offset": [
-        582.3128437271555,
-        258.8825719638959
-      ]
-    },
-    "frontendVersion": "1.41.20"
-  },
-  "version": 0.4
+﻿{
+    "id":  "1760de0b-5e24-4e35-9491-2e349cf4fc11",
+    "revision":  0,
+    "last_node_id":  20,
+    "last_link_id":  36,
+    "nodes":  [
+                  {
+                      "id":  14,
+                      "type":  "VAELoader",
+                      "pos":  [
+                                  52.00009567161578,
+                                  472.00013392776077
+                              ],
+                      "size":  [
+                                   360,
+                                   82.65625
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  0,
+                      "mode":  0,
+                      "inputs":  [
+
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "VAE",
+                                          "type":  "VAE",
+                                          "links":  [
+                                                        20,
+                                                        25,
+                                                        32
+                                                    ]
+                                      }
+                                  ],
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "VAELoader"
+                                     },
+                      "widgets_values":  [
+                                             "sdxl.vae.safetensors"
+                                         ]
+                  },
+                  {
+                      "id":  15,
+                      "type":  "ModelSamplingDiscrete",
+                      "pos":  [
+                                  501.72084847847464,
+                                  539.1509115268607
+                              ],
+                      "size":  [
+                                   360,
+                                   130.390625
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  3,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "model",
+                                         "type":  "MODEL",
+                                         "link":  4
+                                     }
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "MODEL",
+                                          "type":  "MODEL",
+                                          "links":  [
+                                                        15,
+                                                        23,
+                                                        30
+                                                    ]
+                                      }
+                                  ],
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "ModelSamplingDiscrete"
+                                     },
+                      "widgets_values":  [
+                                             "v_prediction",
+                                             true
+                                         ]
+                  },
+                  {
+                      "id":  7,
+                      "type":  "VAEDecode",
+                      "pos":  [
+                                  1648.0002437518958,
+                                  352.00004140950534
+                              ],
+                      "size":  [
+                                   252,
+                                   72
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  7,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "samples",
+                                         "type":  "LATENT",
+                                         "link":  8
+                                     },
+                                     {
+                                         "name":  "vae",
+                                         "type":  "VAE",
+                                         "link":  20
+                                     }
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "IMAGE",
+                                          "type":  "IMAGE",
+                                          "links":  [
+                                                        22
+                                                    ]
+                                      }
+                                  ],
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "VAEDecode"
+                                     },
+                      "widgets_values":  [
+
+                                         ]
+                  },
+                  {
+                      "id":  5,
+                      "type":  "EmptyLatentImage",
+                      "pos":  [
+                                  494.5699425558382,
+                                  717.4754058939542
+                              ],
+                      "size":  [
+                                   360,
+                                   144
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  1,
+                      "mode":  0,
+                      "inputs":  [
+
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "LATENT",
+                                          "type":  "LATENT",
+                                          "links":  [
+                                                        7
+                                                    ]
+                                      }
+                                  ],
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "EmptyLatentImage"
+                                     },
+                      "widgets_values":  [
+                                             1024,
+                                             1024,
+                                             1
+                                         ]
+                  },
+                  {
+                      "id":  1,
+                      "type":  "CheckpointLoaderSimple",
+                      "pos":  [
+                                  52.00009567161578,
+                                  291.9999951503776
+                              ],
+                      "size":  [
+                                   360,
+                                   130.65625
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  2,
+                      "mode":  0,
+                      "inputs":  [
+
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "MODEL",
+                                          "type":  "MODEL",
+                                          "links":  [
+                                                        4
+                                                    ]
+                                      },
+                                      {
+                                          "name":  "CLIP",
+                                          "type":  "CLIP",
+                                          "links":  [
+                                                        1,
+                                                        2,
+                                                        24,
+                                                        31
+                                                    ]
+                                      },
+                                      {
+                                          "name":  "VAE",
+                                          "type":  "VAE",
+                                          "links":  [
+
+                                                    ]
+                                      }
+                                  ],
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "CheckpointLoaderSimple"
+                                     },
+                      "widgets_values":  [
+                                             "model.safetensors"
+                                         ]
+                  },
+                  {
+                      "id":  4,
+                      "type":  "CLIPTextEncode",
+                      "pos":  [
+                                  496.00012374036555,
+                                  352.00004140950534
+                              ],
+                      "size":  [
+                                   600,
+                                   144
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  5,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "clip",
+                                         "type":  "CLIP",
+                                         "link":  2
+                                     }
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "CONDITIONING",
+                                          "type":  "CONDITIONING",
+                                          "links":  [
+                                                        6,
+                                                        27,
+                                                        34
+                                                    ]
+                                      }
+                                  ],
+                      "title":  "Negative",
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "CLIPTextEncode"
+                                     },
+                      "widgets_values":  [
+                                             "score_4, score_5, score_6, nsfw, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands, extra fingers, missing fingers, mammal, anthro, furry, feral, (bad hands:1.4), (extra fingers:1.4), (missing fingers:1.4), (deformed hands:1.3), (malformed hands:1.3), fused fingers"
+                                         ],
+                      "color":  "#322",
+                      "bgcolor":  "#533"
+                  },
+                  {
+                      "id":  16,
+                      "type":  "SaveImage",
+                      "pos":  [
+                                  1960.0000653009658,
+                                  352.00004140950534
+                              ],
+                      "size":  [
+                                   687.09375,
+                                   754.515625
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  12,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "images",
+                                         "type":  "IMAGE",
+                                         "link":  36
+                                     }
+                                 ],
+                      "outputs":  [
+
+                                  ],
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2"
+                                     },
+                      "widgets_values":  [
+                                             "ComfyUI"
+                                         ],
+                      "color":  "#222",
+                      "bgcolor":  "#000"
+                  },
+                  {
+                      "id":  6,
+                      "type":  "KSampler",
+                      "pos":  [
+                                  1169.4302294460651,
+                                  343.4189543023417
+                              ],
+                      "size":  [
+                                   408,
+                                   324
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  6,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "model",
+                                         "type":  "MODEL",
+                                         "link":  15
+                                     },
+                                     {
+                                         "name":  "positive",
+                                         "type":  "CONDITIONING",
+                                         "link":  5
+                                     },
+                                     {
+                                         "name":  "negative",
+                                         "type":  "CONDITIONING",
+                                         "link":  6
+                                     },
+                                     {
+                                         "name":  "latent_image",
+                                         "type":  "LATENT",
+                                         "link":  7
+                                     }
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "LATENT",
+                                          "type":  "LATENT",
+                                          "links":  [
+                                                        8
+                                                    ]
+                                      }
+                                  ],
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "KSampler"
+                                     },
+                      "widgets_values":  [
+                                             468750691416121,
+                                             "randomize",
+                                             32,
+                                             5,
+                                             "dpmpp_2m",
+                                             "karras",
+                                             1
+                                         ]
+                  },
+                  {
+                      "id":  3,
+                      "type":  "CLIPTextEncode",
+                      "pos":  [
+                                  496.00012374036555,
+                                  88.00002118114062
+                              ],
+                      "size":  [
+                                   600,
+                                   216
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  4,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "clip",
+                                         "type":  "CLIP",
+                                         "link":  1
+                                     }
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "CONDITIONING",
+                                          "type":  "CONDITIONING",
+                                          "links":  [
+                                                        5,
+                                                        26,
+                                                        33
+                                                    ]
+                                      }
+                                  ],
+                      "title":  "Positive",
+                      "properties":  {
+                                         "cnr_id":  "comfy-core",
+                                         "ver":  "0.17.2",
+                                         "Node name for S\u0026R":  "CLIPTextEncode"
+                                     },
+                      "widgets_values":  [
+                                             "score_9, score_8_up, score_7_up, masterpiece, best quality, newest, absurdres, highres, very awa, source_anime, (detailed hands:1.2), (anatomically correct:1.1), five fingers, 1girl, brown hair, ponytail, school uniform, pleated skirt, full body, standing, arms at sides, simple background, white background"
+                                         ],
+                      "color":  "#232",
+                      "bgcolor":  "#353"
+                  },
+                  {
+                      "id":  17,
+                      "type":  "UltralyticsDetectorProvider",
+                      "pos":  [
+                                  2150,
+                                  -60
+                              ],
+                      "size":  [
+                                   315,
+                                   78
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  0,
+                      "mode":  0,
+                      "inputs":  [
+
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "BBOX_DETECTOR",
+                                          "type":  "BBOX_DETECTOR",
+                                          "shape":  3,
+                                          "links":  [
+                                                        28
+                                                    ],
+                                          "slot_index":  0
+                                      },
+                                      {
+                                          "name":  "SEGM_DETECTOR",
+                                          "type":  "SEGM_DETECTOR",
+                                          "shape":  3,
+                                          "links":  null
+                                      }
+                                  ],
+                      "title":  "Face Detector",
+                      "properties":  {
+                                         "Node name for S\u0026R":  "UltralyticsDetectorProvider"
+                                     },
+                      "widgets_values":  [
+                                             "bbox/face_yolov8n.pt"
+                                         ],
+                      "color":  "#223",
+                      "bgcolor":  "#335"
+                  },
+                  {
+                      "id":  18,
+                      "type":  "FaceDetailer",
+                      "pos":  [
+                                  2520,
+                                  -60
+                              ],
+                      "size":  [
+                                   350,
+                                   1100
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  9,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "image",
+                                         "type":  "IMAGE",
+                                         "link":  22
+                                     },
+                                     {
+                                         "name":  "model",
+                                         "type":  "MODEL",
+                                         "link":  23
+                                     },
+                                     {
+                                         "name":  "clip",
+                                         "type":  "CLIP",
+                                         "link":  24
+                                     },
+                                     {
+                                         "name":  "vae",
+                                         "type":  "VAE",
+                                         "link":  25
+                                     },
+                                     {
+                                         "name":  "positive",
+                                         "type":  "CONDITIONING",
+                                         "link":  26
+                                     },
+                                     {
+                                         "name":  "negative",
+                                         "type":  "CONDITIONING",
+                                         "link":  27
+                                     },
+                                     {
+                                         "name":  "bbox_detector",
+                                         "type":  "BBOX_DETECTOR",
+                                         "link":  28
+                                     },
+                                     {
+                                         "name":  "sam_model_opt",
+                                         "type":  "SAM_MODEL",
+                                         "link":  null,
+                                         "shape":  7
+                                     },
+                                     {
+                                         "name":  "segm_detector_opt",
+                                         "type":  "SEGM_DETECTOR",
+                                         "link":  null,
+                                         "shape":  7
+                                     },
+                                     {
+                                         "name":  "detailer_hook",
+                                         "type":  "DETAILER_HOOK",
+                                         "link":  null,
+                                         "shape":  7
+                                     },
+                                     {
+                                         "name":  "scheduler_func_opt",
+                                         "type":  "SCHEDULER_FUNC",
+                                         "link":  null,
+                                         "shape":  7
+                                     }
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "image",
+                                          "type":  "IMAGE",
+                                          "shape":  3,
+                                          "links":  [
+                                                        29
+                                                    ],
+                                          "slot_index":  0
+                                      },
+                                      {
+                                          "name":  "cropped_refined",
+                                          "type":  "IMAGE",
+                                          "shape":  6,
+                                          "links":  null,
+                                          "slot_index":  1
+                                      },
+                                      {
+                                          "name":  "cropped_enhanced_alpha",
+                                          "type":  "IMAGE",
+                                          "shape":  6,
+                                          "links":  null,
+                                          "slot_index":  2
+                                      },
+                                      {
+                                          "name":  "mask",
+                                          "type":  "MASK",
+                                          "shape":  3,
+                                          "links":  null,
+                                          "slot_index":  3
+                                      },
+                                      {
+                                          "name":  "detailer_pipe",
+                                          "type":  "DETAILER_PIPE",
+                                          "shape":  3,
+                                          "links":  null
+                                      },
+                                      {
+                                          "name":  "cnet_images",
+                                          "type":  "IMAGE",
+                                          "shape":  6,
+                                          "links":  null
+                                      }
+                                  ],
+                      "title":  "FaceDetailer ΓÇö Face Pass",
+                      "properties":  {
+                                         "Node name for S\u0026R":  "FaceDetailer"
+                                     },
+                      "widgets_values":  [
+                                             512,
+                                             true,
+                                             1024,
+                                             0,
+                                             "randomize",
+                                             20,
+                                             5,
+                                             "dpmpp_2m",
+                                             "karras",
+                                             0.5,
+                                             5,
+                                             true,
+                                             true,
+                                             0.5,
+                                             10,
+                                             3,
+                                             "center-1",
+                                             0,
+                                             0.93,
+                                             0,
+                                             0.7,
+                                             "False",
+                                             10,
+                                             "",
+                                             1,
+                                             false,
+                                             20,
+                                             false,
+                                             false
+                                         ],
+                      "color":  "#223",
+                      "bgcolor":  "#335"
+                  },
+                  {
+                      "id":  19,
+                      "type":  "UltralyticsDetectorProvider",
+                      "pos":  [
+                                  2940,
+                                  -60
+                              ],
+                      "size":  [
+                                   315,
+                                   78
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  0,
+                      "mode":  0,
+                      "inputs":  [
+
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "BBOX_DETECTOR",
+                                          "type":  "BBOX_DETECTOR",
+                                          "shape":  3,
+                                          "links":  [
+                                                        35
+                                                    ],
+                                          "slot_index":  0
+                                      },
+                                      {
+                                          "name":  "SEGM_DETECTOR",
+                                          "type":  "SEGM_DETECTOR",
+                                          "shape":  3,
+                                          "links":  null
+                                      }
+                                  ],
+                      "title":  "Hand Detector",
+                      "properties":  {
+                                         "Node name for S\u0026R":  "UltralyticsDetectorProvider"
+                                     },
+                      "widgets_values":  [
+                                             "bbox/hand_yolov8n.pt"
+                                         ],
+                      "color":  "#223",
+                      "bgcolor":  "#335"
+                  },
+                  {
+                      "id":  20,
+                      "type":  "FaceDetailer",
+                      "pos":  [
+                                  3310,
+                                  -60
+                              ],
+                      "size":  [
+                                   350,
+                                   1100
+                               ],
+                      "flags":  {
+
+                                },
+                      "order":  10,
+                      "mode":  0,
+                      "inputs":  [
+                                     {
+                                         "name":  "image",
+                                         "type":  "IMAGE",
+                                         "link":  29
+                                     },
+                                     {
+                                         "name":  "model",
+                                         "type":  "MODEL",
+                                         "link":  30
+                                     },
+                                     {
+                                         "name":  "clip",
+                                         "type":  "CLIP",
+                                         "link":  31
+                                     },
+                                     {
+                                         "name":  "vae",
+                                         "type":  "VAE",
+                                         "link":  32
+                                     },
+                                     {
+                                         "name":  "positive",
+                                         "type":  "CONDITIONING",
+                                         "link":  33
+                                     },
+                                     {
+                                         "name":  "negative",
+                                         "type":  "CONDITIONING",
+                                         "link":  34
+                                     },
+                                     {
+                                         "name":  "bbox_detector",
+                                         "type":  "BBOX_DETECTOR",
+                                         "link":  35
+                                     },
+                                     {
+                                         "name":  "sam_model_opt",
+                                         "type":  "SAM_MODEL",
+                                         "link":  null,
+                                         "shape":  7
+                                     },
+                                     {
+                                         "name":  "segm_detector_opt",
+                                         "type":  "SEGM_DETECTOR",
+                                         "link":  null,
+                                         "shape":  7
+                                     },
+                                     {
+                                         "name":  "detailer_hook",
+                                         "type":  "DETAILER_HOOK",
+                                         "link":  null,
+                                         "shape":  7
+                                     },
+                                     {
+                                         "name":  "scheduler_func_opt",
+                                         "type":  "SCHEDULER_FUNC",
+                                         "link":  null,
+                                         "shape":  7
+                                     }
+                                 ],
+                      "outputs":  [
+                                      {
+                                          "name":  "image",
+                                          "type":  "IMAGE",
+                                          "shape":  3,
+                                          "links":  [
+                                                        36
+                                                    ],
+                                          "slot_index":  0
+                                      },
+                                      {
+                                          "name":  "cropped_refined",
+                                          "type":  "IMAGE",
+                                          "shape":  6,
+                                          "links":  null,
+                                          "slot_index":  1
+                                      },
+                                      {
+                                          "name":  "cropped_enhanced_alpha",
+                                          "type":  "IMAGE",
+                                          "shape":  6,
+                                          "links":  null,
+                                          "slot_index":  2
+                                      },
+                                      {
+                                          "name":  "mask",
+                                          "type":  "MASK",
+                                          "shape":  3,
+                                          "links":  null,
+                                          "slot_index":  3
+                                      },
+                                      {
+                                          "name":  "detailer_pipe",
+                                          "type":  "DETAILER_PIPE",
+                                          "shape":  3,
+                                          "links":  null
+                                      },
+                                      {
+                                          "name":  "cnet_images",
+                                          "type":  "IMAGE",
+                                          "shape":  6,
+                                          "links":  null
+                                      }
+                                  ],
+                      "title":  "FaceDetailer ΓÇö Hand Pass",
+                      "properties":  {
+                                         "Node name for S\u0026R":  "FaceDetailer"
+                                     },
+                      "widgets_values":  [
+                                             512,
+                                             true,
+                                             1024,
+                                             0,
+                                             "randomize",
+                                             20,
+                                             5,
+                                             "dpmpp_2m",
+                                             "karras",
+                                             0.4,
+                                             5,
+                                             true,
+                                             true,
+                                             0.4,
+                                             6,
+                                             3,
+                                             "center-1",
+                                             0,
+                                             0.93,
+                                             0,
+                                             0.7,
+                                             "False",
+                                             10,
+                                             "",
+                                             1,
+                                             false,
+                                             20,
+                                             false,
+                                             false
+                                         ],
+                      "color":  "#223",
+                      "bgcolor":  "#335"
+                  }
+              ],
+    "links":  [
+                  {
+                      "value":  [
+                                    1,
+                                    1,
+                                    1,
+                                    3,
+                                    0,
+                                    "CLIP"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    2,
+                                    1,
+                                    1,
+                                    4,
+                                    0,
+                                    "CLIP"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    4,
+                                    1,
+                                    0,
+                                    15,
+                                    0,
+                                    "MODEL"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    5,
+                                    3,
+                                    0,
+                                    6,
+                                    1,
+                                    "CONDITIONING"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    6,
+                                    4,
+                                    0,
+                                    6,
+                                    2,
+                                    "CONDITIONING"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    7,
+                                    5,
+                                    0,
+                                    6,
+                                    3,
+                                    "LATENT"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    8,
+                                    6,
+                                    0,
+                                    7,
+                                    0,
+                                    "LATENT"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    15,
+                                    15,
+                                    0,
+                                    6,
+                                    0,
+                                    "MODEL"
+                                ],
+                      "Count":  6
+                  },
+                  {
+                      "value":  [
+                                    20,
+                                    14,
+                                    0,
+                                    7,
+                                    1,
+                                    "VAE"
+                                ],
+                      "Count":  6
+                  },
+                  [
+                      22,
+                      7,
+                      0,
+                      18,
+                      0,
+                      "IMAGE"
+                  ],
+                  [
+                      23,
+                      15,
+                      0,
+                      18,
+                      1,
+                      "MODEL"
+                  ],
+                  [
+                      24,
+                      1,
+                      1,
+                      18,
+                      2,
+                      "CLIP"
+                  ],
+                  [
+                      25,
+                      14,
+                      0,
+                      18,
+                      3,
+                      "VAE"
+                  ],
+                  [
+                      26,
+                      3,
+                      0,
+                      18,
+                      4,
+                      "CONDITIONING"
+                  ],
+                  [
+                      27,
+                      4,
+                      0,
+                      18,
+                      5,
+                      "CONDITIONING"
+                  ],
+                  [
+                      28,
+                      17,
+                      0,
+                      18,
+                      6,
+                      "BBOX_DETECTOR"
+                  ],
+                  [
+                      29,
+                      18,
+                      0,
+                      20,
+                      0,
+                      "IMAGE"
+                  ],
+                  [
+                      30,
+                      15,
+                      0,
+                      20,
+                      1,
+                      "MODEL"
+                  ],
+                  [
+                      31,
+                      1,
+                      1,
+                      20,
+                      2,
+                      "CLIP"
+                  ],
+                  [
+                      32,
+                      14,
+                      0,
+                      20,
+                      3,
+                      "VAE"
+                  ],
+                  [
+                      33,
+                      3,
+                      0,
+                      20,
+                      4,
+                      "CONDITIONING"
+                  ],
+                  [
+                      34,
+                      4,
+                      0,
+                      20,
+                      5,
+                      "CONDITIONING"
+                  ],
+                  [
+                      35,
+                      19,
+                      0,
+                      20,
+                      6,
+                      "BBOX_DETECTOR"
+                  ],
+                  [
+                      36,
+                      20,
+                      0,
+                      16,
+                      0,
+                      "IMAGE"
+                  ]
+              ],
+    "groups":  [
+
+               ],
+    "config":  {
+
+               },
+    "extra":  {
+                  "workflowRendererVersion":  "Vue",
+                  "ds":  {
+                             "scale":  0.6992121074020052,
+                             "offset":  [
+                                            582.3128437271555,
+                                            258.8825719638959
+                                        ]
+                         },
+                  "frontendVersion":  "1.41.20"
+              },
+    "version":  0.4
 }
