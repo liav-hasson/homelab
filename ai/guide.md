@@ -36,12 +36,24 @@ CIVITAI_KEY=your-api-key COMFY_DIR=test-dir bash setup.sh
 
 **Follow this order**: [quality tags], [subject], [character details], [scene], [aesthetic tags]
 
-#### Base positive prompt (NoobAI-XL)
+#### Positive prompt (NoobAI-XL)
 
 ```
 score_9, score_8_up, score_7_up, masterpiece, best quality, newest, absurdres, highres, very awa, source_anime,
 <your subject and scene here>
+
+# Test prompts:
+[base], 1girl, long silver hair, blue eyes, looking at viewer, soft smile, close-up portrait, detailed face, rim lighting, white background
+[base], 1girl, brown hair, ponytail, school uniform, pleated skirt, full body, standing, arms at sides, simple background, white background
+[base], 1girl, blonde hair, holding a book with both hands, reading, sitting at desk, indoors, detailed hands, fingers
+[base], 1girl, red hair, short hair, running, dynamic pose, outdoors, wind, motion blur background, city street
+[base], 1girl, black hair, long hair, standing in a field of flowers, cherry blossoms, spring, soft sunlight, bokeh, looking at viewer
+
+[base], 1girl, brown hair, ponytail, school uniform, sailor collar, upper body, looking at viewer, slight smile, outdoors, cherry blossoms, bokeh, soft lighting
+[base], 1girl, brown hair, ponytail, school uniform, pleated skirt, holding book, both hands, reading, sitting, classroom, window, afternoon light, detailed hands
+[base], 1girl, brown hair, ponytail, school uniform, reaching out, palm facing viewer, close-up, expressive eyes, determined expression, simple background, white background
 ```
+
 
 #### Base negative prompt (NoobAI-XL)
 

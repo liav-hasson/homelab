@@ -28,8 +28,8 @@ echo "============================================"
 # Default terminal spawn is `/workspace/runpod-slim/`
 # The script must be executed one directory above ComfyUI (if COMFY_DIR not set)
 if [[ -z "$COMFY_DIR" ]]; then
-  echo "NOTE: COMFY_DIR is not set. Defaulting to ./ComfyUI"
-  COMFY_DIR=ComfyUI
+  echo "NOTE: COMFY_DIR is not set. Defaulting to ./workspace/runpod-slim/ComfyUI"
+  COMFY_DIR=/workspace/runpod-slim/ComfyUI
 else
   echo "Received COMFY_DIR environment variable: \"$COMFY_DIR\""
 fi
@@ -181,6 +181,7 @@ if ! skip_if_exists "$MODELS_DIR/ultralytics/bbox/face_yolov8n.pt"; then
 fi
 
 # Hand detector — used by FaceDetailer (hand pass) to detect and refine hands/fingers
+echo ""
 echo "Downloading hand_yolov8n.pt..."
 if ! skip_if_exists "$MODELS_DIR/ultralytics/bbox/hand_yolov8n.pt"; then
   curl "${CURL_OPTS[@]}" \
