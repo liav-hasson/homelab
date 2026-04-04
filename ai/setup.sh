@@ -17,7 +17,7 @@ echo ""
 echo "* NOTE: The script may take a few minutes to finish."
 
 # =============================================================================
-# 1. Pre-script setup 
+#   Pre-script setup 
 # =============================================================================
 echo ""
 echo "Running pre-script setup..."
@@ -42,14 +42,15 @@ else
   echo "Received CIVITAI_KEY environment variable: \"${CIVITAI_KEY:0:5}...\""
 fi
 
-# create necessary sub directories
-mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes,user/default/workflows}
+# create necessary sub directories and environment vars
+CURL_OPTS=(-L --progress-bar --retry 3 --retry-delay 10 -C -) # common curl flags
+COMFY_DIR="$(cd "$COMFY_DIR" && pwd)"                         # make sure to use absolute path
+
 MODELS_DIR="$COMFY_DIR/models"
+MANAGER_CONFIG_DIR="$COMFY_DIR/user/__manager"
+MANAGER_CONFIG="$MANAGER_CONFIG_DIR/config.ini"
 
-COMFY_DIR="$(cd "$COMFY_DIR" && pwd)" # make sure to use absolute path
-
-# Curl options for consistent retries and resume capability
-CURL_OPTS=(-L --progress-bar --retry 3 --retry-delay 10 -C -)
+mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,custom_nodes},custom_nodes,user/__manager}
 
 # =============================================================================
 # UTILITY FUNCTION: Skip installation if file exists
@@ -69,7 +70,7 @@ skip_if_exists() {
 }
 
 # =============================================================================
-# 1. CHECKPOINTS (base models - NoobAI-XL - vPred1.0)
+#   CHECKPOINTS 
 # =============================================================================
 echo ""
 echo "Downloading base model..."
@@ -80,15 +81,15 @@ if ! skip_if_exists "$MODELS_DIR/checkpoints/model.safetensors"; then
     -H "Authorization: Bearer $CIVITAI_KEY" \
     -o "$MODELS_DIR/checkpoints/model.safetensors" \
     "https://civitai.com/api/download/models/1190596?type=Model&format=SafeTensor&size=full&fp=bf16" || {
-      echo "ERROR: Failed to download checkpoint"
+      echo "ERROR: Failed to download checkpoint (NoobAI-XL vPred 1.0)"
       exit 1
     }
-  echo "✓ Installed base model"
+  echo "✓ Installed checkpoint: NoobAI-XL vPred 1.0"
 fi
 # NOTE - Grabbed the install URL from browser console when clicked download
 
 # =============================================================================
-# 2. VAE
+#   VAE
 # =============================================================================
 echo ""
 echo "Downloading VAE: sdxl-vae-fp16-fix..."
@@ -98,88 +99,45 @@ if ! skip_if_exists "$MODELS_DIR/vae/sdxl.vae.safetensors"; then
   curl "${CURL_OPTS[@]}" \
     -o "$MODELS_DIR/vae/sdxl.vae.safetensors" \
     "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors" || {
-      echo "ERROR: Failed to download VAE"
+      echo "ERROR: Failed to download VAE (sdxl-vae-fp16-fix)"
       exit 1
     }
-  echo "✓ Installed VAE"
+  echo "✓ Installed VAE: sdxl-vae-fp16-fix"
 fi
 
 # =============================================================================
-# 3. LORAS (uncomment when needed)
-# =============================================================================
-
-# Example: curl "${CURL_OPTS[@]}" \
-#   -H "Authorization: Bearer $CIVITAI_KEY" \
-#   -o "$MODELS_DIR/loras/my_lora.safetensors" \
-#   "https://civitai.com/api/download/models/XXXXXX"
-
-# =============================================================================
-# 4. UPSCALERS (uncomment when needed)
-# =============================================================================
-
-# Example: 4x-UltraSharp — great general purpose upscaler
-# curl "${CURL_OPTS[@]}" \
-#   -o "$MODELS_DIR/upscale_models/4x-UltraSharp.pth" \
-#   "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth"
-
-# =============================================================================
-# 5. CONTROLNET MODELS (uncomment when needed)
-# =============================================================================
-
-# Example: ControlNet for SDXL — pose/depth/canny etc.
-# curl "${CURL_OPTS[@]}" \
-#   -o "$MODELS_DIR/controlnet/control-lora-canny-rank256.safetensors" \
-#   "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank256/control-lora-canny-rank256.safetensors"
-
-# =============================================================================
-# 6. CUSTOM NODES
+#   CUSTOM NODES
 # =============================================================================
 echo ""
 echo "Downloading custom nodes..."
 echo "============================================"
 
-# ComfyUI Manager — lets you install more nodes from the UI
+# 1. ComfyUI Manager — lets you install more nodes from the UI
 if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
   git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_DIR/custom_nodes/ComfyUI-Manager"
   echo "✓ Installed ComfyUI-Manager"
-
-  # Set ComfyUI-Manager security level to normal so nodes can be installed via UI
-  MANAGER_CONFIG="$COMFY_DIR/custom_nodes/ComfyUI-Manager/config.ini"
-  if [[ -f "$MANAGER_CONFIG" ]]; then
-    sed -i 's/security_level = strong/security_level = normal/' "$MANAGER_CONFIG"
-    echo "✓ Set ComfyUI-Manager security level to normal"
-  else
-    echo "NOTE: $MANAGER_CONFIG was not found."
-    echo "ComfyUI-Manager security level was not changed, this may block Github node downloads."
-  fi
 fi
 
-# ADetailer — face and hand inpainting post-process pass
-if ! skip_if_exists "$COMFY_DIR/custom_nodes/comfyui-adetailer"; then
-  git clone https://github.com/Bing-su/adetailer.git "$COMFY_DIR/custom_nodes/comfyui-adetailer"
-  pip install -r "$COMFY_DIR/custom_nodes/comfyui-adetailer/requirements.txt" -q
-  echo "✓ Installed ADetailer"
+# Set ComfyUI-Manager security level to weak so git URL installs are allowed via UI
+# Since v3.38, config.ini lives in ComfyUI/user/__manager/ (not in custom_nodes)
+# "Install via git URL" is a high-risk feature, requires security_level = weak
+if [[ -f "$MANAGER_CONFIG" ]]; then
+  sed -i 's/security_level = .*/security_level = weak/' "$MANAGER_CONFIG"
+else
+  echo -e "[default]\nsecurity_level = weak" > "$MANAGER_CONFIG"
 fi
+echo "✓ ComfyUI-Manager: security level set to weak (allows git URL installs)"
 
-# =============================================================================
-# 7. COMFYUI WORKFLOW CONFIG
-# =============================================================================
-echo ""
-echo "Pulling ComfyUI workflow config from GitHub repo..."
-echo "============================================"
-
-if ! skip_if_exists "$COMFY_DIR/user/default/workflows/comfyui-config.json"; then
-  curl "${CURL_OPTS[@]}" \
-    -o "$COMFY_DIR/user/default/workflows/comfyui-config.json" \
-    "https://raw.githubusercontent.com/liav-hasson/homelab/main/ai/comfyui-config.json" || {
-      echo "ERROR: Failed to download config"
-      exit 1
-    }
-  echo "✓ Installed comfyui config"
+# ComfyUI-Impact-Pack — FaceDetailer and hand detection nodes (ADetailer equivalent for ComfyUI)
+if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack"; then
+  git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack"
+  pip install -r "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack/requirements.txt" -q
+  (cd "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack" && python3 install.py)
+  echo "✓ Installed ComfyUI-Impact-Pack (FaceDetailer)"
 fi
 
 # =============================================================================
-# DONE
+#   DONE
 # =============================================================================
 echo ""
 echo "============================================"
