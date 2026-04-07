@@ -28,7 +28,7 @@
         "page cache",
         "direct io"
       ],
-      "styles": [
+      "style_modifiers": [
         "concept explanation",
         "tricky question",
         "yes or no + explanation",
@@ -61,7 +61,7 @@
         "package management",
         "disk pressure"
       ],
-      "styles": [
+      "style_modifiers": [
         "concept explanation",
         "tricky question",
         "yes or no + explanation",
@@ -1484,6 +1484,67 @@
       ]
     }
   },
+  "CRD's (Custom Resource Definitions)": {
+    "cert-manager Core": {
+      "keywords": [
+        "cert-manager",
+        "Issuer",
+        "ClusterIssuer",
+        "Certificate CRD",
+        "CertificateRequest",
+        "TLS Secret (tls.crt / tls.key / ca.crt)",
+        "self-signed issuer",
+        "CA issuer",
+        "ACME issuer",
+        "HTTP-01 challenge",
+        "DNS-01 challenge",
+        "Order and Challenge resources",
+        "certificate renewal",
+        "cert-manager webhook",
+        "cainjector",
+        "startupapicheck",
+        "internal CA flow",
+        "isCA flag",
+        "cert-manager controller",
+        "ServerSideApply for CRDs"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "certificate lifecycle scenario",
+        "what happens behind the scenes?",
+        "tricky question",
+        "yes or no + explanation",
+        "troubleshooting",
+        "what is the difference between X and Y?",
+        "configuration scenario",
+        "what does this manifest do?"
+      ]
+    },
+    "trust-manager": {
+      "keywords": [
+        "trust-manager",
+        "Bundle CRD",
+        "CA trust distribution",
+        "useDefaultCAs",
+        "default CA package",
+        "ConfigMap trust bundle",
+        "cross-namespace CA distribution",
+        "ca-certificates.crt",
+        "trust-manager webhook",
+        "cert-manager dependency"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "trust distribution scenario",
+        "what happens behind the scenes?",
+        "tricky question",
+        "yes or no + explanation",
+        "troubleshooting",
+        "what is the difference between X and Y?",
+        "when would you use it?"
+      ]
+    }
+  },
   "Cloud Fundamentals": {
     "Core Cloud Concepts": {
       "keywords": [
@@ -2356,7 +2417,7 @@
         "conditionals and loops",
         "chart dependencies"
       ],
-      "styles": [
+      "style_modifiers": [
         "write a helm template",
         "fix helm syntax",
         "find and explain the mistake",
@@ -3325,6 +3386,60 @@
         "what happens behind the scenes?",
         "yes or no + explanation"
       ]
+    },
+    "Keycloak Administration": {
+      "keywords": [
+        "realm",
+        "client (confidential vs public)",
+        "client scope",
+        "protocol mapper",
+        "group membership mapper",
+        "realm roles vs client roles",
+        "composite roles",
+        "identity brokering",
+        "user federation (LDAP)",
+        "service account (client credentials)",
+        "Keycloak admin console",
+        "SSO session idle vs max",
+        "offline tokens",
+        "token claims",
+        "Keycloak seed configuration",
+        "oauth2-proxy"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "configuration scenario",
+        "what happens behind the scenes?",
+        "tricky question",
+        "yes or no + explanation",
+        "troubleshooting",
+        "what is the difference between X and Y?",
+        "when would you use it?"
+      ]
+    },
+    "AWS SSO & EKS Access": {
+      "keywords": [
+        "AWS IAM Identity Center",
+        "OIDC device registration",
+        "SSO session token",
+        "STS role credentials",
+        "EKS bearer token",
+        "aws sso login",
+        "aws eks get-token",
+        "presigned GetCallerIdentity",
+        "kubeconfig exec plugin",
+        "SSO token chain",
+        "SSO session refresh"
+      ],
+      "style_modifiers": [
+        "concept explanation",
+        "what happens behind the scenes?",
+        "token flow scenario",
+        "tricky question",
+        "yes or no + explanation",
+        "troubleshooting",
+        "what is the difference between X and Y?"
+      ]
     }
   },
   "Metrics & Visualization": {
@@ -4171,7 +4286,7 @@
         "workspaces",
         "resource naming conventions"
       ],
-      "styles": [
+      "style_modifiers": [
         "write terraform configuration",
         "fix terraform syntax",
         "find and explain the mistake",
