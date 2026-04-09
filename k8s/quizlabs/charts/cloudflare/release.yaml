@@ -1,0 +1,23 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cloudflare-tunnel
+  namespace: cloudflare
+spec:
+  interval: 1h
+  install:
+    createNamespace: true
+  dependsOn:
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
+  chart:
+    spec:
+      chart: k8s/quizlabs/charts/cloudflare
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  valuesFrom:
+    - kind: Secret
+      name: cloudflare-helm-values
+      valuesKey: values.yaml

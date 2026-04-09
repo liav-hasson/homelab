@@ -1,5 +1,12 @@
-# SOPS encryption rules for quizlabs secrets
+# SOPS encryption rules for quizlabs secrets.
+# public key for encryption, safe to commit.
+# order of rules matter - top rules apply first.
 creation_rules:
+  # k8s Secret manifests (only encrypts data/stringData values)
+  - path_regex: k8s/.*helm-secrets\.yaml$
+    age: "age12t2lrvjt7r8k7sx2ef0q5wc9xj8kk3upxzr0kx3mqgya557z0uxsvna00u"
+    encrypted_regex: "^(data|stringData)$"
+
+  # for general secrets (encrypts all values)
   - path_regex: .*secrets\.yaml$
-    # public key for encryption, safe to commit
     age: "age12t2lrvjt7r8k7sx2ef0q5wc9xj8kk3upxzr0kx3mqgya557z0uxsvna00u"

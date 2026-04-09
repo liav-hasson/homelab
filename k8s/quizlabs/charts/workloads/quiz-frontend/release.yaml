@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: quiz-frontend
+  namespace: quiz-frontend
+spec:
+  interval: 1h
+  install:
+    createNamespace: true
+  dependsOn:
+    - name: quiz-backend
+      namespace: quiz-backend
+    - name: quiz-multiplayer
+      namespace: quiz-multiplayer
+  chart:
+    spec:
+      chart: k8s/quizlabs/charts/workloads/quiz-frontend
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system

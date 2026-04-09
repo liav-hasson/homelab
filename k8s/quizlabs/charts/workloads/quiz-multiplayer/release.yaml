@@ -1,0 +1,27 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: quiz-multiplayer
+  namespace: quiz-multiplayer
+spec:
+  interval: 1h
+  install:
+    createNamespace: true
+  dependsOn:
+    - name: mongodb
+      namespace: mongodb
+    - name: mongodb-init
+      namespace: mongodb
+    - name: redis
+      namespace: redis
+  chart:
+    spec:
+      chart: k8s/quizlabs/charts/workloads/quiz-multiplayer
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  valuesFrom:
+    - kind: Secret
+      name: quiz-multiplayer-helm-values
+      valuesKey: values.yaml

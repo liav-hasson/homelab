@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - flux-system/
+
+  # External chart sources
+  - charts/vendor/sources.yaml
+
+  # Infrastructure (no dependencies)
+  - charts/vendor/envoy-gateway-release.yaml
+  - charts/vendor/openebs-release.yaml
+
+  # Platform (depends on envoy-gateway)
+  - charts/platform/release.yaml
+  - charts/cloudflare/helm-secrets.yaml
+  - charts/cloudflare/release.yaml
+
+  # Stateful (depends on openebs)
+  - charts/stateful/mongodb/helm-secrets.yaml
+  - charts/stateful/mongodb/release.yaml
+  - charts/stateful/mongodb-init/release.yaml
+  - charts/stateful/redis/release.yaml
+
+  # Workloads (depend on stateful)
+  - charts/workloads/quiz-backend/helm-secrets.yaml
+  - charts/workloads/quiz-backend/release.yaml
+  - charts/workloads/quiz-multiplayer/helm-secrets.yaml
+  - charts/workloads/quiz-multiplayer/release.yaml
+  - charts/workloads/quiz-frontend/release.yaml
