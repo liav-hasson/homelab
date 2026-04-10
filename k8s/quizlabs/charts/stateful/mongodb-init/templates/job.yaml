@@ -16,7 +16,6 @@ spec:
     metadata:
       labels:
         {{- include "mongodb-init.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: init-job
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}

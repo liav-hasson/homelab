@@ -16,8 +16,8 @@ flux get all -A --status-selector ready=false
 # Looking for controller errors
 flux logs --all-namespaces --level=error
 
-# Force git pull
-flux reconcile source git flux-system          
+# Start reconciliation 
+flux reconcile kustomization flux-system --with-source
 
 # Access Capacitor UI with port-forwarding
 kubectl -n flux-system port-forward svc/capacitor 9000:9000
