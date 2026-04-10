@@ -18,7 +18,4 @@ flux logs --all-namespaces --level=error
 
 # Start reconciliation 
 flux reconcile kustomization flux-system --with-source
-
-# Access Capacitor UI with port-forwarding
-kubectl -n flux-system port-forward svc/capacitor 9000:9000
 ```
