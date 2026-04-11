@@ -34,12 +34,17 @@ CIVITAI_KEY=your-api-key COMFY_DIR=test-dir bash setup.sh
 
 #### Prompts structure
 
-**Follow this order**: [quality tags], [subject], [character details], [scene], [aesthetic tags]
+**Follow this order**: [number of characters], [character name], [artist tags], [scene/environment/camera], [action], [expression], [items], [quality tags]
+
+Use Danbooru-style tags. Artist tags use the `artist:` prefix (e.g., `artist:wlop`).
+Remove underscores from Danbooru tags and escape parentheses with backslash: `lucy \(cyberpunk\)`.
 
 #### Positive prompt (NoobAI-XL)
 
+**Do NOT use `score_` tags** with NoobAI/Illustrious — they don't work on this model family. Use NovelAI-style quality tags instead.
+
 ```
-score_9, score_8_up, score_7_up, masterpiece, best quality, newest, absurdres, highres, very awa, source_anime,
+masterpiece, best quality, newest, absurdres, highres, very awa,
 <your subject and scene here>
 
 # Test prompts:
@@ -48,33 +53,41 @@ score_9, score_8_up, score_7_up, masterpiece, best quality, newest, absurdres, h
 [base], 1girl, blonde hair, holding a book with both hands, reading, sitting at desk, indoors, detailed hands, fingers
 [base], 1girl, red hair, short hair, running, dynamic pose, outdoors, wind, motion blur background, city street
 [base], 1girl, black hair, long hair, standing in a field of flowers, cherry blossoms, spring, soft sunlight, bokeh, looking at viewer
-
-[base], 1girl, brown hair, ponytail, school uniform, sailor collar, upper body, looking at viewer, slight smile, outdoors, cherry blossoms, bokeh, soft lighting
-[base], 1girl, brown hair, ponytail, school uniform, pleated skirt, holding book, both hands, reading, sitting, classroom, window, afternoon light, detailed hands
-[base], 1girl, brown hair, ponytail, school uniform, reaching out, palm facing viewer, close-up, expressive eyes, determined expression, simple background, white background
 ```
-
 
 #### Base negative prompt (NoobAI-XL)
 
+The new workflow uses `zero_out_negative_conditioning` (ON by default), which means negative prompts are zeroed out and unused. Keep it on unless you have edge cases where negative prompting helps. If you turn it off, use:
+
 ```
-score_4, score_5, score_6, nsfw, worst quality, old, early, low quality, lowres, signature, username, logo,
-(bad hands:1.4), (extra fingers:1.4), (missing fingers:1.4), (deformed hands:1.3), (malformed hands:1.3), fused fingers,
+nsfw, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands,
 mammal, anthro, furry, ambiguous form, feral, semi-anthro
 ```
 
 #### Tips
 
 - When hands are visible in the scene, strengthen with: `(detailed hands:1.2), (anatomically correct:1.1), five fingers`
-- Score tags (`score_9` etc.) are mandatory for NoobAI-XL — they replace `masterpiece`-style tags from older models
 - `very awa` is a NoobAI-specific aesthetic tag that improves overall quality
+- For artist mixes, combine artists with 100+ Danbooru posts before Oct 2024
+- Enable text autocomplete in `settings > pysssss` and use a Danbooru CSV for tag autocompletion
 
 #### KSampler settings (NoobAI-XL vPred)
 
-| Parameter | Value |
+| Parameter | Recommended |
 |---|---|
-| Steps | 32 |
-| CFG | 5 |
-| Sampler | dpmpp_2m |
-| Scheduler | karras |
+| Steps | 20–35 |
+| CFG | 3.5–5.5 |
+| Sampler | `euler` / `euler_ancestral` / `euler_cfg_pp` / `res_multistep_ancestral_cfg_pp` |
+| Scheduler | `sgm_uniform` / `normal` / `kl_optimal` / `beta` |
 | control_after_generate | randomize |
+
+**⚠️ Avoid `karras` scheduler for vPred models** — it causes oversaturation. `dpmpp_2m` may also cause subtle artifacts with vPred; prefer Euler-family samplers.
+
+#### HiresFix settings
+
+| Parameter | Recommended |
+|---|---|
+| Steps | 15–25 |
+| Sampler | `gradient_estimation_cfg_pp` |
+| Scheduler | `normal` / `sgm_uniform` |
+| Upscale factor | 1.25x–1.75x (2x+ requires RAUNet) |

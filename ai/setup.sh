@@ -51,7 +51,7 @@ MODELS_DIR="$COMFY_DIR/models"
 MANAGER_CONFIG_DIR="$COMFY_DIR/user/__manager"
 MANAGER_CONFIG="$MANAGER_CONFIG_DIR/config.ini"
 
-mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,ultralytics/bbox,custom_nodes},custom_nodes,user/__manager}
+mkdir -pv "$COMFY_DIR"/{models/{checkpoints,vae,loras,upscale_models,controlnet,ultralytics/bbox},custom_nodes,user/__manager}
 
 # =============================================================================
 # UTILITY FUNCTIONS
@@ -102,15 +102,26 @@ fi
 #   VAE
 # =============================================================================
 echo ""
-echo "Downloading VAE: sdxl-vae-fp16-fix..."
+echo "Downloading VAEs..."
 echo "============================================"
 
+echo "Downloading VAE: sdxl-vae-fp16-fix..."
 if ! skip_if_exists "$MODELS_DIR/vae/sdxl.vae.safetensors"; then
   curl "${CURL_OPTS[@]}" \
     -o "$MODELS_DIR/vae/sdxl.vae.safetensors" \
     "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors" \
   && echo "✓ Installed VAE: sdxl-vae-fp16-fix" \
   || mark_failed "VAE: sdxl-vae-fp16-fix"
+fi
+
+echo ""
+echo "Downloading VAE: SDXL Anime VAE Dec-only B3..."
+if ! skip_if_exists "$MODELS_DIR/vae/SDXL_Anime_VAE_Dec-only_B3.safetensors"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/vae/SDXL_Anime_VAE_Dec-only_B3.safetensors" \
+    "https://huggingface.co/Anzhc/Anzhcs-VAEs/resolve/main/SDXL%20Anime%20VAE%20Dec-only%20B3.safetensors" \
+  && echo "✓ Installed VAE: SDXL Anime VAE Dec-only B3" \
+  || mark_failed "VAE: SDXL Anime VAE Dec-only B3"
 fi
 
 # =============================================================================
@@ -120,47 +131,112 @@ echo ""
 echo "Downloading custom nodes..."
 echo "============================================"
 
-# 1. ComfyUI Manager — lets you install more nodes from the UI
-echo "Installing ComfyUI-Manager..."
-if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
-  if git clone https://github.com/ltdrdata/ComfyUI-Manager.git "$COMFY_DIR/custom_nodes/ComfyUI-Manager"; then
-    echo "✓ Installed ComfyUI-Manager"
+# Helper: clone a node repo and optionally install requirements
+# Usage: install_node "name" "git_url" [has_requirements] [has_install_py]
+install_node() {
+  local name="$1" url="$2" has_reqs="${3:-false}" has_install="${4:-false}"
+  local dir_name
+  dir_name="$(basename "$url" .git)"
 
-    # Set ComfyUI-Manager security level to weak so git URL installs are allowed via UI
-    if [[ -f "$MANAGER_CONFIG" ]]; then
-      sed -i 's/security_level = .*/security_level = weak/' "$MANAGER_CONFIG"
-    fi
-    echo "✓ ComfyUI-Manager: security level set to weak (allows git URL installs)"
-  else
-    mark_failed "Custom Node: ComfyUI-Manager"
+  echo ""
+  echo "Installing $name..."
+  if skip_if_exists "$COMFY_DIR/custom_nodes/$dir_name"; then
+    return 0
   fi
+
+  if ! git clone "$url" "$COMFY_DIR/custom_nodes/$dir_name"; then
+    mark_failed "Custom Node: $name"
+    return 1
+  fi
+
+  if [[ "$has_reqs" == "true" ]] && [[ -f "$COMFY_DIR/custom_nodes/$dir_name/requirements.txt" ]]; then
+    pip install -r "$COMFY_DIR/custom_nodes/$dir_name/requirements.txt" -q \
+      || mark_failed "Custom Node (deps): $name"
+  fi
+
+  if [[ "$has_install" == "true" ]] && [[ -f "$COMFY_DIR/custom_nodes/$dir_name/install.py" ]]; then
+    (cd "$COMFY_DIR/custom_nodes/$dir_name" && python3 install.py) \
+      || mark_failed "Custom Node (install): $name"
+  fi
+
+  echo "✓ Installed $name"
+}
+
+# --- Core management ---
+install_node "ComfyUI-Manager" \
+  "https://github.com/ltdrdata/ComfyUI-Manager.git"
+
+# Set ComfyUI-Manager security level to weak so git URL installs are allowed via UI
+if [[ -f "$MANAGER_CONFIG" ]]; then
+  sed -i 's/security_level = .*/security_level = weak/' "$MANAGER_CONFIG"
+  echo "✓ ComfyUI-Manager: security level set to weak"
 fi
 
-# 2. ComfyUI-Impact-Pack — FaceDetailer and hand detection nodes
+# --- Impact Pack suite (FaceDetailer, UltralyticsDetectorProvider) ---
+install_node "ComfyUI-Impact-Pack" \
+  "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" true true
+
+install_node "ComfyUI-Impact-Subpack" \
+  "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git" true true
+
+# --- Workflow utility nodes ---
+install_node "ComfyUI-Custom-Scripts (pysssss)" \
+  "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
+
+install_node "rgthree-comfy" \
+  "https://github.com/rgthree/rgthree-comfy.git" true
+
+install_node "ComfyUI-Easy-Use" \
+  "https://github.com/yolain/ComfyUI-Easy-Use.git" true
+
+install_node "ComfyUI-Crystools" \
+  "https://github.com/crystian/ComfyUI-Crystools.git" true
+
+install_node "ComfyUI_UltimateSDUpscale" \
+  "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
+
+install_node "Comfyroll Studio" \
+  "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
+
+install_node "ComfyUI-Image-Saver" \
+  "https://github.com/alexopus/ComfyUI-Image-Saver.git" true
+
+install_node "ComfyUI-EasyColorCorrector" \
+  "https://github.com/regiellis/ComfyUI-EasyColorCorrector.git" true
+
+install_node "comfyui-lopi999-nodes" \
+  "https://github.com/LaVie024/comfyui-lopi999-nodes.git" true
+
+# =============================================================================
+#   UPSCALE MODELS
+# =============================================================================
 echo ""
-echo "Installing ComfyUI-Impact-Pack..."
-if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack"; then
-  if git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack" \
-    && pip install -r "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack/requirements.txt" -q \
-    && (cd "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Pack" && python3 install.py); then
-    echo "✓ Installed ComfyUI-Impact-Pack (FaceDetailer)"
-  else
-    mark_failed "Custom Node: ComfyUI-Impact-Pack"
-  fi
+echo "Downloading upscale models..."
+echo "============================================"
+
+echo "Downloading 2x-AnimeSharpV4_RCAN..."
+if ! skip_if_exists "$MODELS_DIR/upscale_models/2x-AnimeSharpV4_RCAN.safetensors"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/upscale_models/2x-AnimeSharpV4_RCAN.safetensors" \
+    "https://huggingface.co/Kim2091/2x-AnimeSharpV4/resolve/main/2x-AnimeSharpV4_RCAN.safetensors" \
+  && echo "✓ Installed 2x-AnimeSharpV4_RCAN" \
+  || mark_failed "Upscaler: 2x-AnimeSharpV4_RCAN"
 fi
 
-# 3. ComfyUI-Impact-Subpack — required for UltralyticsDetectorProvider (YOLO detectors)
-#    This is separate from Impact-Pack since v8.0 and must be installed manually.
+# =============================================================================
+#   CONTROLNET MODELS
+# =============================================================================
 echo ""
-echo "Installing ComfyUI-Impact-Subpack..."
-if ! skip_if_exists "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack"; then
-  if git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack" \
-    && pip install -r "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack/requirements.txt" -q \
-    && (cd "$COMFY_DIR/custom_nodes/ComfyUI-Impact-Subpack" && python3 install.py); then
-    echo "✓ Installed ComfyUI-Impact-Subpack (UltralyticsDetectorProvider)"
-  else
-    mark_failed "Custom Node: ComfyUI-Impact-Subpack"
-  fi
+echo "Downloading ControlNet models..."
+echo "============================================"
+
+echo "Downloading noob-sdxl-controlnet-tile..."
+if ! skip_if_exists "$MODELS_DIR/controlnet/noob-sdxl-controlnet-tile.safetensors"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/controlnet/noob-sdxl-controlnet-tile.safetensors" \
+    "https://huggingface.co/Eugeoter/noob-sdxl-controlnet-tile/resolve/main/noob-sdxl-controlnet-tile.safetensors" \
+  && echo "✓ Installed noob-sdxl-controlnet-tile" \
+  || mark_failed "ControlNet: noob-sdxl-controlnet-tile"
 fi
 
 # =============================================================================
@@ -189,6 +265,23 @@ if ! skip_if_exists "$MODELS_DIR/ultralytics/bbox/hand_yolov8n.pt"; then
     "https://huggingface.co/Bingsu/adetailer/resolve/main/hand_yolov8n.pt" \
   && echo "✓ Installed hand_yolov8n.pt" \
   || mark_failed "YOLO: hand_yolov8n.pt"
+fi
+
+# =============================================================================
+#   RESTART COMFYUI
+# =============================================================================
+# ComfyUI auto-starts when the pod boots, before this script runs.
+# Custom nodes installed after that initial start are invisible until restart.
+echo ""
+echo "Restarting ComfyUI to load custom nodes..."
+echo "============================================"
+if pkill -f "python.*main.py" 2>/dev/null; then
+  sleep 2
+  cd "$COMFY_DIR"
+  nohup python main.py --listen 0.0.0.0 >> /workspace/comfyui.log 2>&1 &
+  echo "✓ ComfyUI restarted — refresh your browser tab"
+else
+  echo "NOTE: ComfyUI was not running — custom nodes will load on next start"
 fi
 
 # =============================================================================
