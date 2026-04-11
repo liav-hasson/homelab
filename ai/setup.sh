@@ -240,13 +240,13 @@ echo ""
 echo "Downloading ControlNet models..."
 echo "============================================"
 
-echo "Downloading noob-sdxl-controlnet-tile..."
-if ! skip_if_exists "$MODELS_DIR/controlnet/noob-sdxl-controlnet-tile.safetensors"; then
+echo "Downloading noobaiXLControlnet_epsTile..."
+if ! skip_if_exists "$MODELS_DIR/controlnet/noobaiXLControlnet_epsTile.safetensors"; then
   curl "${CURL_OPTS[@]}" \
-    -o "$MODELS_DIR/controlnet/noob-sdxl-controlnet-tile.safetensors" \
+    -o "$MODELS_DIR/controlnet/noobaiXLControlnet_epsTile.safetensors" \
     "https://huggingface.co/Eugeoter/noob-sdxl-controlnet-tile/resolve/main/noob-sdxl-controlnet-tile.safetensors" \
-  && echo "✓ Installed noob-sdxl-controlnet-tile" \
-  || mark_failed "ControlNet: noob-sdxl-controlnet-tile"
+  && echo "✓ Installed noobaiXLControlnet_epsTile" \
+  || mark_failed "ControlNet: noobaiXLControlnet_epsTile"
 fi
 
 # =============================================================================

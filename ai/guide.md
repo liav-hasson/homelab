@@ -32,7 +32,7 @@ CIVITAI_KEY=your-api-key COMFY_DIR=test-dir bash setup.sh
 
 ### Troubleshooting
 
-#### If Comfyui crashes
+#### Restart Comfyui from Python
 
 ```bash
 cd /workspace/runpod-slim/ComfyUI
