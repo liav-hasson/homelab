@@ -30,6 +30,16 @@ CIVITAI_KEY=your-api-key COMFY_DIR=test-dir bash setup.sh
 4. If unable to load the workflow config, simply drag it manually to the UI.
 5. After modifying the workflow config, make sure to export it (and push to github).
 
+### Troubleshooting
+
+#### If Comfyui crashes
+
+```bash
+cd /workspace/runpod-slim/ComfyUI
+source .venv-cu128/bin/activate
+python main.py --listen 0.0.0.0 --port 8188 --enable-cors-header
+```
+
 ### Prompts
 
 #### Prompts structure
@@ -64,7 +74,7 @@ nsfw, worst quality, old, early, low quality, lowres, signature, username, logo,
 mammal, anthro, furry, ambiguous form, feral, semi-anthro
 ```
 
-#### Tips
+### Tips
 
 - When hands are visible in the scene, strengthen with: `(detailed hands:1.2), (anatomically correct:1.1), five fingers`
 - `very awa` is a NoobAI-specific aesthetic tag that improves overall quality

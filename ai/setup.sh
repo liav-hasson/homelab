@@ -116,9 +116,9 @@ fi
 
 echo ""
 echo "Downloading VAE: SDXL Anime VAE Dec-only B3..."
-if ! skip_if_exists "$MODELS_DIR/vae/SDXL_Anime_VAE_Dec-only_B3.safetensors"; then
+if ! skip_if_exists "$MODELS_DIR/vae/SDXL Anime VAE Dec-only B3.safetensors"; then
   curl "${CURL_OPTS[@]}" \
-    -o "$MODELS_DIR/vae/SDXL_Anime_VAE_Dec-only_B3.safetensors" \
+    -o "$MODELS_DIR/vae/SDXL Anime VAE Dec-only B3.safetensors" \
     "https://huggingface.co/Anzhc/Anzhcs-VAEs/resolve/main/SDXL%20Anime%20VAE%20Dec-only%20B3.safetensors" \
   && echo "✓ Installed VAE: SDXL Anime VAE Dec-only B3" \
   || mark_failed "VAE: SDXL Anime VAE Dec-only B3"
@@ -203,6 +203,16 @@ install_node "ComfyUI-Image-Saver" \
 
 install_node "ComfyUI-EasyColorCorrector" \
   "https://github.com/regiellis/ComfyUI-EasyColorCorrector.git" true
+
+# --- Nodes required by new workflow subgraphs ---
+install_node "cg-use-everywhere (Anything Everywhere)" \
+  "https://github.com/chrisgoringe/cg-use-everywhere.git"
+
+install_node "ComfyUI_Mira (Logic NOT)" \
+  "https://github.com/mirabarukaso/ComfyUI_Mira.git" true
+
+install_node "ComfyUI-KJNodes (Text Concatenate)" \
+  "https://github.com/kijai/ComfyUI-KJNodes.git" true
 
 install_node "comfyui-lopi999-nodes" \
   "https://github.com/LaVie024/comfyui-lopi999-nodes.git" true
