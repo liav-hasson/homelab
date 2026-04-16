@@ -31,7 +31,7 @@ spec:
       enabled: false
     prometheus:
       prometheusSpec:
-        retention: 24h
+        retention: 7d
         resources:
           requests:
             cpu: 200m
