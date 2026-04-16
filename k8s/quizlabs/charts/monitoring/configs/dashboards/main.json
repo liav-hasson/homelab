@@ -1590,8 +1590,8 @@
     ]
   },
   "time": {
-    "from": "2026-04-16T17:13:03.193Z",
-    "to": "2026-04-17T01:13:03.193Z"
+    "from": "now-3h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",

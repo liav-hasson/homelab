@@ -15,3 +15,10 @@ configMapGenerator:
         app.kubernetes.io/part-of: flux
         app.kubernetes.io/component: monitoring
         kustomize.toolkit.fluxcd.io/substitute: disabled
+  - name: custom-grafana-dashboards
+    files:
+      - dashboards/main.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        kustomize.toolkit.fluxcd.io/substitute: disabled
