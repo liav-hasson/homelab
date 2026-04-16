@@ -2,5 +2,5 @@ apiVersion: v2
 name: platform
 description: Envoy gateway API for ingress traffic
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "v2.0.3"
