@@ -807,7 +807,7 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byNamePattern",
+              "id": "byRegexp",
               "options": "^request"
             },
             "properties": [
@@ -826,7 +826,7 @@
           },
           {
             "matcher": {
-              "id": "byNamePattern",
+              "id": "byRegexp",
               "options": "^limit"
             },
             "properties": [
@@ -973,7 +973,7 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byNamePattern",
+              "id": "byRegexp",
               "options": "^request"
             },
             "properties": [
@@ -992,7 +992,7 @@
           },
           {
             "matcher": {
-              "id": "byNamePattern",
+              "id": "byRegexp",
               "options": "^limit"
             },
             "properties": [
