@@ -13,5 +13,4 @@ spec:
       protocol: {{ .Values.gateway.listener.protocol }}
       allowedRoutes:
         namespaces:
-          # works because httproute is in the same namespace
-          from: Same
+          from: All

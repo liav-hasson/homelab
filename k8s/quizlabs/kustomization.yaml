@@ -10,6 +10,11 @@ resources:
   - charts/vendor/envoy-gateway-release.yaml
   - charts/vendor/openebs-release.yaml
 
+  # Monitoring (no app dependencies)
+  - charts/monitoring/controllers/kube-prometheus-stack
+  - charts/monitoring/controllers/loki-stack
+  - charts/monitoring/configs
+
   # Platform (depends on envoy-gateway)
   - charts/platform/release.yaml
   - charts/cloudflare/helm-secrets.yaml
