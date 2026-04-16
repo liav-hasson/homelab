@@ -13,7 +13,9 @@ resources:
   # Monitoring (no app dependencies)
   - charts/monitoring/controllers/kube-prometheus-stack
   - charts/monitoring/controllers/loki-stack
-  - charts/monitoring/configs
+  # configs (PodMonitor + dashboards) applied in a separate Flux Kustomization
+  # after kube-prometheus-stack CRDs are installed — see configs-kustomization.yaml
+  - charts/monitoring/configs-kustomization.yaml
 
   # Platform (depends on envoy-gateway)
   - charts/platform/release.yaml
