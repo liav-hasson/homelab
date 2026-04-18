@@ -88,15 +88,27 @@ echo ""
 echo "Downloading base model..."
 echo "============================================"
 
-if ! skip_if_exists "$MODELS_DIR/checkpoints/model.safetensors"; then
+if ! skip_if_exists "$MODELS_DIR/checkpoints/noobaiXLNAIXL_vPred10Version.safetensors"; then
   curl "${CURL_OPTS[@]}" \
     -H "Authorization: Bearer $CIVITAI_KEY" \
-    -o "$MODELS_DIR/checkpoints/model.safetensors" \
+    -o "$MODELS_DIR/checkpoints/noobaiXLNAIXL_vPred10Version.safetensors" \
     "https://civitai.com/api/download/models/1190596?type=Model&format=SafeTensor&size=full&fp=bf16" \
   && echo "✓ Installed checkpoint: NoobAI-XL vPred 1.0" \
   || mark_failed "Checkpoint: NoobAI-XL vPred 1.0"
 fi
 # NOTE - Grabbed the install URL from browser console when clicked download
+# NOTE - Filename matches CivitAI's default: noobaiXLNAIXL_vPred10Version.safetensors
+
+echo ""
+echo "Downloading checkpoint: MDNT_NAI-XL_vPredV1_VAE..."
+if ! skip_if_exists "$MODELS_DIR/checkpoints/mdntNAIXLVpred_mdntNAIXLVpredv1VAE.safetensors"; then
+  curl "${CURL_OPTS[@]}" \
+    -H "Authorization: Bearer $CIVITAI_KEY" \
+    -o "$MODELS_DIR/checkpoints/mdntNAIXLVpred_mdntNAIXLVpredv1VAE.safetensors" \
+    "https://civitai.com/api/download/models/1383659" \
+  && echo "✓ Installed checkpoint: MDNT_NAI-XL_vPredV1_VAE" \
+  || mark_failed "Checkpoint: MDNT_NAI-XL_vPredV1_VAE"
+fi
 
 # =============================================================================
 #   VAE
@@ -112,6 +124,26 @@ if ! skip_if_exists "$MODELS_DIR/vae/sdxl.vae.safetensors"; then
     "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors" \
   && echo "✓ Installed VAE: sdxl-vae-fp16-fix" \
   || mark_failed "VAE: sdxl-vae-fp16-fix"
+fi
+
+echo ""
+echo "Downloading VAE: sdxl_vae (stabilityai)..."
+if ! skip_if_exists "$MODELS_DIR/vae/sdxl_vae.safetensors"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/vae/sdxl_vae.safetensors" \
+    "https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors" \
+  && echo "✓ Installed VAE: sdxl_vae" \
+  || mark_failed "VAE: sdxl_vae"
+fi
+
+echo ""
+echo "Downloading VAE: sdxl-vae-anime-alpha-67500..."
+if ! skip_if_exists "$MODELS_DIR/vae/sdxl-vae-anime-alpha-67500.safetensors"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/vae/sdxl-vae-anime-alpha-67500.safetensors" \
+    "https://huggingface.co/Eugeoter/sdxl-vae-anime-alpha-67500/resolve/main/sdxl-vae-anime-alpha-67500.safetensors" \
+  && echo "✓ Installed VAE: sdxl-vae-anime-alpha-67500" \
+  || mark_failed "VAE: sdxl-vae-anime-alpha-67500"
 fi
 
 echo ""
@@ -245,6 +277,16 @@ echo ""
 echo "Downloading upscale models..."
 echo "============================================"
 
+echo "Downloading 4x-AnimeSharp..."
+if ! skip_if_exists "$MODELS_DIR/upscale_models/4x-AnimeSharp.pth"; then
+  curl "${CURL_OPTS[@]}" \
+    -o "$MODELS_DIR/upscale_models/4x-AnimeSharp.pth" \
+    "https://huggingface.co/Kim2091/AnimeSharp/resolve/main/4x-AnimeSharp.pth" \
+  && echo "✓ Installed 4x-AnimeSharp" \
+  || mark_failed "Upscaler: 4x-AnimeSharp"
+fi
+
+echo ""
 echo "Downloading 2x-AnimeSharpV4_RCAN..."
 if ! skip_if_exists "$MODELS_DIR/upscale_models/2x-AnimeSharpV4_RCAN.safetensors"; then
   curl "${CURL_OPTS[@]}" \
