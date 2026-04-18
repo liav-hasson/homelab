@@ -283,26 +283,21 @@ fi
 # ComfyUI auto-starts when the pod boots, before this script runs.
 # Custom nodes installed after that initial start are invisible until restart.
 echo ""
-echo "Restarting ComfyUI to load custom nodes..."
+echo "Starting ComfyUI to load custom nodes..."
 echo "============================================"
 if pkill -f "python.*main.py" 2>/dev/null; then
   # wait 10 seconds before restarting comfyui.
   seconds=10
-  echo -n "Progress: ["
+  echo -n "ComfyUI already running, restarting: ["
   for ((i=0; i<seconds; i++)); do
       printf "▓"
       sleep 1
   done
   echo "]"
-
-  cd "$COMFY_DIR" && source .venv-cu128/bin/activate
-  nohup python main.py --listen 0.0.0.0 --port 8188 --enable-cors-header &
-  echo "✓ ComfyUI restarted — refresh your browser tab"
-else
-  echo "NOTE: ComfyUI was not running, starting it..."
-  cd "$COMFY_DIR" && source .venv-cu128/bin/activate
-  nohup python main.py --listen 0.0.0.0 --port 8188 --enable-cors-header &
 fi
+
+cd "$COMFY_DIR" && source .venv-cu128/bin/activate
+nohup python main.py --listen 0.0.0.0 --port 8188 --enable-cors-header &
 
 # =============================================================================
 #   SUMMARY
