@@ -166,7 +166,7 @@ echo "============================================"
 # Helper: clone a node repo and optionally install requirements
 # Usage: install_node "name" "git_url" [has_requirements] [has_install_py]
 install_node() {
-  local name="$1" url="$2" has_reqs="${3:-false}" has_install="${4:-false}"
+  local name="$1" url="$2" has_reqs="${3:-false}" has_install="${4:-false}" checkout_ref="${5:-}"
   local dir_name
   dir_name="$(basename "$url" .git)"
 
@@ -179,6 +179,13 @@ install_node() {
   if ! git clone "$url" "$COMFY_DIR/custom_nodes/$dir_name"; then
     mark_failed "Custom Node: $name"
     return 1
+  fi
+
+  # Pin to a specific version (tag, branch, or commit) if requested
+  if [[ -n "$checkout_ref" ]]; then
+    echo "  Pinning to version: $checkout_ref"
+    (cd "$COMFY_DIR/custom_nodes/$dir_name" && git checkout "$checkout_ref") \
+      || mark_failed "Custom Node (checkout): $name"
   fi
 
   if [[ "$has_reqs" == "true" ]] && [[ -f "$COMFY_DIR/custom_nodes/$dir_name/requirements.txt" ]]; then
@@ -230,8 +237,9 @@ install_node "ComfyUI_UltimateSDUpscale" \
 install_node "Comfyroll Studio" \
   "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
 
+# Pinned to v1.16.0: v1.17.0 broke InputParameters output order (removed sampler_name/scheduler_name STRING outputs)
 install_node "ComfyUI-Image-Saver" \
-  "https://github.com/alexopus/ComfyUI-Image-Saver.git" true
+  "https://github.com/alexopus/ComfyUI-Image-Saver.git" true false "v1.16.0"
 
 install_node "ComfyUI-EasyColorCorrector" \
   "https://github.com/regiellis/ComfyUI-EasyColorCorrector.git" true
@@ -246,8 +254,9 @@ install_node "ComfyUI_Mira (Logic NOT)" \
 install_node "ComfyUI-KJNodes" \
   "https://github.com/kijai/ComfyUI-KJNodes.git" true
 
+# Pinned to workflow commit: later versions add 'pixel_space' to ModelParameters VAE output, breaking easy fullLoader
 install_node "comfyui-lopi999-nodes" \
-  "https://github.com/LaVie024/comfyui-lopi999-nodes.git" true
+  "https://github.com/LaVie024/comfyui-lopi999-nodes.git" true false "936812aa4ff5e4df870be66d8eb6620b2d125239"
 
 install_node "ComfyMath (CM_NearestSDXLResolution)" \
   "https://github.com/evanspearman/ComfyMath.git" true
