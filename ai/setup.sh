@@ -286,9 +286,17 @@ echo ""
 echo "Restarting ComfyUI to load custom nodes..."
 echo "============================================"
 if pkill -f "python.*main.py" 2>/dev/null; then
-  sleep 2
-  cd "$COMFY_DIR"
-  nohup python main.py --listen 0.0.0.0 >> /workspace/comfyui.log 2>&1 &
+  # restart w/ progress
+  seconds=10
+  echo -n "Progress: ["
+  for ((i=0; i<seconds; i++)); do
+      printf "▓"
+      sleep 1
+  done
+  echo "]"
+
+  cd "$COMFY_DIR" && source .venv-cu128/bin/activate
+  nohup python main.py --listen 0.0.0.0 --port 8188 --enable-cors-header &
   echo "✓ ComfyUI restarted — refresh your browser tab"
 else
   echo "NOTE: ComfyUI was not running — custom nodes will load on next start"
