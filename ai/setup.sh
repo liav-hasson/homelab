@@ -211,11 +211,32 @@ install_node "cg-use-everywhere (Anything Everywhere)" \
 install_node "ComfyUI_Mira (Logic NOT)" \
   "https://github.com/mirabarukaso/ComfyUI_Mira.git" true
 
-install_node "ComfyUI-KJNodes (Text Concatenate)" \
+install_node "ComfyUI-KJNodes" \
   "https://github.com/kijai/ComfyUI-KJNodes.git" true
 
 install_node "comfyui-lopi999-nodes" \
   "https://github.com/LaVie024/comfyui-lopi999-nodes.git" true
+
+install_node "ComfyMath (CM_NearestSDXLResolution)" \
+  "https://github.com/evanspearman/ComfyMath.git" true
+
+install_node "was-node-suite-comfyui (Text Concatenate)" \
+  "https://github.com/WASasquatch/was-node-suite-comfyui.git" true
+
+# SD Prompt Reader Node (SDPromptSaver) requires --recurse-submodules for its core library
+echo ""
+echo "Installing SD Prompt Reader Node (SDPromptSaver)..."
+if ! skip_if_exists "$COMFY_DIR/custom_nodes/comfyui-prompt-reader-node"; then
+  if ! git clone --recurse-submodules \
+    "https://github.com/receyuki/comfyui-prompt-reader-node.git" \
+    "$COMFY_DIR/custom_nodes/comfyui-prompt-reader-node"; then
+    mark_failed "Custom Node: SD Prompt Reader Node (SDPromptSaver)"
+  else
+    pip install -r "$COMFY_DIR/custom_nodes/comfyui-prompt-reader-node/requirements.txt" -q \
+      || mark_failed "Custom Node (deps): SD Prompt Reader Node (SDPromptSaver)"
+    echo "✓ Installed SD Prompt Reader Node (SDPromptSaver)"
+  fi
+fi
 
 # =============================================================================
 #   UPSCALE MODELS
@@ -276,28 +297,6 @@ if ! skip_if_exists "$MODELS_DIR/ultralytics/bbox/hand_yolov8n.pt"; then
   && echo "✓ Installed hand_yolov8n.pt" \
   || mark_failed "YOLO: hand_yolov8n.pt"
 fi
-
-# =============================================================================
-#   RESTART COMFYUI
-# =============================================================================
-# ComfyUI auto-starts when the pod boots, before this script runs.
-# Custom nodes installed after that initial start are invisible until restart.
-echo ""
-echo "Starting ComfyUI to load custom nodes..."
-echo "============================================"
-if pkill -f "python.*main.py" 2>/dev/null; then
-  # wait 10 seconds before restarting comfyui.
-  seconds=10
-  echo -n "ComfyUI already running, restarting: ["
-  for ((i=0; i<seconds; i++)); do
-      printf "▓"
-      sleep 1
-  done
-  echo "]"
-fi
-
-cd "$COMFY_DIR" && source .venv-cu128/bin/activate
-nohup python main.py --listen 0.0.0.0 --port 8188 --enable-cors-header &
 
 # =============================================================================
 #   SUMMARY

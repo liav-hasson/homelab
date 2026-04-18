@@ -73,31 +73,3 @@ The new workflow uses `zero_out_negative_conditioning` (ON by default), which me
 nsfw, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands,
 mammal, anthro, furry, ambiguous form, feral, semi-anthro
 ```
-
-### Tips
-
-- When hands are visible in the scene, strengthen with: `(detailed hands:1.2), (anatomically correct:1.1), five fingers`
-- `very awa` is a NoobAI-specific aesthetic tag that improves overall quality
-- For artist mixes, combine artists with 100+ Danbooru posts before Oct 2024
-- Enable text autocomplete in `settings > pysssss` and use a Danbooru CSV for tag autocompletion
-
-#### KSampler settings (NoobAI-XL vPred)
-
-| Parameter | Recommended |
-|---|---|
-| Steps | 20–35 |
-| CFG | 3.5–5.5 |
-| Sampler | `euler` / `euler_ancestral` / `euler_cfg_pp` / `res_multistep_ancestral_cfg_pp` |
-| Scheduler | `sgm_uniform` / `normal` / `kl_optimal` / `beta` |
-| control_after_generate | randomize |
-
-**⚠️ Avoid `karras` scheduler for vPred models** — it causes oversaturation. `dpmpp_2m` may also cause subtle artifacts with vPred; prefer Euler-family samplers.
-
-#### HiresFix settings
-
-| Parameter | Recommended |
-|---|---|
-| Steps | 15–25 |
-| Sampler | `gradient_estimation_cfg_pp` |
-| Scheduler | `normal` / `sgm_uniform` |
-| Upscale factor | 1.25x–1.75x (2x+ requires RAUNet) |
