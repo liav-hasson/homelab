@@ -10474,7 +10474,7 @@
             "type": "MODEL",
             "linkIds": [
               106,
-              168
+              200
             ],
             "localized_name": "model",
             "pos": [
@@ -10711,6 +10711,41 @@
             "widgets_values": [
               false
             ]
+          },
+          {
+            "id": 300,
+            "type": "Reroute",
+            "pos": [
+              -120,
+              460
+            ],
+            "size": [
+              75,
+              26
+            ],
+            "flags": {},
+            "order": 1,
+            "mode": 0,
+            "inputs": [
+              {
+                "name": "",
+                "type": "*",
+                "link": 200
+              }
+            ],
+            "outputs": [
+              {
+                "name": "",
+                "type": "*",
+                "links": [
+                  168
+                ]
+              }
+            ],
+            "properties": {
+              "showOutputText": false,
+              "horizontal": false
+            }
           }
         ],
         "groups": [],
@@ -10741,7 +10776,7 @@
           },
           {
             "id": 168,
-            "origin_id": -10,
+            "origin_id": 300,
             "origin_slot": 0,
             "target_id": 73,
             "target_slot": 1,
@@ -10770,6 +10805,14 @@
             "target_id": 74,
             "target_slot": 0,
             "type": "*"
+          },
+          {
+            "id": 200,
+            "origin_id": -10,
+            "origin_slot": 0,
+            "target_id": 300,
+            "target_slot": 0,
+            "type": "MODEL"
           }
         ],
         "extra": {

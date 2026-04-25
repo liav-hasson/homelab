@@ -254,9 +254,10 @@ install_node "ComfyUI_Mira (Logic NOT)" \
 install_node "ComfyUI-KJNodes" \
   "https://github.com/kijai/ComfyUI-KJNodes.git" true
 
-# Pinned to workflow commit: later versions add 'pixel_space' to ModelParameters VAE output, breaking easy fullLoader
+# Pinned to Dec 24 2025 refactor commit — includes BooleanSwitch, RoundFloat, Concatenate_With_Prefix, ParametersToString, TokenCounter
+# NOTE: old pin (936812aa) predated these nodes; pixel_space concern no longer applies after lopi999-nodes refactor
 install_node "comfyui-lopi999-nodes" \
-  "https://github.com/LaVie024/comfyui-lopi999-nodes.git" true false "936812aa4ff5e4df870be66d8eb6620b2d125239"
+  "https://github.com/LaVie024/comfyui-lopi999-nodes.git" false false "c106ba2e09e62d1a31fd5e8fe22d7714b61925bb"
 
 install_node "ComfyMath (CM_NearestSDXLResolution)" \
   "https://github.com/evanspearman/ComfyMath.git" true
