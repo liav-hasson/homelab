@@ -2,14 +2,14 @@
   "id": "57efc558-557a-4faf-8ec1-85b57b428626",
   "revision": 0,
   "last_node_id": 300,
-  "last_link_id": 43737,
+  "last_link_id": 43757,
   "nodes": [
     {
       "id": 45,
       "type": "ShowText|pysssss",
       "pos": [
-        60,
-        480
+        54.01572839805906,
+        487.9790288025879
       ],
       "size": [
         140,
@@ -35,10 +35,10 @@
       ],
       "title": "Token Count",
       "properties": {
-        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
+        "cnr_id": "comfyui-custom-scripts",
         "ver": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
         "Node name for S&R": "ShowText|pysssss",
-        "cnr_id": "comfyui-custom-scripts",
+        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -46,7 +46,7 @@
         }
       },
       "widgets_values": [
-        "154 / 225"
+        "78 / 150"
       ],
       "color": "#232",
       "bgcolor": "#353"
@@ -55,15 +55,15 @@
       "id": 50,
       "type": "ShowText|pysssss",
       "pos": [
-        60,
-        1100
+        54.01572839805906,
+        1107.979028802588
       ],
       "size": [
         140,
         76.00000000000011
       ],
       "flags": {},
-      "order": 14,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
@@ -82,10 +82,10 @@
       ],
       "title": "Token Count",
       "properties": {
-        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
+        "cnr_id": "comfyui-custom-scripts",
         "ver": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
         "Node name for S&R": "ShowText|pysssss",
-        "cnr_id": "comfyui-custom-scripts",
+        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -93,7 +93,7 @@
         }
       },
       "widgets_values": [
-        "0 / 75"
+        "45 / 75"
       ],
       "color": "#322",
       "bgcolor": "#533"
@@ -241,10 +241,10 @@
       ],
       "title": "Seed",
       "properties": {
-        "aux_id": "alexopus/ComfyUI-Image-Saver",
+        "cnr_id": "comfyui-image-saver",
         "ver": "1.16.0",
         "Node name for S&R": "Seed Generator (Image Saver)",
-        "cnr_id": "comfyui-image-saver",
+        "aux_id": "alexopus/ComfyUI-Image-Saver",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -252,7 +252,7 @@
         }
       },
       "widgets_values": [
-        571399876609193,
+        260760305160796,
         "fixed",
         0
       ],
@@ -263,8 +263,8 @@
       "id": 38,
       "type": "ShowText|pysssss",
       "pos": [
-        60,
-        610
+        54.01572839805906,
+        617.9790288025879
       ],
       "size": [
         320,
@@ -290,10 +290,10 @@
       ],
       "title": "Full Prompt",
       "properties": {
-        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
+        "cnr_id": "comfyui-custom-scripts",
         "ver": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
         "Node name for S&R": "ShowText|pysssss",
-        "cnr_id": "comfyui-custom-scripts",
+        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -301,7 +301,7 @@
         }
       },
       "widgets_values": [
-        "to e, pong \\(pong o0\\), xianyu liang, artist:kirby d a, outdoors, blue sky, horizon, ocean, depth of field, on grass, 1girl, raccoon ears, raccoon tail, large breasts, purple hair, long sidelocks, high ponytail, purple tail, double-parted bangs, hair between eyes, looking at viewer, smile, fangs, open mouth, necklace, black nails, black shirt, detached sleeves, black skirt, leg tattoo, sitting, bracelet, hand on own cheek, hand on own ankle, head tilt, crossed ankles, straight-on, unworn boots, barefoot, anklet, soles, toe ring, long toenails, very awa, highres, absurdres, newest"
+        "to e, pong \\(pong o0\\), xianyu liang, artist:kirby d a, masterpiece, best quality, newest, absurdres, highres, very awa, 1girl, black hair, long hair, standing in a field of flowers, cherry blossoms, spring, soft sunlight, bokeh, looking at viewer, very awa, highres, absurdres, newest"
       ],
       "color": "#232",
       "bgcolor": "#353"
@@ -334,10 +334,10 @@
       ],
       "title": "Seed",
       "properties": {
-        "aux_id": "alexopus/ComfyUI-Image-Saver",
+        "cnr_id": "comfyui-image-saver",
         "ver": "1.20.0",
         "Node name for S&R": "Seed Generator (Image Saver)",
-        "cnr_id": "comfyui-image-saver",
+        "aux_id": "alexopus/ComfyUI-Image-Saver",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -345,7 +345,7 @@
         }
       },
       "widgets_values": [
-        571399876609193,
+        260760305160796,
         "fixed",
         0
       ],
@@ -356,8 +356,8 @@
       "id": 129,
       "type": "Seed Generator (Image Saver)",
       "pos": [
-        280,
-        550
+        274.0157283980591,
+        557.9790288025879
       ],
       "size": [
         300.4,
@@ -380,10 +380,10 @@
       ],
       "title": "Seed",
       "properties": {
-        "aux_id": "alexopus/ComfyUI-Image-Saver",
+        "cnr_id": "comfyui-image-saver",
         "ver": "1.20.0",
         "Node name for S&R": "Seed Generator (Image Saver)",
-        "cnr_id": "comfyui-image-saver",
+        "aux_id": "alexopus/ComfyUI-Image-Saver",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -391,7 +391,7 @@
         }
       },
       "widgets_values": [
-        571399876609193,
+        260760305160796,
         "fixed",
         0
       ],
@@ -647,10 +647,10 @@
         }
       ],
       "properties": {
-        "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
         "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
         "Node name for S&R": "CR Upscale Image",
-        "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+        "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -931,10 +931,10 @@
       ],
       "title": "USDU",
       "properties": {
-        "aux_id": "ssitu/ComfyUI_UltimateSDUpscale",
+        "cnr_id": "comfyui_ultimatesdupscale",
         "ver": "d6b575adb878c3d1c7a357f700b5c1001ccb8bd9",
         "Node name for S&R": "UltimateSDUpscaleNoUpscale",
-        "cnr_id": "comfyui_ultimatesdupscale",
+        "aux_id": "ssitu/ComfyUI_UltimateSDUpscale",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1101,10 +1101,10 @@
         }
       ],
       "properties": {
-        "aux_id": "alexopus/ComfyUI-Image-Saver",
+        "cnr_id": "comfyui-image-saver",
         "ver": "1.16.0",
         "Node name for S&R": "Image Saver",
-        "cnr_id": "comfyui-image-saver",
+        "aux_id": "alexopus/ComfyUI-Image-Saver",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1155,7 +1155,7 @@
         118
       ],
       "flags": {},
-      "order": 17,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -1194,11 +1194,11 @@
       ],
       "title": "Power Lora Loader",
       "properties": {
-        "aux_id": "rgthree/rgthree-comfy",
+        "cnr_id": "rgthree-comfy",
         "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
         "Show Strengths": "Single Strength",
         "Match": "",
-        "cnr_id": "rgthree-comfy",
+        "aux_id": "rgthree/rgthree-comfy",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1299,10 +1299,10 @@
         }
       ],
       "properties": {
-        "aux_id": "yolain/ComfyUI-Easy-Use",
+        "cnr_id": "comfyui-easy-use",
         "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
         "Node name for S&R": "easy pipeIn",
-        "cnr_id": "comfyui-easy-use",
+        "aux_id": "yolain/ComfyUI-Easy-Use",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1348,10 +1348,10 @@
       "outputs": [],
       "title": "CLIP",
       "properties": {
-        "aux_id": "chrisgoringe/cg-use-everywhere",
+        "cnr_id": "cg-use-everywhere",
         "ver": "7.4.1",
         "Node name for S&R": "Anything Everywhere",
-        "cnr_id": "cg-use-everywhere",
+        "aux_id": "chrisgoringe/cg-use-everywhere",
         "ue_properties": {
           "version": "7.4.1",
           "group_restricted": 0,
@@ -1439,8 +1439,8 @@
       "id": 42,
       "type": "Note",
       "pos": [
-        -960,
-        480
+        -965.9842716019409,
+        487.9790288025879
       ],
       "size": [
         240,
@@ -1463,72 +1463,6 @@
       ],
       "color": "#514c5a",
       "bgcolor": "#3d3846"
-    },
-    {
-      "id": 49,
-      "type": "895db45a-9c8e-4dcf-9c43-ec9f5a3b5e6b",
-      "pos": [
-        -350,
-        1060
-      ],
-      "size": [
-        400,
-        260
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            101
-          ]
-        },
-        {
-          "label": "STRING",
-          "name": "",
-          "type": "*",
-          "links": [
-            102,
-            11696
-          ]
-        },
-        {
-          "label": "TKN_COUNT",
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            103
-          ]
-        }
-      ],
-      "properties": {
-        "proxyWidgets": [
-          [
-            "47",
-            "text"
-          ]
-        ],
-        "cnr_id": "comfy-core",
-        "ver": "0.3.71",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.4.1"
-        }
-      },
-      "widgets_values": [],
-      "color": "#322",
-      "bgcolor": "#533"
     },
     {
       "id": 11,
@@ -1677,10 +1611,10 @@
         }
       ],
       "properties": {
-        "aux_id": "regiellis/ComfyUI-EasyColorCorrector",
+        "cnr_id": "ComfyUI-EasyColorCorrector",
         "ver": "c600fe7e3e6c14b1659908f73272cf9cd704dba3",
         "Node name for S&R": "EasyColorCorrection",
-        "cnr_id": "ComfyUI-EasyColorCorrector",
+        "aux_id": "regiellis/ComfyUI-EasyColorCorrector",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1765,10 +1699,10 @@
       ],
       "title": "HiresFix Type",
       "properties": {
-        "aux_id": "yolain/ComfyUI-Easy-Use",
+        "cnr_id": "comfyui-easy-use",
         "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
         "Node name for S&R": "easy ifElse",
-        "cnr_id": "comfyui-easy-use",
+        "aux_id": "yolain/ComfyUI-Easy-Use",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1785,15 +1719,15 @@
       "id": 43,
       "type": "AdvancedTextSwitch",
       "pos": [
-        -710,
-        480
+        -715.9842716019409,
+        487.9790288025879
       ],
       "size": [
         350,
         910
       ],
       "flags": {},
-      "order": 7,
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -1813,10 +1747,10 @@
         }
       ],
       "properties": {
-        "aux_id": "LaVie024/comfyui-lopi999-nodes",
+        "cnr_id": "lopi999-nodes",
         "ver": "936812aa4ff5e4df870be66d8eb6620b2d125239",
         "Node name for S&R": "AdvancedTextSwitch",
-        "cnr_id": "lopi999-nodes",
+        "aux_id": "LaVie024/comfyui-lopi999-nodes",
         "ue_properties": {
           "version": "7.0.1",
           "widget_ue_connectable": {},
@@ -1826,7 +1760,7 @@
       "widgets_values": [
         "index",
         3,
-        571399876609193,
+        260760305160796,
         "fixed",
         "artist:kirby-d-a, juri-arima, mizuki \\(kogetsu-tei\\), (j.c.14:0.5)",
         1,
@@ -1851,53 +1785,6 @@
       ],
       "color": "#514c5a",
       "bgcolor": "#3d3846"
-    },
-    {
-      "id": 99,
-      "type": "ShowText|pysssss",
-      "pos": [
-        200,
-        80
-      ],
-      "size": [
-        140,
-        76.00000000000003
-      ],
-      "flags": {},
-      "order": 16,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "text",
-          "type": "STRING",
-          "link": 32332
-        }
-      ],
-      "outputs": [
-        {
-          "name": "STRING",
-          "shape": 6,
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "title": "Resolution",
-      "properties": {
-        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
-        "ver": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
-        "Node name for S&R": "ShowText|pysssss",
-        "cnr_id": "comfyui-custom-scripts",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.1"
-        }
-      },
-      "widgets_values": [
-        "768x1344"
-      ],
-      "color": "#694769",
-      "bgcolor": "#553355"
     },
     {
       "id": 28,
@@ -1994,7 +1881,7 @@
           "type": [
             "Aligning-try-resumed-step00003500.safetensors",
             "B7-test-step00000400.safetensors",
-            "E\u0399\u0397-1.5.safetensors",
+            "EΙΗ-1.5.safetensors",
             "LS_Tiro_XL_vpred_v3_base.safetensors",
             "NetaAniLumina_Alpha_full_roundnnnn_ep7_s160000.pth",
             "NoobAI-RectifiedFlow-test-step207k.safetensors",
@@ -2350,9 +2237,9 @@
       ],
       "title": "Context",
       "properties": {
-        "aux_id": "rgthree/rgthree-comfy",
-        "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
         "cnr_id": "rgthree-comfy",
+        "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
+        "aux_id": "rgthree/rgthree-comfy",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -2445,15 +2332,15 @@
         130
       ],
       "flags": {},
-      "order": 8,
+      "order": 7,
       "mode": 0,
       "inputs": [],
       "outputs": [],
       "properties": {
-        "aux_id": "yolain/ComfyUI-Easy-Use",
+        "cnr_id": "comfyui-easy-use",
         "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
         "Node name for S&R": "easy globalSeed",
-        "cnr_id": "comfyui-easy-use",
+        "aux_id": "yolain/ComfyUI-Easy-Use",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -2461,10 +2348,10 @@
         }
       },
       "widgets_values": [
-        571399876609193,
+        260760305160796,
         true,
         "randomize",
-        516140051513730
+        843856583157339
       ],
       "color": "#323",
       "bgcolor": "#535"
@@ -2753,7 +2640,7 @@
         258
       ],
       "flags": {},
-      "order": 9,
+      "order": 8,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -2793,10 +2680,10 @@
       ],
       "title": "Empty Latent",
       "properties": {
-        "aux_id": "LaVie024/comfyui-lopi999-nodes",
+        "cnr_id": "lopi999-nodes",
         "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
         "Node name for S&R": "SDXLEmptyLatentSizePicker_v2",
-        "cnr_id": "lopi999-nodes",
+        "aux_id": "LaVie024/comfyui-lopi999-nodes",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -2813,41 +2700,6 @@
       ],
       "color": "#323",
       "bgcolor": "#535"
-    },
-    {
-      "id": 26,
-      "type": "PreviewImage",
-      "pos": [
-        1250,
-        260
-      ],
-      "size": [
-        710,
-        1310
-      ],
-      "flags": {},
-      "order": 35,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 42733
-        }
-      ],
-      "outputs": [],
-      "title": "Output",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.71",
-        "Node name for S&R": "PreviewImage",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.4.1"
-        }
-      },
-      "widgets_values": []
     },
     {
       "id": 62,
@@ -2884,10 +2736,10 @@
       "outputs": [],
       "title": "IEE",
       "properties": {
-        "aux_id": "chrisgoringe/cg-use-everywhere",
+        "cnr_id": "cg-use-everywhere",
         "ver": "7.4.1",
         "Node name for S&R": "Anything Everywhere",
-        "cnr_id": "cg-use-everywhere",
+        "aux_id": "chrisgoringe/cg-use-everywhere",
         "ue_properties": {
           "version": "7.4.1",
           "group_restricted": 0,
@@ -2921,7 +2773,7 @@
         230
       ],
       "flags": {},
-      "order": 10,
+      "order": 9,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -2938,121 +2790,6 @@
       ],
       "color": "#1f1f48",
       "bgcolor": "rgba(24,24,27,.9)"
-    },
-    {
-      "id": 36,
-      "type": "678e3484-b8f7-402e-b58a-cfa5be0e345d",
-      "pos": [
-        -350,
-        460
-      ],
-      "size": [
-        400,
-        560
-      ],
-      "flags": {},
-      "order": 15,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": null
-        },
-        {
-          "label": "artist_tags",
-          "name": "text_a",
-          "type": "STRING",
-          "link": 81
-        },
-        {
-          "label": "gentags",
-          "name": "value",
-          "type": "STRING",
-          "widget": {
-            "name": "value"
-          },
-          "link": null
-        },
-        {
-          "label": "quality_tags",
-          "name": "value_1",
-          "type": "STRING",
-          "widget": {
-            "name": "value_1"
-          },
-          "link": null
-        },
-        {
-          "label": "seed",
-          "name": "",
-          "type": "*",
-          "link": 42585
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            82
-          ]
-        },
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            77,
-            2043
-          ]
-        },
-        {
-          "label": "TKN_COUNT",
-          "name": "tkn_count_str",
-          "type": "STRING",
-          "links": [
-            84
-          ]
-        },
-        {
-          "label": "ZERO_COND",
-          "name": "CONDITIONING_1",
-          "type": "CONDITIONING",
-          "links": [
-            92
-          ]
-        },
-        {
-          "label": "PIPE",
-          "name": "CPipeAny",
-          "type": "CPipeAny",
-          "links": [
-            42534
-          ]
-        }
-      ],
-      "properties": {
-        "proxyWidgets": [
-          [
-            "189",
-            "value"
-          ],
-          [
-            "192",
-            "value"
-          ]
-        ],
-        "cnr_id": "comfy-core",
-        "ver": "0.3.71",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.4.1"
-        }
-      },
-      "widgets_values": [],
-      "color": "#232",
-      "bgcolor": "#353"
     },
     {
       "id": 27,
@@ -3103,10 +2840,10 @@
       "outputs": [],
       "title": "AE",
       "properties": {
-        "aux_id": "chrisgoringe/cg-use-everywhere",
+        "cnr_id": "cg-use-everywhere",
         "ver": "7.4.1",
         "Node name for S&R": "Anything Everywhere",
-        "cnr_id": "cg-use-everywhere",
+        "aux_id": "chrisgoringe/cg-use-everywhere",
         "ue_properties": {
           "version": "7.4.1",
           "group_restricted": 0,
@@ -3238,7 +2975,7 @@
         166
       ],
       "flags": {},
-      "order": 11,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -3310,6 +3047,269 @@
       "widgets_values": [],
       "color": "#323",
       "bgcolor": "#535"
+    },
+    {
+      "id": 99,
+      "type": "ShowText|pysssss",
+      "pos": [
+        212.26201407405426,
+        99.07424411519548
+      ],
+      "size": [
+        140,
+        76.00000000000003
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 32332
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "Resolution",
+      "properties": {
+        "cnr_id": "comfyui-custom-scripts",
+        "ver": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
+        "Node name for S&R": "ShowText|pysssss",
+        "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
+        }
+      },
+      "widgets_values": [
+        "768x1344"
+      ],
+      "color": "#694769",
+      "bgcolor": "#553355"
+    },
+    {
+      "id": 49,
+      "type": "895db45a-9c8e-4dcf-9c43-ec9f5a3b5e6b",
+      "pos": [
+        -355.9842716019409,
+        1067.979028802588
+      ],
+      "size": [
+        400,
+        260
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            101
+          ]
+        },
+        {
+          "label": "STRING",
+          "name": "",
+          "type": "*",
+          "links": [
+            102,
+            11696
+          ]
+        },
+        {
+          "label": "TKN_COUNT",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            103
+          ]
+        }
+      ],
+      "properties": {
+        "proxyWidgets": [
+          [
+            "47",
+            "text"
+          ]
+        ],
+        "cnr_id": "comfy-core",
+        "ver": "0.3.71",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4.1"
+        }
+      },
+      "widgets_values": [],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 36,
+      "type": "678e3484-b8f7-402e-b58a-cfa5be0e345d",
+      "pos": [
+        -355.9842716019409,
+        467.9790288025879
+      ],
+      "size": [
+        400,
+        560
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": null
+        },
+        {
+          "label": "artist_tags",
+          "name": "text_a",
+          "type": "STRING",
+          "link": 81
+        },
+        {
+          "label": "gentags",
+          "name": "value",
+          "type": "STRING",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        },
+        {
+          "label": "quality_tags",
+          "name": "value_1",
+          "type": "STRING",
+          "widget": {
+            "name": "value_1"
+          },
+          "link": null
+        },
+        {
+          "label": "seed",
+          "name": "",
+          "type": "*",
+          "link": 42585
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            82
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            77,
+            2043
+          ]
+        },
+        {
+          "label": "TKN_COUNT",
+          "name": "tkn_count_str",
+          "type": "STRING",
+          "links": [
+            84
+          ]
+        },
+        {
+          "label": "ZERO_COND",
+          "name": "CONDITIONING_1",
+          "type": "CONDITIONING",
+          "links": [
+            92
+          ]
+        },
+        {
+          "label": "PIPE",
+          "name": "CPipeAny",
+          "type": "CPipeAny",
+          "links": [
+            42534
+          ]
+        }
+      ],
+      "properties": {
+        "proxyWidgets": [
+          [
+            "189",
+            "value"
+          ],
+          [
+            "192",
+            "value"
+          ]
+        ],
+        "cnr_id": "comfy-core",
+        "ver": "0.3.71",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4.1"
+        }
+      },
+      "widgets_values": [],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 26,
+      "type": "PreviewImage",
+      "pos": [
+        1250,
+        260
+      ],
+      "size": [
+        710,
+        1310
+      ],
+      "flags": {},
+      "order": 35,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 42733
+        }
+      ],
+      "outputs": [],
+      "title": "Output",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.71",
+        "Node name for S&R": "PreviewImage",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4.1"
+        }
+      },
+      "widgets_values": []
     }
   ],
   "links": [
@@ -3546,7 +3546,7 @@
       [
         "Aligning-try-resumed-step00003500.safetensors",
         "B7-test-step00000400.safetensors",
-        "E\u0399\u0397-1.5.safetensors",
+        "EΙΗ-1.5.safetensors",
         "LS_Tiro_XL_vpred_v3_base.safetensors",
         "NetaAniLumina_Alpha_full_roundnnnn_ep7_s160000.pth",
         "NoobAI-RectifiedFlow-test-step207k.safetensors",
@@ -3902,8 +3902,8 @@
       "id": 3,
       "title": "Prompts",
       "bounding": [
-        -980,
-        360,
+        -985.9842716019409,
+        367.9790288025879,
         1370,
         1050
       ],
@@ -3914,8 +3914,8 @@
       "id": 4,
       "title": "Artist Mixes",
       "bounding": [
-        -970,
-        400,
+        -975.9842716019409,
+        407.9790288025879,
         620,
         1000
       ],
@@ -3958,7 +3958,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -4344,10 +4344,10 @@
             ],
             "title": "STR to COMBO",
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR String To Combo",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -4449,7 +4449,7 @@
                 "type": [
                   "Aligning-try-resumed-step00003500.safetensors",
                   "B7-test-step00000400.safetensors",
-                  "E\u0399\u0397-1.5.safetensors",
+                  "EΙΗ-1.5.safetensors",
                   "LS_Tiro_XL_vpred_v3_base.safetensors",
                   "NetaAniLumina_Alpha_full_roundnnnn_ep7_s160000.pth",
                   "NoobAI-RectifiedFlow-test-step207k.safetensors",
@@ -4804,9 +4804,9 @@
               }
             ],
             "properties": {
-              "aux_id": "rgthree/rgthree-comfy",
-              "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
               "cnr_id": "rgthree-comfy",
+              "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
+              "aux_id": "rgthree/rgthree-comfy",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -4864,10 +4864,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -4972,10 +4972,10 @@
             ],
             "title": "To Any",
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "BooleanSwitch",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -5029,10 +5029,10 @@
             ],
             "title": "Scheduler Selector",
             "properties": {
-              "aux_id": "alexopus/ComfyUI-Image-Saver",
+              "cnr_id": "comfyui-image-saver",
               "ver": "1.16.0",
               "Node name for S&R": "Scheduler Selector (Image Saver)",
-              "cnr_id": "comfyui-image-saver",
+              "aux_id": "alexopus/ComfyUI-Image-Saver",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -5134,10 +5134,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy pipeOut",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -5263,7 +5263,7 @@
               }
             },
             "widgets_values": [
-              631713664586722,
+              78126510375806,
               "randomize",
               30,
               8,
@@ -5651,7 +5651,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -5870,10 +5870,10 @@
               }
             ],
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR Upscale Image",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "version": "7.5.1",
@@ -6028,7 +6028,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -6446,10 +6446,10 @@
             ],
             "title": "To Any",
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "BooleanSwitch",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -6503,10 +6503,10 @@
             ],
             "title": "Scheduler Selector",
             "properties": {
-              "aux_id": "alexopus/ComfyUI-Image-Saver",
+              "cnr_id": "comfyui-image-saver",
               "ver": "1.16.0",
               "Node name for S&R": "Scheduler Selector (Image Saver)",
-              "cnr_id": "comfyui-image-saver",
+              "aux_id": "alexopus/ComfyUI-Image-Saver",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -6560,10 +6560,10 @@
             ],
             "title": "STR to COMBO",
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR String To Combo",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -6659,10 +6659,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy pipeOut",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -6760,10 +6760,10 @@
               }
             ],
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR Integer To String",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -6859,10 +6859,10 @@
               }
             ],
             "properties": {
-              "aux_id": "WASasquatch/was-node-suite-comfyui",
+              "cnr_id": "was-ns",
               "ver": "3.0.1",
               "Node name for S&R": "Logic NOT",
-              "cnr_id": "was-ns",
+              "aux_id": "WASasquatch/was-node-suite-comfyui",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -6961,10 +6961,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7024,10 +7024,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7076,10 +7076,10 @@
               }
             ],
             "properties": {
-              "aux_id": "alexopus/ComfyUI-Image-Saver",
+              "cnr_id": "comfyui-image-saver",
               "ver": "1.20.0",
               "Node name for S&R": "Seed Generator (Image Saver)",
-              "cnr_id": "comfyui-image-saver",
+              "aux_id": "alexopus/ComfyUI-Image-Saver",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7087,7 +7087,7 @@
               }
             },
             "widgets_values": [
-              106085802114761,
+              464699092070354,
               "randomize",
               0
             ]
@@ -7140,10 +7140,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7189,10 +7189,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "c106ba2e09e62d1a31fd5e8fe22d7714b61925bb",
               "Node name for S&R": "RoundFloat",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7245,10 +7245,10 @@
             ],
             "title": "Float To String",
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR Float To String",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7404,10 +7404,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "ParametersToString",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7469,9 +7469,9 @@
             ],
             "title": "Latent Size",
             "properties": {
-              "aux_id": "rgthree/rgthree-comfy",
-              "ver": "8ff50e4521881eca1fe26aec9615fc9362474931",
               "cnr_id": "rgthree-comfy",
+              "ver": "8ff50e4521881eca1fe26aec9615fc9362474931",
+              "aux_id": "rgthree/rgthree-comfy",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7534,10 +7534,10 @@
               }
             ],
             "properties": {
-              "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
-              "ver": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
               "cnr_id": "comfyui-custom-scripts",
+              "ver": "f2838ed5e59de4d73cde5c98354b87a8d3200190",
               "Node name for S&R": "MathExpression|pysssss",
+              "aux_id": "pythongosssss/ComfyUI-Custom-Scripts",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7653,9 +7653,9 @@
             ],
             "title": "Latent Size",
             "properties": {
-              "aux_id": "rgthree/rgthree-comfy",
-              "ver": "8ff50e4521881eca1fe26aec9615fc9362474931",
               "cnr_id": "rgthree-comfy",
+              "ver": "8ff50e4521881eca1fe26aec9615fc9362474931",
+              "aux_id": "rgthree/rgthree-comfy",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -7781,7 +7781,7 @@
               }
             },
             "widgets_values": [
-              955846298807063,
+              574330964932494,
               "randomize",
               20,
               8,
@@ -8222,7 +8222,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -8459,10 +8459,10 @@
             ],
             "title": "Image IE",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -8522,10 +8522,10 @@
             ],
             "title": "String IE",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -8668,7 +8668,7 @@
                 "type": [
                   "Aligning-try-resumed-step00003500.safetensors",
                   "B7-test-step00000400.safetensors",
-                  "E\u0399\u0397-1.5.safetensors",
+                  "EΙΗ-1.5.safetensors",
                   "LS_Tiro_XL_vpred_v3_base.safetensors",
                   "NetaAniLumina_Alpha_full_roundnnnn_ep7_s160000.pth",
                   "NoobAI-RectifiedFlow-test-step207k.safetensors",
@@ -9023,9 +9023,9 @@
               }
             ],
             "properties": {
-              "aux_id": "rgthree/rgthree-comfy",
-              "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
               "cnr_id": "rgthree-comfy",
+              "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
+              "aux_id": "rgthree/rgthree-comfy",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -9082,10 +9082,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -9224,7 +9224,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -9440,10 +9440,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -9494,10 +9494,10 @@
               }
             ],
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR String To Combo",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -9569,10 +9569,10 @@
             ],
             "title": "Load Checkpoint",
             "properties": {
-              "aux_id": "alexopus/ComfyUI-Image-Saver",
+              "cnr_id": "comfyui-image-saver",
               "ver": "1.16.0",
               "Node name for S&R": "Checkpoint Loader with Name (Image Saver)",
-              "cnr_id": "comfyui-image-saver",
+              "aux_id": "alexopus/ComfyUI-Image-Saver",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -9611,6 +9611,16 @@
                 "name": "",
                 "type": "*",
                 "link": 71
+              },
+              {
+                "name": "model",
+                "type": "MODEL",
+                "link": null
+              },
+              {
+                "name": "",
+                "type": "*",
+                "link": null
               }
             ],
             "outputs": [
@@ -9750,7 +9760,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -10094,10 +10104,10 @@
             ],
             "title": "Enable APG",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -10158,10 +10168,10 @@
             ],
             "title": "Enable Epsilon Scaling",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -10221,10 +10231,10 @@
             ],
             "title": "Enable PAG",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -10285,10 +10295,10 @@
             ],
             "title": "Enable Mahiro",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -10451,7 +10461,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -10706,10 +10716,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "125b3a4905ac9367f7aae5c2df67e2282f0a3d37",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -10840,7 +10850,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -11145,7 +11155,7 @@
               }
             },
             "widgets_values": [
-              "outdoors, blue sky, horizon, ocean, depth of field, on grass, 1girl, raccoon ears, raccoon tail, large breasts, purple hair, long sidelocks, high ponytail, purple tail, double-parted bangs, hair between eyes, looking at viewer, smile, fangs, open mouth, necklace, black nails, black shirt, detached sleeves, black skirt, leg tattoo, sitting, bracelet, hand on own cheek, {hand on own knee|hand on own ankle|hand on own foot}, head tilt, crossed ankles, straight-on, unworn boots, barefoot, anklet, soles, toe ring, long toenails"
+              "1girl, black hair, long hair, standing in a field of flowers, cherry blossoms, spring, soft sunlight, bokeh, looking at viewer"
             ]
           },
           {
@@ -11205,10 +11215,10 @@
               }
             ],
             "properties": {
-              "aux_id": "WASasquatch/was-node-suite-comfyui",
+              "cnr_id": "was-ns",
               "ver": "3.0.1",
               "Node name for S&R": "Text Concatenate",
-              "cnr_id": "was-ns",
+              "aux_id": "WASasquatch/was-node-suite-comfyui",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -11273,10 +11283,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy wildcards",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -11287,7 +11297,7 @@
               "",
               "Select the LoRA to add to the text",
               "Select the Wildcard to add to the text",
-              1069988007803930,
+              500154472544332,
               "randomize",
               false
             ]
@@ -11458,10 +11468,10 @@
               }
             ],
             "properties": {
-              "aux_id": "crystian/ComfyUI-Crystools",
+              "cnr_id": "ComfyUI-Crystools",
               "ver": "2f18256c5b5063937106f29a8e0a7db3ae3869b7",
               "Node name for S&R": "Pipe to/edit any [Crystools]",
-              "cnr_id": "ComfyUI-Crystools",
+              "aux_id": "crystian/ComfyUI-Crystools",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -11494,6 +11504,16 @@
                 "name": "text",
                 "type": "STRING",
                 "link": 90
+              },
+              {
+                "name": "clip",
+                "type": "CLIP",
+                "link": null
+              },
+              {
+                "name": "text",
+                "type": "STRING",
+                "link": null
               }
             ],
             "outputs": [
@@ -11693,7 +11713,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -11800,10 +11820,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy compare",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -11935,10 +11955,10 @@
               }
             ],
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR Integer To String",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -11992,10 +12012,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12054,10 +12074,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12106,10 +12126,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12170,10 +12190,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12229,10 +12249,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12293,10 +12313,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "TokenCounter",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12525,7 +12545,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -12723,10 +12743,10 @@
             ],
             "title": "Zero Out Negative Cond",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12786,10 +12806,10 @@
             ],
             "title": "Zero Out Negative Cond",
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -12880,7 +12900,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -13028,7 +13048,7 @@
               }
             },
             "widgets_values": [
-              ""
+              "nsfw, worst quality, old, early, low quality, lowres, signature, username, logo, bad hands, mutated hands,\nmammal, anthro, furry, ambiguous form, feral, semi-anthr"
             ]
           },
           {
@@ -13095,6 +13115,16 @@
                 "name": "text",
                 "type": "STRING",
                 "link": 102
+              },
+              {
+                "name": "clip",
+                "type": "CLIP",
+                "link": null
+              },
+              {
+                "name": "text",
+                "type": "STRING",
+                "link": null
               }
             ],
             "outputs": [
@@ -13198,7 +13228,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -13306,10 +13336,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy compare",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -13448,10 +13478,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -13500,10 +13530,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -13564,10 +13594,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -13623,10 +13653,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -13869,10 +13899,10 @@
               }
             ],
             "properties": {
-              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
+              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
               "ver": "d78b780ae43fcf8c6b7c6505e6ffb4584281ceca",
               "Node name for S&R": "CR Integer To String",
-              "cnr_id": "ComfyUI_Comfyroll_CustomNodes",
+              "aux_id": "Suzie1/ComfyUI_Comfyroll_CustomNodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -13929,10 +13959,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -13991,10 +14021,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "TokenCounter",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -14051,10 +14081,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -14110,10 +14140,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "499ed4eafc3ad9d0f26e2cad40219a9e0d613fe5",
               "Node name for S&R": "easy mathInt",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -14342,7 +14372,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -14564,10 +14594,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "BooleanSwitch",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -14621,10 +14651,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "BooleanSwitch",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -14678,10 +14708,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "e7171863e21f5b1ac830f027cdd4bc361b92aef1",
               "Node name for S&R": "BooleanSwitch",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -14785,7 +14815,7 @@
                 "type": [
                   "Aligning-try-resumed-step00003500.safetensors",
                   "B7-test-step00000400.safetensors",
-                  "E\u0399\u0397-1.5.safetensors",
+                  "EΙΗ-1.5.safetensors",
                   "LS_Tiro_XL_vpred_v3_base.safetensors",
                   "NetaAniLumina_Alpha_full_roundnnnn_ep7_s160000.pth",
                   "NoobAI-RectifiedFlow-test-step207k.safetensors",
@@ -15160,9 +15190,9 @@
               }
             ],
             "properties": {
-              "aux_id": "rgthree/rgthree-comfy",
-              "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
               "cnr_id": "rgthree-comfy",
+              "ver": "2b9eb36d3e1741e88dbfccade0e08137f7fa2bfb",
+              "aux_id": "rgthree/rgthree-comfy",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -15227,10 +15257,10 @@
               }
             ],
             "properties": {
-              "aux_id": "WASasquatch/was-node-suite-comfyui",
+              "cnr_id": "was-ns",
               "ver": "3.0.1",
               "Node name for S&R": "Text Concatenate",
-              "cnr_id": "was-ns",
+              "aux_id": "WASasquatch/was-node-suite-comfyui",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -15386,7 +15416,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -15732,10 +15762,10 @@
               }
             ],
             "properties": {
-              "aux_id": "ltdrdata/ComfyUI-Impact-Subpack",
+              "cnr_id": "comfyui-impact-subpack",
               "ver": "1.3.5",
               "Node name for S&R": "UltralyticsDetectorProvider",
-              "cnr_id": "comfyui-impact-subpack",
+              "aux_id": "ltdrdata/ComfyUI-Impact-Subpack",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -15796,10 +15826,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "c106ba2e09e62d1a31fd5e8fe22d7714b61925bb",
               "Node name for S&R": "BooleanSwitch",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -15881,10 +15911,10 @@
               }
             ],
             "properties": {
-              "aux_id": "crystian/ComfyUI-Crystools",
+              "cnr_id": "ComfyUI-Crystools",
               "ver": "2f18256c5b5063937106f29a8e0a7db3ae3869b7",
               "Node name for S&R": "Pipe from any [Crystools]",
-              "cnr_id": "ComfyUI-Crystools",
+              "aux_id": "crystian/ComfyUI-Crystools",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -15983,10 +16013,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "e900c2ca9c0d90b0896881910ca7f3f02d88ebd8",
               "Node name for S&R": "easy pipeOut",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -16098,10 +16128,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "3b224fbccde9bd35728348f9a4590dad6f603203",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -16195,10 +16225,10 @@
               }
             ],
             "properties": {
-              "aux_id": "LaVie024/comfyui-lopi999-nodes",
+              "cnr_id": "lopi999-nodes",
               "ver": "c106ba2e09e62d1a31fd5e8fe22d7714b61925bb",
               "Node name for S&R": "Concatenate_With_Prefix",
-              "cnr_id": "lopi999-nodes",
+              "aux_id": "LaVie024/comfyui-lopi999-nodes",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -16515,10 +16545,10 @@
               }
             ],
             "properties": {
-              "aux_id": "ltdrdata/ComfyUI-Impact-Pack",
+              "cnr_id": "comfyui-impact-pack",
               "ver": "61bd8397a18e7e7668e6a24e95168967768c2bed",
               "Node name for S&R": "FaceDetailer",
-              "cnr_id": "comfyui-impact-pack",
+              "aux_id": "ltdrdata/ComfyUI-Impact-Pack",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -16594,10 +16624,10 @@
               }
             ],
             "properties": {
-              "aux_id": "alexopus/ComfyUI-Image-Saver",
+              "cnr_id": "comfyui-image-saver",
               "ver": "1.20.0",
               "Node name for S&R": "Seed Generator (Image Saver)",
-              "cnr_id": "comfyui-image-saver",
+              "aux_id": "alexopus/ComfyUI-Image-Saver",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -16605,7 +16635,7 @@
               }
             },
             "widgets_values": [
-              233098914025575,
+              305684751529363,
               "randomize",
               0
             ]
@@ -16658,10 +16688,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "3b224fbccde9bd35728348f9a4590dad6f603203",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -17168,7 +17198,7 @@
         "state": {
           "lastGroupId": 6,
           "lastNodeId": 300,
-          "lastLinkId": 43737,
+          "lastLinkId": 43757,
           "lastRerouteId": 0
         },
         "revision": 0,
@@ -17443,10 +17473,10 @@
               }
             ],
             "properties": {
-              "aux_id": "crystian/ComfyUI-Crystools",
+              "cnr_id": "ComfyUI-Crystools",
               "ver": "2f18256c5b5063937106f29a8e0a7db3ae3869b7",
               "Node name for S&R": "Pipe from any [Crystools]",
-              "cnr_id": "ComfyUI-Crystools",
+              "aux_id": "crystian/ComfyUI-Crystools",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -17512,10 +17542,10 @@
               }
             ],
             "properties": {
-              "aux_id": "WASasquatch/was-node-suite-comfyui",
+              "cnr_id": "was-ns",
               "ver": "3.0.1",
               "Node name for S&R": "Text Concatenate",
-              "cnr_id": "was-ns",
+              "aux_id": "WASasquatch/was-node-suite-comfyui",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -17616,10 +17646,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "3b224fbccde9bd35728348f9a4590dad6f603203",
               "Node name for S&R": "easy pipeOut",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -17806,10 +17836,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "3b224fbccde9bd35728348f9a4590dad6f603203",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -17868,10 +17898,10 @@
               }
             ],
             "properties": {
-              "aux_id": "yolain/ComfyUI-Easy-Use",
+              "cnr_id": "comfyui-easy-use",
               "ver": "3b224fbccde9bd35728348f9a4590dad6f603203",
               "Node name for S&R": "easy ifElse",
-              "cnr_id": "comfyui-easy-use",
+              "aux_id": "yolain/ComfyUI-Easy-Use",
               "ue_properties": {
                 "widget_ue_connectable": {},
                 "input_ue_unconnectable": {},
@@ -18116,14 +18146,6 @@
         "type": "CPipeAny"
       },
       {
-        "downstream": 49,
-        "downstream_slot": 0,
-        "upstream": "63",
-        "upstream_slot": 1,
-        "controller": 37,
-        "type": "CLIP"
-      },
-      {
         "downstream": 6,
         "downstream_slot": 0,
         "upstream": "13",
@@ -18148,6 +18170,14 @@
         "type": "RGTHREE_CONTEXT"
       },
       {
+        "downstream": 49,
+        "downstream_slot": 0,
+        "upstream": "63",
+        "upstream_slot": 1,
+        "controller": 37,
+        "type": "CLIP"
+      },
+      {
         "downstream": 36,
         "downstream_slot": 0,
         "upstream": "63",
@@ -18157,16 +18187,16 @@
       }
     ],
     "links_added_by_ue": [
-      43728,
-      43729,
-      43730,
-      43731,
-      43732,
-      43733,
-      43734,
-      43735,
-      43736,
-      43737
+      43748,
+      43749,
+      43750,
+      43751,
+      43752,
+      43753,
+      43754,
+      43755,
+      43756,
+      43757
     ],
     "workflowRendererVersion": "LG",
     "frontendVersion": "1.41.21",
@@ -18175,10 +18205,10 @@
     "VHS_MetadataImage": true,
     "VHS_KeepIntermediate": true,
     "ds": {
-      "scale": 0.5013141447368427,
+      "scale": 0.9769194463205626,
       "offset": [
-        801.3220134884571,
-        364.53579146061037
+        -324.1736483458926,
+        -451.31342993196506
       ]
     }
   },
