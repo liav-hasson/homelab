@@ -4,7 +4,6 @@ metadata:
   name: quiz-frontend
   namespace: quizlabs
 spec:
-  suspend: true # Resume after the MongoDB data restore is complete.
   interval: 1h
   install:
     createNamespace: true
