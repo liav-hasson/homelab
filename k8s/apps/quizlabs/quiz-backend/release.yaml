@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: quiz-backend
+  namespace: quizlabs
+spec:
+  interval: 1h
+  install:
+    createNamespace: true
+  dependsOn:
+    - name: mongodb
+      namespace: quizlabs
+    - name: mongodb-init
+      namespace: quizlabs
+    - name: redis
+      namespace: quizlabs
+    - name: platform
+      namespace: platform
+  chart:
+    spec:
+      chart: k8s/apps/quizlabs/quiz-backend
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  valuesFrom:
+    - kind: Secret
+      name: quiz-backend-helm-values
+      valuesKey: values.yaml
