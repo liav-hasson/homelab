@@ -3,7 +3,7 @@
 # Cloudflare parameters.
 cloudflare:
   # The name of the tunnel this instance will serve
-  tunnelName: "quizlabs-tunnel"
+  tunnelName: "homelab-tunnel"
   # If true, turn on WARP routing for TCP
   enableWarp: false
   # Define ingress rules for the tunnel. See
