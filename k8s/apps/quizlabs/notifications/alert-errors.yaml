@@ -1,0 +1,18 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: discord-errors
+  namespace: quizlabs
+spec:
+  providerRef:
+    name: discord
+  eventSeverity: error
+  eventSources:
+    - kind: Kustomization
+      name: quizlabs
+      namespace: flux-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: quizlabs
+  eventMetadata:
+    project: quizlabs

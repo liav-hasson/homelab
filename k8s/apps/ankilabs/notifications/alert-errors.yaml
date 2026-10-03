@@ -1,0 +1,18 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: discord-errors
+  namespace: ankilabs
+spec:
+  providerRef:
+    name: discord
+  eventSeverity: error
+  eventSources:
+    - kind: Kustomization
+      name: ankilabs
+      namespace: flux-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: ankilabs
+  eventMetadata:
+    project: ankilabs

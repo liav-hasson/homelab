@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - discord-webhook-secrets.yaml
+  - provider.yaml
+  - alert-errors.yaml
+  - alert-deployments.yaml

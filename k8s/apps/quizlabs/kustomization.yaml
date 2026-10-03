@@ -12,3 +12,4 @@ resources:
   - quiz-multiplayer/helm-secrets.yaml
   - quiz-multiplayer/release.yaml
   - quiz-frontend/release.yaml
+  - notifications/

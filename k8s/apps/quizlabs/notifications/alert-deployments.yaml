@@ -1,0 +1,17 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: discord-deployments
+  namespace: quizlabs
+spec:
+  providerRef:
+    name: discord
+  eventSeverity: info
+  eventSources:
+    - kind: HelmRelease
+      name: "*"
+      namespace: quizlabs
+  inclusionList:
+    - ".*Helm (install|upgrade) succeeded.*"
+  eventMetadata:
+    project: quizlabs
