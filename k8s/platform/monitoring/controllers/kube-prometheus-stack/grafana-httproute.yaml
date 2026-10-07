@@ -5,9 +5,10 @@ metadata:
   namespace: monitoring
 spec:
   hostnames:
+    - "grafana.ankilabs.org"
     - "grafana.quizlabs.org"
   parentRefs:
-    - name: quiz-gateway
+    - name: homelab-gateway
       namespace: platform
   rules:
     - backendRefs:

@@ -1,12 +1,11 @@
 nameOverride: ""
-fullnameOverride: "quiz-platform"
 
 # gateway configuration
 gateway:
-  name: quiz-gateway
-  className: quiz-gatewayclass
+  name: homelab-gateway
+  className: homelab-gatewayclass
   controllerName: gateway.envoyproxy.io/gatewayclass-controller
-  proxyName: quiz-proxy-config
+  proxyName: homelab-proxy-config
   serviceName: envoy-gateway-proxy
   listener:
     port: 80

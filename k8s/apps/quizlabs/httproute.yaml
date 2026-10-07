@@ -7,7 +7,7 @@ spec:
   hostnames:
     - quizlabs.org
   parentRefs:
-    - name: quiz-gateway
+    - name: homelab-gateway
       namespace: platform
   rules:
     - matches:

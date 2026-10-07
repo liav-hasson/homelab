@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.gateway.className }}
   # no namespace, cluster scoped resource
   labels:
-    {{- include "quiz-platform.labels" . | nindent 4 }}
+    {{- include "platform.labels" . | nindent 4 }}
 spec:
   controllerName: {{ .Values.gateway.controllerName }}
   parametersRef:

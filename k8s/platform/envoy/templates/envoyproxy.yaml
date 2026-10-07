@@ -1,6 +1,6 @@
 # EnvoyProxy configures the data-plane proxy that Envoy Gateway creates for
 # our GatewayClass. By default, Envoy Gateway auto-generates the proxy Service
-# name with a hash suffix (e.g. envoy-platform-quiz-gateway-8dff7555), derived
+# name with a hash suffix (e.g. envoy-platform-homelab-gateway-8dff7555), derived
 # from sha256("<gateway-namespace>/<gateway-name>")[:8]. That name is stable
 # for a given Gateway, but is not human-friendly and makes it hard to reference
 # from other resources (like the Cloudflare tunnel ingress config).
@@ -16,7 +16,7 @@ metadata:
   name: {{ .Values.gateway.proxyName }}
   namespace: envoy-gateway-system
   labels:
-    {{- include "quiz-platform.labels" . | nindent 4 }}
+    {{- include "platform.labels" . | nindent 4 }}
 spec:
   provider:
     type: Kubernetes

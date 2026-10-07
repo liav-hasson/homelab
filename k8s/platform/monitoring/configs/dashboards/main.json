@@ -1121,10 +1121,10 @@
       {
         "current": {
           "text": [
-            "quiz-frontend"
+            "All"
           ],
           "value": [
-            "quiz-frontend"
+            "$__all"
           ]
         },
         "datasource": {
@@ -1149,8 +1149,8 @@
     ]
   },
   "time": {
-    "from": "2026-04-16T09:30:59.233Z",
-    "to": "2026-04-17T09:30:59.233Z"
+    "from": "now-1h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",

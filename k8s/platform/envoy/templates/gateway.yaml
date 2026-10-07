@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.gateway.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "quiz-platform.labels" . | nindent 4 }}
+    {{- include "platform.labels" . | nindent 4 }}
 spec:
   gatewayClassName: {{ .Values.gateway.className }}
   listeners:
