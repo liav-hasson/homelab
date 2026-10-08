@@ -1,5 +1,5 @@
-# Local development database only; never deployed. Start with:
-#   docker compose -f dev/compose.yaml up -d
+# Local development stack only; never deployed. Expects the app repos cloned next to homelab/.
+#   docker compose -f dev/compose.yaml up -d --build
 name: ankilabs-dev
 
 services:
@@ -17,6 +17,18 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ankilabs -d ankilabs"]
       interval: 5s
       retries: 10
+
+  dictionary-lookup:
+    build:
+      context: ../../ankilabs-dictionary
+      dockerfile: lookup.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ankilabs:ankilabs-dev@postgres:5432/ankilabs
+    ports:
+      - "127.0.0.1:8081:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres:
