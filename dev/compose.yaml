@@ -1,0 +1,22 @@
+# Local development database only; never deployed. Start with:
+#   docker compose -f dev/compose.yaml up -d
+name: ankilabs-dev
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ankilabs
+      POSTGRES_PASSWORD: ankilabs-dev
+      POSTGRES_DB: ankilabs
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ankilabs -d ankilabs"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  postgres:
