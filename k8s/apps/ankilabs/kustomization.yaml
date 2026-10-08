@@ -3,3 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - notifications/
+  - ghcr-pull-secrets.yaml
+  - image-update-automation.yaml
+  - httproute.yaml
+  - api-gateway/

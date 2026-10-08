@@ -1,0 +1,31 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: api-gateway
+  namespace: ankilabs
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: k8s/apps/ankilabs/charts/ankilabs-service
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 2
+  upgrade:
+    remediation:
+      retries: 2
+  values:
+    image:
+      repository: ghcr.io/liav-hasson/ankilabs/api-gateway
+      tag: "0.1.1" # {"$imagepolicy": "ankilabs:api-gateway:tag"}
+      digest: "sha256:a1de79b09e0f6d45dbbdcdda4a29beea2db4f2e2374e2d610a875dae9d076eb2" # {"$imagepolicy": "ankilabs:api-gateway:digest"}
+    resources:
+      requests:
+        cpu: 20m
+        memory: 96Mi
+      limits:
+        memory: 192Mi
