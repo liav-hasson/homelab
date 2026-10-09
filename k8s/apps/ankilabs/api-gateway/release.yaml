@@ -21,8 +21,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/api-gateway
-      tag: "0.1.2" # {"$imagepolicy": "ankilabs:api-gateway:tag"}
-      digest: "sha256:6d9b7e743e1e6b7afb0c4e85dd6a922929a9b3481a11c628471a73250a37fd3a" # {"$imagepolicy": "ankilabs:api-gateway:digest"}
+      tag: "0.1.3" # {"$imagepolicy": "ankilabs:api-gateway:tag"}
+      digest: "sha256:d80849adbf6af8305e65b2d3c6a39b002db2cc5ea0a8526b4f0136781d11fb7b" # {"$imagepolicy": "ankilabs:api-gateway:digest"}
     resources:
       requests:
         cpu: 20m
