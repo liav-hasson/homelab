@@ -30,5 +30,17 @@ services:
       postgres:
         condition: service_healthy
 
+  sentence-lookup:
+    build:
+      context: ../../ankilabs-sentences
+      dockerfile: lookup.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ankilabs:ankilabs-dev@postgres:5432/ankilabs
+    ports:
+      - "127.0.0.1:8082:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres:
