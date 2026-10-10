@@ -1,0 +1,44 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dictionary-lookup
+  namespace: ankilabs
+spec:
+  interval: 1h
+  dependsOn:
+    - name: postgres
+  chart:
+    spec:
+      chart: k8s/apps/ankilabs/charts/ankilabs-service
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 2
+  upgrade:
+    remediation:
+      retries: 2
+  values:
+    image:
+      repository: ghcr.io/liav-hasson/ankilabs/dictionary-lookup
+      tag: "0.1.5" # {"$imagepolicy": "ankilabs:dictionary-lookup:tag"}
+      digest: "sha256:3785cf37e57c7ea7e3b0c37c2c0e97044996ff3ed6af7263e14997c61e531fdc" # {"$imagepolicy": "ankilabs:dictionary-lookup:digest"}
+    env:
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: dictionary-lookup-db
+            key: DATABASE_URL
+    probes:
+      # Liveness must not depend on the database: restarting the pod does not fix a database outage.
+      liveness:
+        httpGet:
+          path: /version
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 256Mi

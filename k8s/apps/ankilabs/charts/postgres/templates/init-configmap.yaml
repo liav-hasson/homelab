@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-init
+  labels:
+    {{- include "postgres.labels" . | nindent 4 }}
+data:
+  # Runs once, on first initialization of an empty data directory.
+  10-roles.sh: |
+    #!/bin/sh
+    set -eu
+    psql -v ON_ERROR_STOP=1 -v dict_pw="$DICTIONARY_READER_PASSWORD" -v sent_pw="$SENTENCE_READER_PASSWORD" \
+      --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<'SQL'
+    CREATE ROLE dictionary_reader LOGIN PASSWORD :'dict_pw';
+    CREATE ROLE sentence_reader LOGIN PASSWORD :'sent_pw';
+    -- Lookups only read. Schemas and tables the operator publishes later are readable by default.
+    ALTER DEFAULT PRIVILEGES GRANT USAGE ON SCHEMAS TO dictionary_reader, sentence_reader;
+    ALTER DEFAULT PRIVILEGES GRANT SELECT ON TABLES TO dictionary_reader, sentence_reader;
+    SQL

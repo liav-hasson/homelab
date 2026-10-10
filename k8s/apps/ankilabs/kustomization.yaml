@@ -6,4 +6,7 @@ resources:
   - ghcr-pull-secrets.yaml
   - image-update-automation.yaml
   - httproute.yaml
+  - postgres/
+  - dictionary-lookup/
+  - sentence-lookup/
   - api-gateway/

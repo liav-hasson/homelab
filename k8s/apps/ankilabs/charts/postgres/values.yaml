@@ -1,0 +1,35 @@
+image:
+  repository: postgres
+  tag: "18.6"
+  pullPolicy: IfNotPresent
+
+database: ankilabs
+# Privileged role used only by the operator (through a port-forward) to publish dictionary and corpus versions.
+user: ankilabs
+
+# Secret with POSTGRES_PASSWORD, DICTIONARY_READER_PASSWORD, and SENTENCE_READER_PASSWORD.
+existingSecret: postgres-credentials
+
+persistence:
+  size: 100Gi
+  # Empty selects the cluster default storage class.
+  storageClass: ""
+
+# Passed to postgres as -c settings; sized for a 4 GiB container limit.
+config:
+  max_connections: 50
+  shared_buffers: 1GB
+  effective_cache_size: 3GB
+  work_mem: 16MB
+  maintenance_work_mem: 512MB
+  max_wal_size: 8GB
+  checkpoint_timeout: 15min
+
+# Every workload declares requests and limits (see docs/spec/cd.md).
+resources: {}
+
+service:
+  port: 5432
+
+# Postgres only needs these writable besides its data volume; /dev/shm counts toward the memory limit.
+shmSize: 512Mi

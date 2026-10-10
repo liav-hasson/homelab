@@ -1,0 +1,27 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: postgres
+  namespace: ankilabs
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: k8s/apps/ankilabs/charts/postgres
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 2
+  upgrade:
+    remediation:
+      retries: 2
+  values:
+    resources:
+      requests:
+        cpu: 250m
+        memory: 2Gi
+      limits:
+        memory: 4Gi

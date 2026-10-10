@@ -1,0 +1,44 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: sentence-lookup
+  namespace: ankilabs
+spec:
+  interval: 1h
+  dependsOn:
+    - name: postgres
+  chart:
+    spec:
+      chart: k8s/apps/ankilabs/charts/ankilabs-service
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 2
+  upgrade:
+    remediation:
+      retries: 2
+  values:
+    image:
+      repository: ghcr.io/liav-hasson/ankilabs/sentence-lookup
+      tag: "0.1.8" # {"$imagepolicy": "ankilabs:sentence-lookup:tag"}
+      digest: "sha256:45ab075f41d5cefbaf69c01b6f02b6c9f435ef2cf020e340aa3ca569e973bd2d" # {"$imagepolicy": "ankilabs:sentence-lookup:digest"}
+    env:
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: sentence-lookup-db
+            key: DATABASE_URL
+    probes:
+      # Liveness must not depend on the database: restarting the pod does not fix a database outage.
+      liveness:
+        httpGet:
+          path: /version
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 256Mi

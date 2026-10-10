@@ -1,0 +1,24 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: dictionary-lookup
+  namespace: ankilabs
+spec:
+  image: ghcr.io/liav-hasson/ankilabs/dictionary-lookup
+  interval: 5m
+  secretRef:
+    name: ghcr-pull
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: dictionary-lookup
+  namespace: ankilabs
+spec:
+  imageRepositoryRef:
+    name: dictionary-lookup
+  policy:
+    semver:
+      range: ">=0.1.0"
+  digestReflectionPolicy: Always
+  interval: 5m
