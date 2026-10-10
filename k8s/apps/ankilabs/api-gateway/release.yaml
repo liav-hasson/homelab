@@ -21,18 +21,13 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/api-gateway
-<<<<<<< Updated upstream
       tag: "0.1.4" # {"$imagepolicy": "ankilabs:api-gateway:tag"}
       digest: "sha256:e713cde825ea0d70f6257c08da7f842580cb4f3c861c24bb6d634cbc251a3281" # {"$imagepolicy": "ankilabs:api-gateway:digest"}
-=======
-      tag: "0.1.3" # {"$imagepolicy": "ankilabs:api-gateway:tag"}
-      digest: "sha256:d80849adbf6af8305e65b2d3c6a39b002db2cc5ea0a8526b4f0136781d11fb7b" # {"$imagepolicy": "ankilabs:api-gateway:digest"}
     env:
       - name: DICTIONARY_LOOKUP_URL
         value: http://dictionary-lookup
       - name: SENTENCE_LOOKUP_URL
         value: http://sentence-lookup
->>>>>>> Stashed changes
     resources:
       requests:
         cpu: 20m
