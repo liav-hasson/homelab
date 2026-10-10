@@ -10,3 +10,4 @@ resources:
   - dictionary-lookup/
   - sentence-lookup/
   - api-gateway/
+  - frontend/

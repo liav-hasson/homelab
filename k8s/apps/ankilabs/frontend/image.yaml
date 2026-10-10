@@ -1,0 +1,24 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: frontend
+  namespace: ankilabs
+spec:
+  image: ghcr.io/liav-hasson/ankilabs/frontend
+  interval: 5m
+  secretRef:
+    name: ghcr-pull
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: frontend
+  namespace: ankilabs
+spec:
+  imageRepositoryRef:
+    name: frontend
+  policy:
+    semver:
+      range: ">=0.1.0"
+  digestReflectionPolicy: Always
+  interval: 5m

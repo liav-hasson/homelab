@@ -8,6 +8,7 @@ Values are what the manifests in this repository declare; "-" means nothing is d
 | **AnkiLabs** | | | |
 | postgres | 2 GiB | 4 GiB | `k8s/apps/ankilabs/postgres/release.yaml` |
 | api-gateway | 96 MiB | 192 MiB | `k8s/apps/ankilabs/api-gateway/release.yaml` |
+| frontend | 32 MiB | 64 MiB | `k8s/apps/ankilabs/frontend/release.yaml` |
 | dictionary-lookup | 128 MiB | 256 MiB | `k8s/apps/ankilabs/dictionary-lookup/release.yaml` |
 | sentence-lookup | 128 MiB | 256 MiB | `k8s/apps/ankilabs/sentence-lookup/release.yaml` |
 | **quizlabs** (kept for now) | | | |

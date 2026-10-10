@@ -17,3 +17,10 @@ spec:
       backendRefs:
         - name: api-gateway
           port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: frontend
+          port: 80
