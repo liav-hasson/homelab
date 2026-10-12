@@ -15,4 +15,7 @@ spec:
       name: "*"
       namespace: quizlabs
   eventMetadata:
+    cluster: liav-homelab
+    environment: homelab
     project: quizlabs
+    summary: "QuizLabs reconciliation failed"

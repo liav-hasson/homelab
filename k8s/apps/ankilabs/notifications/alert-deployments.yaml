@@ -14,4 +14,7 @@ spec:
   inclusionList:
     - ".*Helm (install|upgrade) succeeded.*"
   eventMetadata:
+    cluster: liav-homelab
+    environment: homelab
     project: ankilabs
+    summary: "AnkiLabs release deployed successfully"
