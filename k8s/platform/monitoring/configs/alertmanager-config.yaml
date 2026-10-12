@@ -36,9 +36,27 @@ spec:
             key: nodes-webhook-url
           sendResolved: true
           title: '{{ .CommonLabels.alertname }} ({{ .Status }})'
-          message: >-
-            {{ range .Alerts }}{{ .Annotations.summary }}
-            {{ .Annotations.description }}{{ end }}
+          message: |
+            {{- range .Alerts }}
+            Alert: {{ .Labels.alertname }}
+            Status: {{ .Status }}
+            Severity: {{ with .Labels.severity }}{{ . }}{{ else }}unknown{{ end }}
+            Namespace: {{ with .Labels.namespace }}{{ . }}{{ else }}n/a{{ end }}
+            Instance: {{ with .Labels.instance }}{{ . }}{{ else }}n/a{{ end }}
+            Pod: {{ with .Labels.pod }}{{ . }}{{ else }}n/a{{ end }}
+            Summary: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            {{- if .Annotations.runbook_url }}
+            Runbook: {{ .Annotations.runbook_url }}
+            {{- end }}
+            {{- if .GeneratorURL }}
+            Source: {{ .GeneratorURL }}
+            {{- end }}
+            {{- if .StartsAt }}
+            Started: {{ .StartsAt }}
+            {{- end }}
+
+            {{- end }}
     - name: pods-discord
       discordConfigs:
         - apiURL:
@@ -46,6 +64,24 @@ spec:
             key: pods-webhook-url
           sendResolved: true
           title: '{{ .CommonLabels.alertname }} ({{ .Status }})'
-          message: >-
-            {{ range .Alerts }}{{ .Annotations.summary }}
-            {{ .Annotations.description }}{{ end }}
+          message: |
+            {{- range .Alerts }}
+            Alert: {{ .Labels.alertname }}
+            Status: {{ .Status }}
+            Severity: {{ with .Labels.severity }}{{ . }}{{ else }}unknown{{ end }}
+            Namespace: {{ with .Labels.namespace }}{{ . }}{{ else }}n/a{{ end }}
+            Instance: {{ with .Labels.instance }}{{ . }}{{ else }}n/a{{ end }}
+            Pod: {{ with .Labels.pod }}{{ . }}{{ else }}n/a{{ end }}
+            Summary: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            {{- if .Annotations.runbook_url }}
+            Runbook: {{ .Annotations.runbook_url }}
+            {{- end }}
+            {{- if .GeneratorURL }}
+            Source: {{ .GeneratorURL }}
+            {{- end }}
+            {{- if .StartsAt }}
+            Started: {{ .StartsAt }}
+            {{- end }}
+
+            {{- end }}
