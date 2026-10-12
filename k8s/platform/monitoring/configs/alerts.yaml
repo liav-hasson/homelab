@@ -1,0 +1,49 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: homelab.nodes
+      rules:
+        - alert: NodeHighCPU
+          expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 90
+          for: 10m
+          labels:
+            scope: nodes
+            severity: warning
+          annotations:
+            summary: Node CPU usage is above 90%
+            description: CPU usage on {{ $labels.instance }} has been above 90% for 10 minutes.
+        - alert: NodeHighMemory
+          expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 90
+          for: 10m
+          labels:
+            scope: nodes
+            severity: warning
+          annotations:
+            summary: Node memory usage is above 90%
+            description: Memory usage on {{ $labels.instance }} has been above 90% for 10 minutes.
+    - name: homelab.pods
+      rules:
+        - alert: PodCrashLoopBackOff
+          expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1
+          for: 5m
+          labels:
+            scope: pods
+            severity: critical
+          annotations:
+            summary: Pod container is in CrashLoopBackOff
+            description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} has been crash-looping for 5 minutes.'
+        - alert: PodFrequentRestarts
+          expr: increase(kube_pod_container_status_restarts_total[15m]) >= 3
+          for: 5m
+          labels:
+            scope: pods
+            severity: warning
+          annotations:
+            summary: Pod container restarted repeatedly
+            description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} restarted at least 3 times in 15 minutes.'

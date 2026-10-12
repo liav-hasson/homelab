@@ -28,7 +28,14 @@ spec:
   # https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
   values:
     alertmanager:
-      enabled: false
+      enabled: true
+      alertmanagerSpec:
+        alertmanagerConfigSelector:
+          matchLabels:
+            app.kubernetes.io/part-of: homelab-alerting
+        alertmanagerConfigNamespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: monitoring
     prometheus:
       prometheusSpec:
         retention: 7d

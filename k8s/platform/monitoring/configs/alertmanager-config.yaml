@@ -1,0 +1,51 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: homelab-discord-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: homelab-alerting
+spec:
+  route:
+    receiver: discard
+    groupBy:
+      - alertname
+      - instance
+      - namespace
+      - pod
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    routes:
+      - receiver: nodes-discord
+        matchers:
+          - name: scope
+            matchType: "="
+            value: nodes
+      - receiver: pods-discord
+        matchers:
+          - name: scope
+            matchType: "="
+            value: pods
+  receivers:
+    - name: discard
+    - name: nodes-discord
+      discordConfigs:
+        - apiURL:
+            name: monitoring-discord-webhooks
+            key: nodes-webhook-url
+          sendResolved: true
+          title: '{{ .CommonLabels.alertname }} ({{ .Status }})'
+          message: >-
+            {{ range .Alerts }}{{ .Annotations.summary }}
+            {{ .Annotations.description }}{{ end }}
+    - name: pods-discord
+      discordConfigs:
+        - apiURL:
+            name: monitoring-discord-webhooks
+            key: pods-webhook-url
+          sendResolved: true
+          title: '{{ .CommonLabels.alertname }} ({{ .Status }})'
+          message: >-
+            {{ range .Alerts }}{{ .Annotations.summary }}
+            {{ .Annotations.description }}{{ end }}

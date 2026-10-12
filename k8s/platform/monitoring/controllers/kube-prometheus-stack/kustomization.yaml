@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - repository.yaml
   - helm-secrets.yaml
+  - discord-webhook-secrets.yaml
   - release.yaml
   - grafana-httproute.yaml
 configMapGenerator:
