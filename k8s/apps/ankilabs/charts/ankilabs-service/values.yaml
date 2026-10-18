@@ -17,6 +17,9 @@ service:
 
 env: []
 
+# Feature flag map (name: bool), normally supplied by the ankilabs-features ConfigMap through valuesFrom.
+features: {}
+
 # Every workload declares requests and limits (see docs/spec/cd.md).
 resources: {}
 

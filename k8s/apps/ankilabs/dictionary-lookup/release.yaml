@@ -20,6 +20,10 @@ spec:
   upgrade:
     remediation:
       retries: 2
+  valuesFrom:
+    - kind: ConfigMap
+      name: ankilabs-features
+      valuesKey: values.yaml
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/dictionary-lookup

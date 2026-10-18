@@ -31,10 +31,12 @@ spec:
             - name: http
               containerPort: {{ .Values.containerPort }}
               protocol: TCP
-          {{- with .Values.env }}
           env:
+            - name: FEATURE_FLAGS
+              value: {{ .Values.features | toJson | quote }}
+            {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- end }}
           readinessProbe:
             {{- toYaml .Values.probes.readiness | nindent 12 }}
           livenessProbe:

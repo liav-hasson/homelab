@@ -1,0 +1,14 @@
+# One flag map for every AnkiLabs service (docs/spec/README.md#feature-flags).
+# Each HelmRelease reads it through valuesFrom; the shared chart passes it to pods as FEATURE_FLAGS (JSON).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ankilabs-features
+  namespace: ankilabs
+  labels:
+    # Lets helm-controller reconcile dependent releases as soon as a flag changes.
+    reconcile.fluxcd.io/watch: Enabled
+data:
+  values.yaml: |
+    features:
+      notes_section: false
