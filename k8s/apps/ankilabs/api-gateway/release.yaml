@@ -32,6 +32,8 @@ spec:
         value: http://dictionary-lookup
       - name: SENTENCE_LOOKUP_URL
         value: http://sentence-lookup
+      - name: ANKI_EXCHANGE_URL
+        value: http://anki-exchange
     resources:
       requests:
         cpu: 20m

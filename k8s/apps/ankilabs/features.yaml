@@ -12,3 +12,4 @@ data:
   values.yaml: |
     features:
       notes_section: false
+      anki_export: true

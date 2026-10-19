@@ -1,0 +1,13 @@
+# Anki Exchange needs no outbound connections; it only answers the API Gateway (docs/spec/anki-exchange.md).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: anki-exchange-deny-egress
+  namespace: ankilabs
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: anki-exchange
+  policyTypes:
+    - Egress
+  egress: []

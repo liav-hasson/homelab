@@ -11,4 +11,5 @@ resources:
   - dictionary-lookup/
   - sentence-lookup/
   - api-gateway/
+  - anki-exchange/
   - frontend/
