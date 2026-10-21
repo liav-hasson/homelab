@@ -1,0 +1,36 @@
+# Authorization answers only the API Gateway and calls only the LLM Proxy (docs/spec/authorization.md).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: authorization
+  namespace: ankilabs
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: authorization
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-gateway
+      ports:
+        - port: http
+          protocol: TCP
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: llm-proxy
+      ports:
+        - port: http
+          protocol: TCP

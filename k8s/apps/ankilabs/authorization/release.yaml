@@ -1,0 +1,49 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: authorization
+  namespace: ankilabs
+spec:
+  interval: 1h
+  dependsOn:
+    - name: llm-proxy
+  chart:
+    spec:
+      chart: k8s/apps/ankilabs/charts/ankilabs-service
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 2
+  upgrade:
+    remediation:
+      retries: 2
+  values:
+    image:
+      repository: ghcr.io/liav-hasson/ankilabs/authorization
+      tag: "0.1.2" # {"$imagepolicy": "ankilabs:authorization:tag"}
+      digest: "sha256:0a65c927681e7b312efe0a09282d3cd525e5c81a615fdeed2df49272121e9685" # {"$imagepolicy": "ankilabs:authorization:digest"}
+    env:
+      - name: LLM_PROXY_URL
+        value: http://llm-proxy
+      - name: LLM_PROXY_KEY
+        valueFrom:
+          secretKeyRef:
+            name: authorization-llm-proxy
+            key: LLM_PROXY_KEY
+      # Bounds how long a blocked or renewed Usage Code keeps its previous decision.
+      - name: CACHE_TTL_SECONDS
+        value: "30"
+    probes:
+      # Readiness follows the LLM Proxy (fail closed); liveness must not, since a restart does not fix it.
+      liveness:
+        httpGet:
+          path: /version
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi

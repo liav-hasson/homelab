@@ -9,6 +9,7 @@ resources:
   - httproute.yaml
   - postgres/
   - llm-proxy/
+  - authorization/
   - dictionary-lookup/
   - sentence-lookup/
   - api-gateway/
