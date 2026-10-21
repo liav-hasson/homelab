@@ -30,13 +30,20 @@ curl -s localhost:4000/key/generate -H "Authorization: Bearer $M" -H 'Content-Ty
 
 ## Authorization service key
 
-Authorization reads key information with its own key, never the master key. Issue it once and store it in the
-Authorization service's SOPS secret:
+Authorization reads key information with its own key, never the master key. The key's value is generated into
+`../authorization/secrets.yaml` (Secret `authorization-llm-proxy`); register that same value in LiteLLM once, after
+Flux has applied the Secret:
 
 ```sh
+S=$(kubectl -n ankilabs get secret authorization-llm-proxy -o jsonpath='{.data.LLM_PROXY_KEY}' | base64 -d)
 curl -s localhost:4000/key/generate -H "Authorization: Bearer $M" -H 'Content-Type: application/json' \
-  -d '{"key_alias":"authorization-service","max_budget":0,"models":["no-models"],"allowed_routes":["/key/info"]}'
+  -d "{\"key\":\"$S\",\"key_alias\":\"authorization-service\",\"max_budget\":0,\"models\":[\"no-models\"],\"allowed_routes\":[\"/key/info\"]}" >/dev/null
+curl -s "localhost:4000/key/info?key=$S" -H "Authorization: Bearer $M" | grep -o '"allowed_routes":\[[^]]*\]'; unset S
 ```
+
+Verify with `/key/info` as above: registering an existing value again answers 200 with default fields but leaves the
+stored key unchanged. To rotate, generate a new value into the Secret, register it, restart Authorization, then
+delete the old key.
 
 ## Secrets
 

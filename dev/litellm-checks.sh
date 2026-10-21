@@ -64,5 +64,13 @@ admin key/update "{\"key\":\"$USER_KEY\",\"max_budget\":5}" >/dev/null
 sleep 2
 check "raising max_budget reopens the code" "200" "$(chat "$USER_KEY")"
 
+# /key/info carries codes in its query string; LiteLLM's access log must redact it. Needs the dev container.
+CONTAINER=${LITELLM_CONTAINER:-ankilabs-dev-litellm-1}
+if command -v docker >/dev/null && [ -n "$(docker ps -q -f "name=^${CONTAINER}$")" ]; then
+  leaked=absent
+  docker logs "$CONTAINER" 2>&1 | grep -qF "${USER_KEY#sk-}" && leaked=present
+  check "codes never reach LiteLLM's logs" "absent" "$leaked"
+fi
+
 admin key/delete "{\"keys\":[\"$USER_KEY\",\"$SVC_KEY\"]}" >/dev/null
 exit $FAILED
