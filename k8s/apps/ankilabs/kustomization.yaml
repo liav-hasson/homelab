@@ -8,6 +8,7 @@ resources:
   - image-update-automation.yaml
   - httproute.yaml
   - postgres/
+  - llm-proxy/
   - dictionary-lookup/
   - sentence-lookup/
   - api-gateway/

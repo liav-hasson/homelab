@@ -1,0 +1,46 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: llm-proxy
+  namespace: ankilabs
+spec:
+  interval: 1h
+  dependsOn:
+    - name: postgres
+  chart:
+    spec:
+      chart: k8s/apps/ankilabs/charts/llm-proxy
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 2
+  upgrade:
+    remediation:
+      retries: 2
+  values:
+    image:
+      tag: v1.106.1
+      digest: "sha256:233f6fee10b475e30b5db671fd48bfa4626442f3f99a15ec197f2fbe724948c4"
+    envFromSecrets:
+      - llm-proxy-providers
+      - llm-proxy-admin
+    database:
+      passwordSecret:
+        name: llm-proxy-database
+    config:
+      # Logical model names are what Usage Codes allow and what AI Card Actions requests.
+      model_list:
+        - model_name: ankilabs-medium
+          litellm_params:
+            model: openai/gpt-6-luna
+            api_key: os.environ/OPENAI_API_KEY
+            reasoning_effort: medium
+    resources:
+      requests:
+        cpu: 100m
+        memory: 768Mi
+      limits:
+        memory: 1Gi

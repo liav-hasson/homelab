@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    {{- include "llm-proxy.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    {{- if not .Values.config.model_list }}{{ fail "config.model_list must define at least one model" }}{{ end }}
+    {{- toYaml .Values.config | nindent 4 }}

@@ -18,6 +18,38 @@ services:
       interval: 5s
       retries: 10
 
+  # LiteLLM keeps its virtual keys and spend in its own database; creating it is idempotent.
+  litellm-db-init:
+    image: postgres:18
+    environment:
+      PGPASSWORD: ankilabs-dev
+    command:
+      - sh
+      - -c
+      - >-
+        echo "SELECT 'CREATE DATABASE litellm' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'litellm')\gexec"
+        | psql -h postgres -U ankilabs -d ankilabs -v ON_ERROR_STOP=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Mock models only (dev/litellm.yaml), so local AI work never spends money.
+  litellm:
+    image: ghcr.io/berriai/litellm-database:v1.106.1
+    command: ["--config", "/etc/litellm/config.yaml", "--port", "4000"]
+    environment:
+      DATABASE_URL: postgresql://ankilabs:ankilabs-dev@postgres:5432/litellm
+      LITELLM_MASTER_KEY: sk-dev-master
+      LITELLM_SALT_KEY: sk-dev-salt
+      LITELLM_LOCAL_MODEL_COST_MAP: "True"
+    volumes:
+      - ./litellm.yaml:/etc/litellm/config.yaml:ro
+    ports:
+      - "127.0.0.1:4000:4000"
+    depends_on:
+      litellm-db-init:
+        condition: service_completed_successfully
+
   dictionary-lookup:
     build:
       context: ../../ankilabs-dictionary

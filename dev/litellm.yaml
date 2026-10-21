@@ -1,0 +1,17 @@
+# Local LiteLLM config: mock responses only, no provider credentials.
+# Prices are deliberately high so a few calls exhaust a small test budget.
+model_list:
+  - model_name: ankilabs-default
+    litellm_params:
+      model: openai/mock
+      api_key: unused
+      mock_response: '{"candidates": []}'
+      input_cost_per_token: 0.01
+      output_cost_per_token: 0.01
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+
+litellm_settings:
+  turn_off_message_logging: true
