@@ -36,6 +36,8 @@ spec:
         value: http://anki-exchange
       - name: AUTHORIZATION_URL
         value: http://authorization
+      - name: AI_CARD_ACTIONS_URL
+        value: http://ai-card-actions
     resources:
       requests:
         cpu: 20m

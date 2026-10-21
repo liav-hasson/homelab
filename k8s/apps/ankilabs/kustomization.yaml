@@ -10,6 +10,7 @@ resources:
   - postgres/
   - llm-proxy/
   - authorization/
+  - ai-card-actions/
   - dictionary-lookup/
   - sentence-lookup/
   - api-gateway/
