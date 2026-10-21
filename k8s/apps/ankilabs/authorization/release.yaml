@@ -23,8 +23,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/authorization
-      tag: "0.1.2" # {"$imagepolicy": "ankilabs:authorization:tag"}
-      digest: "sha256:0a65c927681e7b312efe0a09282d3cd525e5c81a615fdeed2df49272121e9685" # {"$imagepolicy": "ankilabs:authorization:digest"}
+      tag: "0.1.3" # {"$imagepolicy": "ankilabs:authorization:tag"}
+      digest: "sha256:ce17cbe5ee7fe0aa644d95aa26f4a199f6a6278f4095c76d39a95b968322259a" # {"$imagepolicy": "ankilabs:authorization:digest"}
     env:
       - name: LLM_PROXY_URL
         value: http://llm-proxy
