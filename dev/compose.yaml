@@ -46,9 +46,77 @@ services:
       - ./litellm.yaml:/etc/litellm/config.yaml:ro
     ports:
       - "127.0.0.1:4000:4000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4000/health/readiness')"]
+      interval: 5s
+      retries: 30
     depends_on:
       litellm-db-init:
         condition: service_completed_successfully
+
+  # Fixed dev keys: Authorization's route-limited key and one Usage Code. Registering an existing key is a no-op.
+  litellm-keys:
+    image: ghcr.io/berriai/litellm-database:v1.106.1
+    entrypoint: ["python", "-c"]
+    command:
+      - |
+        import json, urllib.request
+        def generate(body):
+            request = urllib.request.Request(
+                "http://litellm:4000/key/generate",
+                data=json.dumps(body).encode(),
+                headers={"Authorization": "Bearer sk-dev-master", "Content-Type": "application/json"},
+            )
+            urllib.request.urlopen(request).read()
+        generate({"key": "sk-dev-authorization-service", "key_alias": "authorization-service", "max_budget": 0,
+                  "models": ["no-models"], "allowed_routes": ["/key/info"]})
+        generate({"key": "sk-dev-usage-code-0001", "key_alias": "dev", "max_budget": 5,
+                  "models": ["dev-sentences", "dev-notes", "dev-review"]})
+        print("dev keys registered; Usage Code: sk-dev-usage-code-0001")
+    depends_on:
+      litellm:
+        condition: service_healthy
+
+  authorization:
+    build:
+      context: ../../ankilabs-authorization
+    environment:
+      LLM_PROXY_URL: http://litellm:4000
+      LLM_PROXY_KEY: sk-dev-authorization-service
+    ports:
+      - "127.0.0.1:8083:8000"
+    depends_on:
+      litellm-keys:
+        condition: service_completed_successfully
+
+  ai-card-actions:
+    build:
+      context: ../../ankilabs-ai-card-actions
+    environment:
+      LLM_PROXY_URL: http://litellm:4000
+      FEATURE_FLAGS: '{"ai_actions": true}'
+      AI_ACTIONS: '{"sentences": {"model": "dev-sentences"}, "notes": {"model": "dev-notes"}, "review": {"model": "dev-review"}}'
+    ports:
+      - "127.0.0.1:8084:8000"
+    depends_on:
+      litellm:
+        condition: service_healthy
+
+  # The frontend's dev server proxies /api to localhost:8000.
+  api-gateway:
+    build:
+      context: ../../ankilabs-api-gateway
+    environment:
+      DICTIONARY_LOOKUP_URL: http://dictionary-lookup:8000
+      SENTENCE_LOOKUP_URL: http://sentence-lookup:8000
+      AUTHORIZATION_URL: http://authorization:8000
+      AI_CARD_ACTIONS_URL: http://ai-card-actions:8000
+      FEATURE_FLAGS: '{"ai_actions": true}'
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - authorization
+      - ai-card-actions
 
   dictionary-lookup:
     build:
