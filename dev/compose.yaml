@@ -54,18 +54,27 @@ services:
       litellm-db-init:
         condition: service_completed_successfully
 
-  # Fixed dev keys: Authorization's route-limited key and one Usage Code. Registering an existing key is a no-op.
+  # Fixed dev keys: Authorization's route-limited key and one Usage Code, registered once (aliases must be unique).
   litellm-keys:
     image: ghcr.io/berriai/litellm-database:v1.106.1
     entrypoint: ["python", "-c"]
     command:
       - |
-        import json, urllib.request
+        import json, urllib.error, urllib.request
+        HEADERS = {"Authorization": "Bearer sk-dev-master", "Content-Type": "application/json"}
+        def exists(key):
+            try:
+                urllib.request.urlopen(urllib.request.Request(f"http://litellm:4000/key/info?key={key}", headers=HEADERS))
+                return True
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    return False
+                raise
         def generate(body):
+            if exists(body["key"]):
+                return
             request = urllib.request.Request(
-                "http://litellm:4000/key/generate",
-                data=json.dumps(body).encode(),
-                headers={"Authorization": "Bearer sk-dev-master", "Content-Type": "application/json"},
+                "http://litellm:4000/key/generate", data=json.dumps(body).encode(), headers=HEADERS
             )
             urllib.request.urlopen(request).read()
         generate({"key": "sk-dev-authorization-service", "key_alias": "authorization-service", "max_budget": 0,

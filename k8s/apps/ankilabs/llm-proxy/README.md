@@ -41,9 +41,9 @@ curl -s localhost:4000/key/generate -H "Authorization: Bearer $M" -H 'Content-Ty
 curl -s "localhost:4000/key/info?key=$S" -H "Authorization: Bearer $M" | grep -o '"allowed_routes":\[[^]]*\]'; unset S
 ```
 
-Verify with `/key/info` as above: registering an existing value again answers 200 with default fields but leaves the
-stored key unchanged. To rotate, generate a new value into the Secret, register it, restart Authorization, then
-delete the old key.
+Verify with `/key/info` as above. Running the registration again fails harmlessly with `400` (key aliases must be
+unique) and leaves the stored key unchanged. To rotate, generate a new value into the Secret, register it under a new
+alias, restart Authorization, then delete the old key.
 
 ## Secrets
 
