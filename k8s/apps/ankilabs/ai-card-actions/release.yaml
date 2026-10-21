@@ -27,8 +27,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/ai-card-actions
-      tag: "0.1.1" # {"$imagepolicy": "ankilabs:ai-card-actions:tag"}
-      digest: "sha256:ca6d0918fb84cf70874db441845a0799edc69b4b0af3c86950b841115203a088" # {"$imagepolicy": "ankilabs:ai-card-actions:digest"}
+      tag: "0.1.2" # {"$imagepolicy": "ankilabs:ai-card-actions:tag"}
+      digest: "sha256:1cb6875ae479c1e7a38712b999fcb782e95a30a22785fc4fd1afbdd8424c4a81" # {"$imagepolicy": "ankilabs:ai-card-actions:digest"}
     env:
       - name: LLM_PROXY_URL
         value: http://llm-proxy
@@ -40,6 +40,7 @@ spec:
       - name: AI_ACTIONS
         value: >-
           {"sentences": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000},
+
            "notes": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 8000},
            "review": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000}}
       - name: SENTENCE_COUNT
