@@ -14,4 +14,4 @@ data:
       notes_section: false
       anki_export: true
       # AI sentences, notes, and review (API Gateway and AI Card Actions).
-      ai_actions: false
+      ai_actions: true
