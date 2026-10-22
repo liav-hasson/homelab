@@ -13,7 +13,7 @@ model_list:
     litellm_params:
       model: openai/mock
       api_key: unused
-      mock_response: '{"sentences": ["Guardó el arma en un cajón.", "El arma principal del equipo es la defensa.", "La policía encontró el arma del crimen."]}'
+      mock_response: '{"sentences": [{"text": "Guardó el arma en un cajón.", "translation": "He put the weapon in a drawer."}, {"text": "El arma principal del equipo es la defensa.", "translation": "The team’s main weapon is its defense."}, {"text": "La policía encontró el arma del crimen.", "translation": "The police found the murder weapon."}]}'
       input_cost_per_token: 0.000001
       output_cost_per_token: 0.000001
   - model_name: dev-notes
