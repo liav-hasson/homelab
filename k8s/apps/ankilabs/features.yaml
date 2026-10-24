@@ -1,4 +1,3 @@
-# One flag map for every AnkiLabs service (docs/spec/README.md#feature-flags).
 # Each HelmRelease reads it through valuesFrom; the shared chart passes it to pods as FEATURE_FLAGS (JSON).
 apiVersion: v1
 kind: ConfigMap
@@ -12,5 +11,4 @@ data:
   values.yaml: |
     features:
       anki_export: true
-      # AI sentences, notes, and review (API Gateway and AI Card Actions).
       ai_actions: true
