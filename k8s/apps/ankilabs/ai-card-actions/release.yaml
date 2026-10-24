@@ -40,10 +40,6 @@ spec:
       - name: AI_ACTIONS
         value: >-
           {"sentences": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000},
-
-
-
-
            "notes": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 8000},
            "review": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000}}
       - name: SENTENCE_COUNT
