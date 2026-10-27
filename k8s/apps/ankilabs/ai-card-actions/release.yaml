@@ -27,8 +27,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/ai-card-actions
-      tag: "0.1.7" # {"$imagepolicy": "ankilabs:ai-card-actions:tag"}
-      digest: "sha256:df951ec9b356f92402232b891cc10fdc00be4b6413d586bfe93efad6939d6b79" # {"$imagepolicy": "ankilabs:ai-card-actions:digest"}
+      tag: "0.1.8" # {"$imagepolicy": "ankilabs:ai-card-actions:tag"}
+      digest: "sha256:7b5de8ac93a61700bb3e3ebac8929a2f493be3ffee8babcf6e3af03867ef242c" # {"$imagepolicy": "ankilabs:ai-card-actions:digest"}
     env:
       - name: LLM_PROXY_URL
         value: http://llm-proxy
@@ -41,6 +41,7 @@ spec:
         value: >-
           {"sentences": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000},
 
+
            "notes": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 8000},
            "review": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000}}
       - name: SENTENCE_COUNT
@@ -52,6 +53,7 @@ spec:
       - name: SPEECH
         value: >-
           {"model": "ankilabs-tts", "max_characters": 500, "response_format": "mp3",
+
            "voices": {
              "es": [{"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female", "accent": "American"},
                     {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
