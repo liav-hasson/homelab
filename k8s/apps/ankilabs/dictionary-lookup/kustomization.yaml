@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - secrets.yaml
   - image.yaml
+  - networkpolicy.yaml
   - release.yaml

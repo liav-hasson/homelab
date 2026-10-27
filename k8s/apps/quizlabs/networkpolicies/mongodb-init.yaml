@@ -1,0 +1,27 @@
+# MongoDB Init job needs to reach CoreDNS and MongoDB to seed data.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mongodb-init
+  namespace: quizlabs
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: mongodb-init
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: mongodb
+      ports:
+        - port: 27017
+          protocol: TCP

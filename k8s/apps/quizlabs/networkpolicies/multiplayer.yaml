@@ -1,0 +1,43 @@
+# Multiplayer answers Envoy Gateway; calls Redis, quiz-backend, and CoreDNS.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: quiz-multiplayer
+  namespace: quizlabs
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: quiz-multiplayer
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+      ports:
+        - port: 5001
+          protocol: TCP
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: quiz-backend
+      ports:
+        - port: 5000
+          protocol: TCP

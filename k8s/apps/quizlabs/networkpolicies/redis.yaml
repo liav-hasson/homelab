@@ -1,0 +1,25 @@
+# Redis answers quiz-backend and quiz-multiplayer; has no outbound connections.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis
+  namespace: quizlabs
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: quiz-backend
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: quiz-multiplayer
+      ports:
+        - port: 6379
+          protocol: TCP
+  egress: []

@@ -1,0 +1,22 @@
+# Frontend answers Envoy Gateway and has no outbound connections.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: quiz-frontend
+  namespace: quizlabs
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: quiz-frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+      ports:
+        - port: 80
+          protocol: TCP
+  egress: []
