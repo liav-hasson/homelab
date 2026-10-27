@@ -12,3 +12,4 @@ data:
     features:
       anki_export: true
       ai_actions: true
+      ai_speech: true

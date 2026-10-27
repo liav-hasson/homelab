@@ -2,7 +2,8 @@
 # LiteLLM behaviour AnkiLabs relies on (docs/spec/llm-proxy.md#verified-behaviour). Run before bumping the image:
 #   docker compose -f dev/compose.yaml up -d litellm   # after changing its image tag
 #   dev/litellm-checks.sh
-# Uses the dev stack's mock model and master key; it never calls a real provider.
+# Uses the dev stack's mock model and master key; it never calls a real provider, except for the text-to-speech checks,
+# which run only when ELEVENLABS_API_KEY is set (for the dev stack too) and spend one short real ElevenLabs request.
 set -u
 P=${LITELLM_URL:-http://localhost:4000}
 M=${LITELLM_MASTER_KEY:-sk-dev-master}
@@ -63,6 +64,45 @@ check "exhausted code still readable" "200 checks-user" "$(call info.key_alias "
 admin key/update "{\"key\":\"$USER_KEY\",\"max_budget\":5}" >/dev/null
 sleep 2
 check "raising max_budget reopens the code" "200" "$(chat "$USER_KEY")"
+
+# Text-to-speech through ElevenLabs. Budgets apply only if LiteLLM records spend for speech, which comes from its
+# bundled cost map alone (custom per-character prices are ignored, LiteLLM #44200): spend 0 means free audio.
+if [ -n "${ELEVENLABS_API_KEY:-}" ]; then
+  TTS=${LITELLM_TTS_MODEL:-ankilabs-tts}
+  VOICE=${ELEVENLABS_VOICE_ID:-EXAVITQu4vr4xnSDxMaL}
+  speech_body="{\"model\":\"$TTS\",\"input\":\"Hola, buenos dias.\",\"voice\":\"$VOICE\",\"response_format\":\"mp3\"}"
+  positive() { python3 -c 'import sys
+try: print("yes" if float(sys.argv[1]) > 0 else "no")
+except ValueError: print("no")' "${1:-0}"; }
+  # Prints "<http status> <error type>" for a speech request that should fail; $1 = key.
+  speak_error() { call - "$P/v1/audio/speech" -H "Authorization: Bearer $1" -H 'Content-Type: application/json' \
+    -d "$speech_body"; }
+
+  # Any spend at all exhausts this budget, so the second call must be refused.
+  TTS_KEY=$(new_key "{\"key_alias\":\"checks-tts\",\"max_budget\":0.000001,\"models\":[\"$TTS\"]}")
+  out=$(curl -s -o /dev/null -D - -w '\n%{http_code} %{content_type} %{size_download}' "$P/v1/audio/speech" \
+    -H "Authorization: Bearer $TTS_KEY" -H 'Content-Type: application/json' -d "$speech_body" | tr -d '\r')
+  read -r status content_type size <<<"$(tail -n 1 <<<"$out")"
+  cost=$(grep -i '^x-litellm-response-cost:' <<<"$out" | awk '{print $2}')
+  check "speech returns MP3 audio" "200 audio/mpeg" "$status $content_type"
+  check "speech audio is not empty" "yes" "$(positive "$size")"
+  check "speech reports a cost (x-litellm-response-cost > 0)" "yes" "$(positive "$cost")"
+  spend=0
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    spend=$(call info.spend "$P/key/info" -H "Authorization: Bearer $TTS_KEY" | cut -d' ' -f2)
+    [ "$(positive "$spend")" = yes ] && break
+    sleep 2
+  done
+  check "speech draws down the code's budget (/key/info spend > 0)" "yes" "$(positive "$spend")"
+  if [ "$(positive "$spend")" != yes ]; then
+    echo "FAIL  !!! LiteLLM recorded no spend for $TTS: budgets do NOT limit text-to-speech. Do not enable ai_speech."
+  fi
+  check "speech: model outside allowlist" "403 key_model_access_denied" "$(speak_error "$USER_KEY")"
+  check "speech: exhausted code" "422 budget_exceeded" "$(speak_error "$TTS_KEY")"
+  admin key/delete "{\"keys\":[\"$TTS_KEY\"]}" >/dev/null
+else
+  echo "SKIP  text-to-speech checks: ELEVENLABS_API_KEY is not set"
+fi
 
 # /key/info carries codes in its query string; LiteLLM's access log must redact it. Needs the dev container.
 CONTAINER=${LITELLM_CONTAINER:-ankilabs-dev-litellm-1}

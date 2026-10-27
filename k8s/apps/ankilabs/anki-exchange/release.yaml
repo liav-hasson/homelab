@@ -32,4 +32,6 @@ spec:
         cpu: 10m
         memory: 96Mi
       limits:
-        memory: 192Mi
+        # Headroom for audio exports: an export holds its body (about 21 MB base64 for 16 MB of audio), the decoded audio,
+        # and the built package at once; genanki also stages the audio in /tmp (chart emptyDir, 64Mi).
+        memory: 256Mi

@@ -43,4 +43,6 @@ spec:
         cpu: 20m
         memory: 96Mi
       limits:
-        memory: 192Mi
+        # Headroom for audio exports: an export holds its body (up to 24 MB) as bytes, parsed JSON, and the re-serialized
+        # forward at once.
+        memory: 256Mi

@@ -39,6 +39,15 @@ spec:
             model: openai/gpt-6-luna
             api_key: os.environ/OPENAI_API_KEY
             reasoning_effort: medium
+        # Text-to-speech (/v1/audio/speech) for AI Card Actions. Budgets draw down only through LiteLLM's bundled
+        # cost map, which prices eleven_multilingual_v2 per character: custom per-character prices are ignored for
+        # speech (LiteLLM #44200), so after any image bump check that a call records spend > 0 (dev/litellm-checks.sh).
+        - model_name: ankilabs-tts
+          litellm_params:
+            model: elevenlabs/eleven_multilingual_v2
+            api_key: os.environ/ELEVENLABS_API_KEY
+          model_info:
+            mode: audio_speech
     resources:
       requests:
         cpu: 100m

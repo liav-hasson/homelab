@@ -18,11 +18,11 @@ Issue one code per person. `models` must list logical model names explicitly: an
 
 ```sh
 curl -s localhost:4000/key/generate -H "Authorization: Bearer $M" -H 'Content-Type: application/json' \
-  -d '{"key_alias":"<person>","max_budget":5,"models":["ankilabs-medium"]}'
+  -d '{"key_alias":"<person>","max_budget":5,"models":["ankilabs-medium","ankilabs-tts"]}'
 ```
 
 | Task | Request (`POST`, master key) |
-|---|---|
+| --- | --- |
 | Check spend | `GET /key/info?key=<code>` (`spend`, `max_budget`, `blocked`) |
 | Renew an exhausted code (same code, another $5) | `/key/update` with `{"key":"<code>","max_budget":<current + 5>}` |
 | Block or unblock | `/key/block` or `/key/unblock` with `{"key":"<code>"}` |
@@ -62,6 +62,18 @@ Models are Helm values (`config.model_list` in `release.yaml`): a logical `model
 its default `reasoning_effort`. Keep logical names stable; renaming one means updating every key's `models`
 allowlist. A provider model missing from LiteLLM's bundled cost map is priced at $0 and never draws down a budget, so
 give it explicit `input_cost_per_token` and `output_cost_per_token`.
+
+## Text-to-speech
+
+`ankilabs-tts` is ElevenLabs `eleven_multilingual_v2`, served on `/v1/audio/speech` and charged to the same $5
+budget as the chat models. Its price comes only from the bundled cost map: LiteLLM ignores a custom
+`input_cost_per_character` for speech (LiteLLM #44200).
+
+- Codes issued before text-to-speech need the model added: `/key/update` with
+  `{"key":"<code>","models":["ankilabs-medium","ankilabs-tts"]}` (the list replaces the old one).
+- After adding the real key and before turning on `ai_speech`, make one speech call with a code and check that
+  `GET /key/info?key=<code>` shows `spend` above 0. A spend of 0 means budgets do not limit speech; leave the flag
+  off. `dev/litellm-checks.sh` checks the same thing when `ELEVENLABS_API_KEY` is set.
 
 ## Upgrades
 

@@ -45,6 +45,29 @@ spec:
            "review": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000}}
       - name: SENTENCE_COUNT
         value: "10"
+      # Text-to-speech: the logical LiteLLM model, a per-request character cap bounding one clip's cost, and the
+      # voice catalog per language. ElevenLabs default voices: verify with GET /v2/voices; defaults expire
+      # 2026-12-31; replace with native-accent Voice Library voices on a paid plan. The free tier allows only these
+      # default (multilingual, non-native-accent) voices and requires crediting elevenlabs.io, which exports do.
+      - name: SPEECH
+        value: >-
+          {"model": "ankilabs-tts", "max_characters": 500, "response_format": "mp3",
+           "voices": {
+             "es": [{"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female", "accent": "American"},
+                    {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
+                    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"},
+                    {"id": "TX3LPaxmHKxFdv7VOQHJ", "name": "Liam", "gender": "male", "accent": "American"},
+                    {"id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "gender": "male", "accent": "Australian"}],
+             "fr": [{"id": "FGY2WhTYpPnrIDTdsKH5", "name": "Laura", "gender": "female", "accent": "American"},
+                    {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
+                    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"},
+                    {"id": "nPczCjzI2devNBz1zQrb", "name": "Brian", "gender": "male", "accent": "American"},
+                    {"id": "TX3LPaxmHKxFdv7VOQHJ", "name": "Liam", "gender": "male", "accent": "American"}],
+             "en": [{"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female", "accent": "American"},
+                    {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
+                    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"},
+                    {"id": "nPczCjzI2devNBz1zQrb", "name": "Brian", "gender": "male", "accent": "American"},
+                    {"id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "gender": "male", "accent": "Australian"}]}}
     probes:
       # Readiness follows the LLM Proxy; liveness must not, since a restart does not fix it.
       liveness:

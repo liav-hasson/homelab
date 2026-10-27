@@ -33,7 +33,8 @@ services:
       postgres:
         condition: service_healthy
 
-  # Mock models only (dev/litellm.yaml), so local AI work never spends money.
+  # Mock chat models only (dev/litellm.yaml), so local AI work never spends money. The exception is ankilabs-tts:
+  # it calls ElevenLabs with the host's ELEVENLABS_API_KEY (never written here) and fails when that is unset.
   litellm:
     image: ghcr.io/berriai/litellm-database:v1.106.1
     command: ["--config", "/etc/litellm/config.yaml", "--port", "4000"]
@@ -42,6 +43,7 @@ services:
       LITELLM_MASTER_KEY: sk-dev-master
       LITELLM_SALT_KEY: sk-dev-salt
       LITELLM_LOCAL_MODEL_COST_MAP: "True"
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
     volumes:
       - ./litellm.yaml:/etc/litellm/config.yaml:ro
     ports:
@@ -80,7 +82,7 @@ services:
         generate({"key": "sk-dev-authorization-service", "key_alias": "authorization-service", "max_budget": 0,
                   "models": ["no-models"], "allowed_routes": ["/key/info"]})
         generate({"key": "sk-dev-usage-code-0001", "key_alias": "dev", "max_budget": 5,
-                  "models": ["dev-sentences", "dev-notes", "dev-review"]})
+                  "models": ["dev-sentences", "dev-notes", "dev-review", "ankilabs-tts"]})
         print("dev keys registered; Usage Code: sk-dev-usage-code-0001")
     depends_on:
       litellm:
@@ -103,8 +105,17 @@ services:
       context: ../../ankilabs-ai-card-actions
     environment:
       LLM_PROXY_URL: http://litellm:4000
-      FEATURE_FLAGS: '{"ai_actions": true}'
+      FEATURE_FLAGS: '{"ai_actions": true, "ai_speech": true}'
       AI_ACTIONS: '{"sentences": {"model": "dev-sentences"}, "notes": {"model": "dev-notes"}, "review": {"model": "dev-review"}}'
+      # Two default ElevenLabs voices per language; the full catalog is in k8s/apps/ankilabs/ai-card-actions.
+      SPEECH: >-
+        {"voices": {
+          "es": [{"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female", "accent": "American"},
+                 {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"}],
+          "fr": [{"id": "FGY2WhTYpPnrIDTdsKH5", "name": "Laura", "gender": "female", "accent": "American"},
+                 {"id": "nPczCjzI2devNBz1zQrb", "name": "Brian", "gender": "male", "accent": "American"}],
+          "en": [{"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
+                 {"id": "TX3LPaxmHKxFdv7VOQHJ", "name": "Liam", "gender": "male", "accent": "American"}]}}
     ports:
       - "127.0.0.1:8084:8000"
     depends_on:
@@ -120,7 +131,7 @@ services:
       SENTENCE_LOOKUP_URL: http://sentence-lookup:8000
       AUTHORIZATION_URL: http://authorization:8000
       AI_CARD_ACTIONS_URL: http://ai-card-actions:8000
-      FEATURE_FLAGS: '{"ai_actions": true}'
+      FEATURE_FLAGS: '{"ai_actions": true, "ai_speech": true}'
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
