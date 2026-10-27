@@ -26,6 +26,7 @@ spec:
       digest: "sha256:233f6fee10b475e30b5db671fd48bfa4626442f3f99a15ec197f2fbe724948c4"
     envFromSecrets:
       - llm-proxy-providers
+      - llm-proxy-elevenlabs
       - llm-proxy-admin
     database:
       passwordSecret:

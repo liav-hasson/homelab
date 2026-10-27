@@ -49,6 +49,9 @@ alias, restart Authorization, then delete the old key.
 
 `secrets.yaml` holds three Secrets: `llm-proxy-providers` (provider API keys), `llm-proxy-admin` (master and salt
 keys), and `llm-proxy-database` (the `litellm` Postgres role's password). Edit with `sops secrets.yaml`.
+`elevenlabs-secrets.yaml` holds `llm-proxy-elevenlabs` (`ELEVENLABS_API_KEY`, for text-to-speech); edit with
+`sops elevenlabs-secrets.yaml`. A Secret change does not restart the pod: run
+`kubectl -n ankilabs rollout restart deploy/llm-proxy` afterwards.
 Never change `LITELLM_SALT_KEY`: it encrypts data in LiteLLM's database.
 
 The chart's bootstrap Job creates the `litellm` role and database before every install and upgrade, and resets the
