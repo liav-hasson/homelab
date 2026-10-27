@@ -25,8 +25,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/anki-exchange
-      tag: "0.1.10" # {"$imagepolicy": "ankilabs:anki-exchange:tag"}
-      digest: "sha256:ccb6564578ac0a8044611213560f39bae156bfbc7f6e7276f2bb08b8ff25b517" # {"$imagepolicy": "ankilabs:anki-exchange:digest"}
+      tag: "0.1.11" # {"$imagepolicy": "ankilabs:anki-exchange:tag"}
+      digest: "sha256:e2f957e249566d50f0afce9b409473fbc42e5455da41483e0e5ca84cbce838e0" # {"$imagepolicy": "ankilabs:anki-exchange:digest"}
     resources:
       requests:
         cpu: 10m
