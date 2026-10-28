@@ -40,8 +40,6 @@ spec:
       - name: AI_ACTIONS
         value: >-
           {"sentences": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000},
-
-
            "notes": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 8000},
            "review": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000}}
       - name: SENTENCE_COUNT
@@ -53,18 +51,17 @@ spec:
       - name: SPEECH
         value: >-
           {"model": "ankilabs-tts", "max_characters": 500, "response_format": "mp3",
-
            "voices": {
-             "es": [{"id": "htFfPSZGJwjBv1CL0aMD", "name": "Antonio", "gender": "male", "accent": "Mexican"},
-                    {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
-                    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"},
-                    {"id": "TX3LPaxmHKxFdv7VOQHJ", "name": "Liam", "gender": "male", "accent": "American"},
-                    {"id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "gender": "male", "accent": "Australian"}],
-             "fr": [{"id": "FGY2WhTYpPnrIDTdsKH5", "name": "Laura", "gender": "female", "accent": "American"},
-                    {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
-                    {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"},
-                    {"id": "nPczCjzI2devNBz1zQrb", "name": "Brian", "gender": "male", "accent": "American"},
-                    {"id": "TX3LPaxmHKxFdv7VOQHJ", "name": "Liam", "gender": "male", "accent": "American"}],
+             "es": [{"id": "htFfPSZGJwjBv1CL0aMD", "name": "Antonio", "gender": "male", "accent": "Latin America"},
+                    {"id": "bN1bDXgDIGX5lw0rtY2B", "name": "Melanie", "gender": "female", "accent": "Argentina"},
+                    {"id": "6WgXEzo1HGn3i7ilT4Fh", "name": "Vicente", "gender": "male", "accent": "Chile"},
+                    {"id": "spPXlKT5a4JMfbhPRAzA", "name": "Camila", "gender": "female", "accent": "Mexico"},
+                    {"id": "KHCvMklQZZo0O30ERnVn", "name": "Sara", "gender": "female", "accent": "Spain"}],
+             "fr": [{"id": "McVZB9hVxVSk3Equu8EH", "name": "Audrey", "gender": "female", "accent": "Standard"},
+                    {"id": "FvmvwvObRqIHojkEGh5N", "name": "Adina", "gender": "female", "accent": "Standard"},
+                    {"id": "ohItIVrXTBI80RrUECOD", "name": "Guillaume", "gender": "male", "accent": "Standard"},
+                    {"id": "93nuHbke4dTER9x2pDwE", "name": "Adam", "gender": "male", "accent": "Quebec"},
+                    {"id": "t8BrjWUT5Z23DLLBzbuY", "name": "Sarah", "gender": "female", "accent": "Standard"}],
              "en": [{"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female", "accent": "American"},
                     {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
                     {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"},
