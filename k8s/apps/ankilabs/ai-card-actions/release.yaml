@@ -55,7 +55,7 @@ spec:
           {"model": "ankilabs-tts", "max_characters": 500, "response_format": "mp3",
 
            "voices": {
-             "es": [{"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female", "accent": "American"},
+             "es": [{"id": "htFfPSZGJwjBv1CL0aMD", "name": "Antonio", "gender": "male", "accent": "Mexican"},
                     {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "accent": "British"},
                     {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "accent": "British"},
                     {"id": "TX3LPaxmHKxFdv7VOQHJ", "name": "Liam", "gender": "male", "accent": "American"},
