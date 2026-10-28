@@ -80,25 +80,35 @@ except ValueError: print("no")' "${1:-0}"; }
 
   # Any spend at all exhausts this budget, so the second call must be refused.
   TTS_KEY=$(new_key "{\"key_alias\":\"checks-tts\",\"max_budget\":0.000001,\"models\":[\"$TTS\"]}")
-  out=$(curl -s -o /dev/null -D - -w '\n%{http_code} %{content_type} %{size_download}' "$P/v1/audio/speech" \
+  speech_out=$(mktemp)
+  out=$(curl -s -o "$speech_out" -D - -w '\n%{http_code} %{content_type} %{size_download}' "$P/v1/audio/speech" \
     -H "Authorization: Bearer $TTS_KEY" -H 'Content-Type: application/json' -d "$speech_body" | tr -d '\r')
   read -r status content_type size <<<"$(tail -n 1 <<<"$out")"
   cost=$(grep -i '^x-litellm-response-cost:' <<<"$out" | awk '{print $2}')
   check "speech returns MP3 audio" "200 audio/mpeg" "$status $content_type"
-  check "speech audio is not empty" "yes" "$(positive "$size")"
-  check "speech reports a cost (x-litellm-response-cost > 0)" "yes" "$(positive "$cost")"
+  tts_ok=0
+  if [ "$status" = 200 ]; then
+    tts_ok=1
+  else
+    # The provider's own error (e.g. ElevenLabs invalid_api_key or missing_permissions); it does not echo the key.
+    echo "      speech error body: $(head -c 600 "$speech_out")"
+    echo "SKIP  speech cost, budget and exhausted-code checks: the first speech call failed"
+  fi
+  rm -f "$speech_out"
+  [ "$tts_ok" = 1 ] && check "speech audio is not empty" "yes" "$(positive "$size")"
+  [ "$tts_ok" = 1 ] && check "speech reports a cost (x-litellm-response-cost > 0)" "yes" "$(positive "$cost")"
   spend=0
-  for _ in 1 2 3 4 5 6 7 8 9 10; do
+  for _ in $([ "$tts_ok" = 1 ] && echo 1 2 3 4 5 6 7 8 9 10); do
     spend=$(call info.spend "$P/key/info" -H "Authorization: Bearer $TTS_KEY" | cut -d' ' -f2)
     [ "$(positive "$spend")" = yes ] && break
     sleep 2
   done
-  check "speech draws down the code's budget (/key/info spend > 0)" "yes" "$(positive "$spend")"
-  if [ "$(positive "$spend")" != yes ]; then
+  [ "$tts_ok" = 1 ] && check "speech draws down the code's budget (/key/info spend > 0)" "yes" "$(positive "$spend")"
+  if [ "$tts_ok" = 1 ] && [ "$(positive "$spend")" != yes ]; then
     echo "FAIL  !!! LiteLLM recorded no spend for $TTS: budgets do NOT limit text-to-speech. Do not enable ai_speech."
   fi
   check "speech: model outside allowlist" "403 key_model_access_denied" "$(speak_error "$USER_KEY")"
-  check "speech: exhausted code" "422 budget_exceeded" "$(speak_error "$TTS_KEY")"
+  [ "$tts_ok" = 1 ] && check "speech: exhausted code" "422 budget_exceeded" "$(speak_error "$TTS_KEY")"
   admin key/delete "{\"keys\":[\"$TTS_KEY\"]}" >/dev/null
 else
   echo "SKIP  text-to-speech checks: ELEVENLABS_API_KEY is not set"
