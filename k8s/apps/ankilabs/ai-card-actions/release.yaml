@@ -27,8 +27,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/ai-card-actions
-      tag: "0.1.8" # {"$imagepolicy": "ankilabs:ai-card-actions:tag"}
-      digest: "sha256:7b5de8ac93a61700bb3e3ebac8929a2f493be3ffee8babcf6e3af03867ef242c" # {"$imagepolicy": "ankilabs:ai-card-actions:digest"}
+      tag: "0.1.9" # {"$imagepolicy": "ankilabs:ai-card-actions:tag"}
+      digest: "sha256:7f56caaa928847e4b885880d600ac03411f1b66f8e22295cd5107a6bf04a4bba" # {"$imagepolicy": "ankilabs:ai-card-actions:digest"}
     env:
       - name: LLM_PROXY_URL
         value: http://llm-proxy
@@ -40,6 +40,7 @@ spec:
       - name: AI_ACTIONS
         value: >-
           {"sentences": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000},
+
            "notes": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 8000},
            "review": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000}}
       - name: SENTENCE_COUNT
@@ -51,6 +52,7 @@ spec:
       - name: SPEECH
         value: >-
           {"model": "ankilabs-tts", "max_characters": 500, "response_format": "mp3",
+
            "voices": {
              "es": [{"id": "htFfPSZGJwjBv1CL0aMD", "name": "Antonio", "gender": "male", "accent": "Latin America"},
                     {"id": "bN1bDXgDIGX5lw0rtY2B", "name": "Melanie", "gender": "female", "accent": "Argentina"},
