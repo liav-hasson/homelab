@@ -11,7 +11,6 @@ configMapGenerator:
       - dashboards/control-plane.json
       - dashboards/cluster.json
       - dashboards/logs.json
-      - dashboards/apps.json
     options:
       labels:
         grafana_dashboard: "1"
@@ -22,6 +21,10 @@ configMapGenerator:
     files:
       - dashboards/main.json
       - dashboards/apps.json
+      - dashboards/homelab-logs-overview.json
+      - dashboards/kubernetes-failures.json
+      - dashboards/networking-ingress.json
+      - dashboards/database-storage.json
     options:
       labels:
         grafana_dashboard: "1"
