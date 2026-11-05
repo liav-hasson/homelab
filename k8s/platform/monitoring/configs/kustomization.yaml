@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - podmonitor.yaml
+  - ankilabs-api-gateway-podmonitor.yaml
   - alerts.yaml
   - alertmanager-config.yaml
 configMapGenerator:
@@ -25,6 +26,7 @@ configMapGenerator:
       - dashboards/kubernetes-failures.json
       - dashboards/networking-ingress.json
       - dashboards/database-storage.json
+      - dashboards/ankilabs-api-latency.json
     options:
       labels:
         grafana_dashboard: "1"
