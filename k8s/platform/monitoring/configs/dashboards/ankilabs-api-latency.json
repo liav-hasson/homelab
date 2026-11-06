@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "AnkiLabs API request and upstream latency, including sentence search and AI calls.",
+  "description": "AnkiLabs API request and upstream latency, including correlated AI request and LLM Proxy logs.",
   "editable": true,
   "graphTooltip": 1,
   "id": null,
@@ -187,6 +187,64 @@
       ],
       "title": "API server errors",
       "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_LOKI}",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": "${DS_LOKI}",
+          "expr": "{namespace=\"ankilabs\"} |~ \"AI gateway request finished|AI Card Actions request finished\" |= \"$request_id\"",
+          "refId": "A"
+        }
+      ],
+      "title": "AI request lifecycle (gateway ↔ AI Card Actions)",
+      "type": "logs"
+    },
+    {
+      "datasource": "${DS_LOKI}",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 6,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": "${DS_LOKI}",
+          "expr": "{namespace=\"ankilabs\"} |~ \"LLM Proxy (timed out|is unreachable|response failed|response completed|refused)\" |= \"$request_id\"",
+          "refId": "A"
+        }
+      ],
+      "title": "LLM Proxy attempts",
+      "type": "logs"
     }
   ],
   "refresh": "30s",
@@ -221,6 +279,43 @@
         },
         "refresh": 1,
         "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "Loki",
+          "value": "Loki"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki datasource",
+        "multi": false,
+        "name": "DS_LOKI",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "",
+          "value": ""
+        },
+        "description": "Optional request ID to correlate gateway and AI service logs.",
+        "hide": 0,
+        "label": "Request ID",
+        "name": "request_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
       }
     ]
   },
