@@ -25,8 +25,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/api-gateway
-      tag: "0.1.24" # {"$imagepolicy": "ankilabs:api-gateway:tag"}
-      digest: "sha256:c00bbbdf154e2996c2443d6cb5134f14d1802a9c5dfdbc0b07bc1449e6778ea9" # {"$imagepolicy": "ankilabs:api-gateway:digest"}
+      tag: "0.1.25" # {"$imagepolicy": "ankilabs:api-gateway:tag"}
+      digest: "sha256:af045ad83c3a2edd170436f7a2fe4d445c12b81fe64fff7c81619682bb301e14" # {"$imagepolicy": "ankilabs:api-gateway:digest"}
     env:
       - name: DICTIONARY_LOOKUP_URL
         value: http://dictionary-lookup
