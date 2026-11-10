@@ -27,8 +27,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/sentence-lookup
-      tag: "0.1.12" # {"$imagepolicy": "ankilabs:sentence-lookup:tag"}
-      digest: "sha256:b12355102b85f0bde20472898aaad03e5ce3b3cb929aefa4210db015eb76bfa7" # {"$imagepolicy": "ankilabs:sentence-lookup:digest"}
+      tag: "0.1.14" # {"$imagepolicy": "ankilabs:sentence-lookup:tag"}
+      digest: "sha256:8af42ac81c4f6e3f36fa3a1b1185872d44f6a8f575516874365ebec2ac1357e5" # {"$imagepolicy": "ankilabs:sentence-lookup:digest"}
     env:
       - name: DATABASE_URL
         valueFrom:
