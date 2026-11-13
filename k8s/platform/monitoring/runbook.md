@@ -63,9 +63,10 @@ auto-discovery, extensions or query-text collector are enabled.
 
 ## Server rollout walkthrough
 
-Run these commands in Bash on the server with the intended Kubernetes context
-and an authorized operator account. They do not require a Git checkout or the
-Flux CLI on the server. Stop on unexpected output.
+Run Kubernetes/psql commands in Bash on the server with the intended Kubernetes
+context and an authorized operator account; they do not require the Flux CLI.
+Run the SOPS editing step in your homelab checkout on a machine with your existing
+SOPS key. There is no need to copy that key to the server. Stop on unexpected output.
 
 The review branch is not a deployment. Leave Flux tracking `main`: pointing it
 at an older review-branch snapshot could undo newer image promotions.
@@ -113,19 +114,49 @@ FROM pg_roles WHERE rolname = 'ankilabs_monitor';
 
 If absent, run the `CREATE ROLE` statement in the preceding monitoring-login
 section. If present, review its privileges instead of recreating or dropping it.
-Run that section's `GRANT` and `ALTER ROLE` statements, set the password with
-`\password ankilabs_monitor`, then leave psql with `\q`.
+Run that section's `GRANT` and `ALTER ROLE` statements. Choose one strong
+password, then run `\password ankilabs_monitor`. At the hidden prompts, enter
+that actual password twice, not YAML, a Kubernetes Secret name or `ENC[...]`
+ciphertext. Leave psql with `\q`.
 
 The exact narrow grant recipe, including database read-only defaults, was
 validated against PostgreSQL 18 and all seven configured exporter collectors.
 Neither `pg_monitor` nor `pg_read_all_settings` is required.
 
-### 3. Create the matching existing Secret
+### 3. Store the same password in the SOPS Secret
 
-If your Secret-management process owns this object, use that process instead.
-Otherwise the following creates an operator-managed Secret referenced by the
-chart; keep an approved encrypted backup for cluster recovery. It does not write
-plaintext credentials to Git or command arguments.
+The SOPS-managed manifest is
+`k8s/apps/ankilabs/postgres/monitoring-secrets.yaml`. During initial setup, keep
+its resource entry disabled until it contains the real password. If the live
+Secret is already configured, retain that same password rather than generating
+a different one.
+
+From your homelab checkout, open it with your existing SOPS setup:
+
+```sh
+sops k8s/apps/ankilabs/postgres/monitoring-secrets.yaml
+```
+
+For an initial template, in the editor SOPS opens replace
+`REPLACE_WITH_THE_PASSWORD_SET_IN_POSTGRESQL` with the exact same password you
+entered at the psql prompts. Save and exit; SOPS encrypts the value again
+automatically. Do not edit the file directly to insert a plaintext password.
+
+Then ensure `- monitoring-secrets.yaml` appears exactly once in the resources of
+`k8s/apps/ankilabs/postgres/kustomization.yaml`. Commit the encrypted Secret and
+that resource entry to the review branch when ready. Do not add a second entry
+if it is already enabled, or commit plaintext password files or SOPS private keys.
+
+After the branch is merged and Flux reconciles, it creates the Secret before
+Helm can use it. If you also want to create it before the merge, use the
+operator-managed alternative below with the same password; otherwise perform
+the Secret-backed login check after reconciliation.
+
+#### Alternative: create the Secret directly on the server
+
+Skip this alternative when using the SOPS manifest. The following is for
+operator-managed provisioning; keep an approved encrypted backup for cluster
+recovery. It does not write plaintext credentials to Git or command arguments.
 
 Enter the same password just assigned to the database login:
 
