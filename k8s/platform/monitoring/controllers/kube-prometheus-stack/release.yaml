@@ -30,6 +30,10 @@ spec:
     alertmanager:
       enabled: true
       alertmanagerSpec:
+        # Application alerts retain their real namespace, not "monitoring".
+        # The selectors below restrict which AlertmanagerConfig may supply routes.
+        alertmanagerConfigMatcherStrategy:
+          type: None
         alertmanagerConfigSelector:
           matchLabels:
             app.kubernetes.io/part-of: homelab-alerting

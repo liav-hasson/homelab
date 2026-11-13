@@ -1,0 +1,133 @@
+# test_rules.py fills exp_annotations from the checked-in rule annotations.
+evaluation_interval: 1m
+tests:
+  - name: a-single-low-traffic-server-failure-is-visible
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_dictionary_lookup_http_request_duration_seconds_count{namespace="ankilabs",job="monitoring/ankilabs-lookups",service="dictionary-lookup",route="/search",status="500"}'
+        values: "0 0 1 1 1 1"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: AnkiLabsRequestFailure
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              job: monitoring/ankilabs-lookups
+              service: dictionary-lookup
+              route: /search
+              status: "500"
+              scope: applications
+              severity: warning
+  - name: explicit-upstream-timeout-needs-no-minimum-traffic
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_api_gateway_upstream_request_duration_seconds_count{namespace="ankilabs",service="Sentence Lookup",status="timeout"}'
+        values: "0 0 1 1 1 1"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: AnkiLabsUpstreamFailure
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              service: Sentence Lookup
+              status: timeout
+              scope: applications
+              severity: warning
+  - name: first-failure-before-first-scrape-is-not-lost
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_dictionary_lookup_http_request_duration_seconds_count{namespace="ankilabs",job="monitoring/ankilabs-lookups",service="dictionary-lookup",route="/search",status="500"}'
+        values: "1+0x5"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: AnkiLabsRequestFailure
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              job: monitoring/ankilabs-lookups
+              service: dictionary-lookup
+              route: /search
+              status: "500"
+              scope: applications
+              severity: warning
+  - name: another-namespace-does-not-trigger-ankilabs-alerts
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_dictionary_lookup_http_request_duration_seconds_count{namespace="quizlabs",status="500"}'
+        values: "0 0 1 1 1 1"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: AnkiLabsRequestFailure
+        exp_alerts: []
+  - name: continuously-waiting-pool-is-measurable-pressure
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_sentence_lookup_db_pool_connections{namespace="ankilabs",pod="sentence-lookup-fixture",state="waiting"}'
+        values: "1+0x5"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: LookupPoolWaiting
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              pod: sentence-lookup-fixture
+              state: waiting
+              scope: database
+              severity: warning
+  - name: missing-dictionary-target-is-not-green
+    interval: 1m
+    input_series:
+      - series: 'up{namespace="ankilabs",job="monitoring/ankilabs-api-gateway"}'
+        values: "1+0x7"
+      - series: 'up{namespace="ankilabs",service="sentence-lookup"}'
+        values: "1+0x7"
+      - series: 'up{namespace="ankilabs",service="postgres-exporter"}'
+        values: "1+0x7"
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: AnkiLabsExpectedTargetMissing
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              service: dictionary-lookup
+              scope: applications
+              severity: warning
+  - name: reachable-exporter-with-failed-collector-is-not-green
+    interval: 1m
+    input_series:
+      - series: 'pg_scrape_collector_success{namespace="ankilabs",collector="stat_activity"}'
+        values: "0+0x5"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: PostgreSQLCollectorFailure
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              collector: stat_activity
+              scope: database
+              severity: warning
+  - name: an-empty-idle-pool-is-not-pressure
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_dictionary_lookup_db_pool_connections{namespace="ankilabs",state="waiting"}'
+        values: "0+0x5"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: LookupPoolWaiting
+        exp_alerts: []
+  - name: quizlabs-native-edge-failure-is-scoped-and-not-lost-at-first-scrape
+    interval: 1m
+    input_series:
+      - series: 'envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name="httproute/quizlabs/quizlabs/rule/1"}'
+        values: "0+0x5"
+      - series: 'envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name="httproute/quizlabs/quizlabs/rule/1"}'
+        values: "1+0x5"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: EdgeUpstreamFailure
+        exp_alerts:
+          - exp_labels:
+              namespace: envoy-gateway-system
+              envoy_cluster_name: httproute/quizlabs/quizlabs/rule/1
+              scope: platform
+              severity: warning

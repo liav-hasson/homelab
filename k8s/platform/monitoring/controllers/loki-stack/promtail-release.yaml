@@ -9,7 +9,7 @@ spec:
     - name: kube-prometheus-stack
   chart:
     spec:
-      version: "6.x"
+      version: "6.17.1"
       chart: promtail
       sourceRef:
         kind: HelmRepository
@@ -22,3 +22,51 @@ spec:
       clients:
         - url: http://loki-gateway/loki/api/v1/push
           tenant_id: 1
+      snippets:
+        # Replaces the chart default list, so CRI decoding must remain first.
+        # Helm tpl evaluates these values: backtick wrappers defer Go templates to Promtail.
+        pipelineStages:
+          - cri: {}
+          - match:
+              selector: '{namespace="envoy-gateway-system",app="envoy"}'
+              stages:
+                - json:
+                    drop_malformed: false
+                    expressions:
+                      edge_status: http_status
+                      edge_event: event
+                - template:
+                    source: severity
+                    template: '{{`{{ if eq .edge_event "edge.request.completed" }}{{ if hasPrefix "5" (default "" .edge_status) }}ERROR{{ else if hasPrefix "4" (default "" .edge_status) }}WARNING{{ else if hasPrefix "0" (default "" .edge_status) }}WARNING{{ else }}INFO{{ end }}{{ else }}UNKNOWN{{ end }}`}}'
+                - labels:
+                    severity:
+          - match:
+              selector: '{namespace="ankilabs",app=~"api-gateway|sentence-lookup|dictionary-lookup"}'
+              stages:
+                - json:
+                    drop_malformed: false
+                    expressions:
+                      app_level: level
+                - template:
+                    source: severity
+                    template: '{{`{{ $level := ToUpper (default "" .app_level) }}{{ if eq $level "WARN" }}WARNING{{ else if or (eq $level "DEBUG") (eq $level "INFO") (eq $level "WARNING") (eq $level "ERROR") (eq $level "CRITICAL") }}{{ $level }}{{ else }}UNKNOWN{{ end }}`}}'
+                - labels:
+                    severity:
+          - match:
+              selector: '{namespace="ankilabs",app="postgres",container="postgres"}'
+              stages:
+                # Optional metadata accepts the previous default stderr prefix during rollout.
+                - regex:
+                    expression: '^(?P<pg_timestamp>\d{4}-\d\d-\d\d .+?) \[(?P<db_backend_pid>\d+)\] (?:(?:app=(?P<application>.*?) sqlstate=(?P<sqlstate>[0-9A-Z]{5})) )?(?P<pg_severity>[A-Z0-9]+):\s*(?P<message>.*)$'
+                - template:
+                    source: severity
+                    template: '{{`{{ if and (eq .pg_severity "LOG") (contains "unexpected EOF on client connection with an open transaction" (default "" .message)) }}WARNING{{ else if or (eq .pg_severity "DEBUG1") (eq .pg_severity "DEBUG2") (eq .pg_severity "DEBUG3") (eq .pg_severity "DEBUG4") (eq .pg_severity "DEBUG5") }}DEBUG{{ else if or (eq .pg_severity "LOG") (eq .pg_severity "INFO") (eq .pg_severity "NOTICE") }}INFO{{ else if eq .pg_severity "WARNING" }}WARNING{{ else if eq .pg_severity "ERROR" }}ERROR{{ else if or (eq .pg_severity "FATAL") (eq .pg_severity "PANIC") }}CRITICAL{{ else }}UNKNOWN{{ end }}`}}'
+                - template:
+                    source: normalized
+                    # Primary SQL errors can quote values even with TERSE and parameter logging off.
+                    # Preserve the record/metadata, not potentially sensitive diagnostic text.
+                    template: '{{`{{ $redact := or (eq .pg_severity "ERROR") (eq .pg_severity "FATAL") (eq .pg_severity "PANIC") }}{{ $message := default .Entry .message }}{{ $raw := .Entry }}{{ if $redact }}{{ $message = "PostgreSQL diagnostic text redacted; correlate SQLSTATE and backend PID with application events" }}{{ $raw = "[diagnostic text redacted]" }}{{ end }}{{ dict "timestamp" (default "" .pg_timestamp) "service" "postgres" "event" "db.stderr" "level" .severity "pg_severity" (default "" .pg_severity) "db_backend_pid" (default "" .db_backend_pid) "application" (default "" .application) "sqlstate" (default "" .sqlstate) "message" $message "raw" $raw "raw_redacted" $redact | toJson }}`}}'
+                - labels:
+                    severity:
+                - output:
+                    source: normalized

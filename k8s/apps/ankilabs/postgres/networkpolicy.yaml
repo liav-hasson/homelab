@@ -1,4 +1,4 @@
-# PostgreSQL serves Dictionary Lookup, Sentence Lookup, LLM Proxy, and LiteLLM's DB bootstrap job.
+# PostgreSQL serves lookups, LLM Proxy/bootstrap, and the separate monitoring exporter.
 # It makes no outbound connections.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -26,7 +26,52 @@ spec:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: llm-proxy-db-bootstrap
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgres-exporter
       ports:
         - port: postgres
           protocol: TCP
   egress: []
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-exporter
+  namespace: ankilabs
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgres-exporter
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: metrics
+          protocol: TCP
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgres
+      ports:
+        - port: 5432
+          protocol: TCP

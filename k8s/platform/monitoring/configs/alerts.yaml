@@ -18,7 +18,9 @@ spec:
             severity: warning
           annotations:
             summary: High node CPU detected.
-            description: CPU usage on {{ $labels.instance }} has been above 90% for 10 minutes.
+            description: CPU usage on {{ $labels.instance }} has been above 90% for 5 minutes. Inspect competing workloads before resizing.
+            dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
         - alert: NodeHighMemory
           expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 90
           for: 5m
@@ -27,7 +29,9 @@ spec:
             severity: warning
           annotations:
             summary: High node memory detected.
-            description: Memory usage on {{ $labels.instance }} has been above 90% for 10 minutes.
+            description: Memory usage on {{ $labels.instance }} has been above 90% for 5 minutes. Check working sets and OOM events.
+            dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
     - name: homelab.pods
       rules:
         - alert: PodCrashLoopBackOff
@@ -39,6 +43,8 @@ spec:
           annotations:
             summary: Pod container CrashLoopBackOff detected.
             description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} has been crash-looping for 5 minutes.'
+            dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
         - alert: PodFrequentRestarts
           expr: increase(kube_pod_container_status_restarts_total[15m]) >= 3
           for: 5m
@@ -48,3 +54,190 @@ spec:
           annotations:
             summary: Pod container repeated restarts detected.
             description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} restarted at least 3 times in 15 minutes.'
+            dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
+    - name: homelab.applications
+      interval: 30s
+      rules:
+        - alert: AnkiLabsRequestFailure
+          # Include a newly discovered nonzero status series: its first failure
+          # can occur before the first scrape and otherwise produce increase=0.
+          expr: |
+            sum by (namespace, job, service, route, status) (
+              increase({__name__=~"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count",namespace="ankilabs",status=~"5.."}[10m])
+            ) > 0
+            or
+            sum by (namespace, job, service, route, status) (
+              {__name__=~"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count",namespace="ankilabs",status=~"5.."} > 0
+              unless
+              {__name__=~"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count",namespace="ankilabs",status=~"5.."} offset 10m
+            )
+          labels:
+            scope: applications
+            severity: warning
+          annotations:
+            summary: AnkiLabs observed a server-side request failure.
+            description: '{{ $labels.job }} {{ $labels.service }} route {{ $labels.route }} has an increased or newly observed nonzero {{ $labels.status }} counter. New scrape coverage can expose older failures; correlate request_id and timestamps in namespace-scoped logs.'
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests
+        - alert: AnkiLabsUpstreamFailure
+          expr: |
+            sum by (namespace, service, status) (
+              increase(ankilabs_api_gateway_upstream_request_duration_seconds_count{namespace="ankilabs",service=~"Sentence Lookup|Dictionary Lookup",status=~"5..|timeout|unavailable"}[10m])
+            ) > 0
+            or
+            sum by (namespace, service, status) (
+              ankilabs_api_gateway_upstream_request_duration_seconds_count{namespace="ankilabs",service=~"Sentence Lookup|Dictionary Lookup",status=~"5..|timeout|unavailable"} > 0
+              unless
+              ankilabs_api_gateway_upstream_request_duration_seconds_count{namespace="ankilabs",service=~"Sentence Lookup|Dictionary Lookup",status=~"5..|timeout|unavailable"} offset 10m
+            )
+          labels:
+            scope: applications
+            severity: warning
+          annotations:
+            summary: Gateway observed a lookup upstream failure.
+            description: '{{ $labels.service }} has an increased or newly observed nonzero {{ $labels.status }} counter. New scrape coverage can expose older failures; compare timestamps and request_id in gateway and lookup logs before retrying.'
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests
+        - alert: AnkiLabsScrapeFailed
+          expr: up{namespace="ankilabs",job=~"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres)"} == 0
+          for: 3m
+          labels:
+            scope: applications
+            severity: warning
+          annotations:
+            summary: AnkiLabs metrics target is not scrapeable.
+            description: '{{ $labels.pod }} has failed scrapes for 3 minutes. Check the target error, named port, network policy and exporter credentials; missing telemetry is not health.'
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry
+        - alert: AnkiLabsExpectedTargetMissing
+          expr: |
+            absent(up{namespace="ankilabs",job="monitoring/ankilabs-api-gateway"})
+            or absent(up{namespace="ankilabs",service="dictionary-lookup"})
+            or absent(up{namespace="ankilabs",service="sentence-lookup"})
+            or absent(up{namespace="ankilabs",service="postgres-exporter"})
+          for: 5m
+          labels:
+            scope: applications
+            severity: warning
+          annotations:
+            summary: An expected AnkiLabs metrics target is missing.
+            description: No discovered target exists for this selector. Inspect PodMonitor selection and desired replicas, including a missing postgres-monitoring Secret.
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry
+        - alert: ApplicationDeploymentUnavailable
+          expr: |
+            kube_deployment_spec_replicas{namespace=~"ankilabs|quizlabs"} > 0
+            and on (namespace, deployment)
+            kube_deployment_status_replicas_available{namespace=~"ankilabs|quizlabs"} == 0
+          for: 5m
+          labels:
+            scope: applications
+            severity: warning
+          annotations:
+            summary: An application deployment has no available replicas.
+            description: '{{ $labels.namespace }}/{{ $labels.deployment }} has desired replicas but none available for 5 minutes. Inspect rollout conditions and logs in that namespace.'
+            dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
+        - alert: ApplicationOOMKilled
+          expr: |
+            (kube_pod_container_status_last_terminated_reason{namespace=~"ankilabs|quizlabs",reason="OOMKilled"} == 1)
+            and on (namespace, pod, container)
+            (increase(kube_pod_container_status_restarts_total{namespace=~"ankilabs|quizlabs"}[15m]) > 0)
+          labels:
+            scope: applications
+            severity: warning
+          annotations:
+            summary: An application container restarted after an OOM kill.
+            description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} was OOM killed with a recent restart. Compare memory to its configured limit; do not change limits before investigating.'
+            dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
+        - alert: LookupPoolWaiting
+          expr: |
+            {__name__=~"ankilabs_(sentence|dictionary)_lookup_db_pool_connections",namespace="ankilabs",state="waiting"} > 0
+          for: 3m
+          labels:
+            scope: database
+            severity: warning
+          annotations:
+            summary: Lookup requests are waiting for database connections.
+            description: '{{ $labels.pod }} has pool waiters continuously for 3 minutes. Compare pool size/available/max, pool_acquire samples and PostgreSQL activity before adjusting capacity.'
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-search-postgres
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#database
+    - name: homelab.database
+      rules:
+        - alert: PostgreSQLUnavailable
+          expr: pg_up{namespace="ankilabs"} == 0
+          for: 2m
+          labels:
+            scope: database
+            severity: critical
+          annotations:
+            summary: The monitoring login cannot reach PostgreSQL.
+            description: Exporter cannot establish a database connection. Distinguish database outage from credential or network-policy failure using exporter logs; do not use superuser credentials.
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-search-postgres
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#database
+        - alert: PostgreSQLCollectorFailure
+          expr: pg_scrape_collector_success{namespace="ankilabs"} == 0
+          for: 3m
+          labels:
+            scope: database
+            severity: warning
+          annotations:
+            summary: A PostgreSQL collector failed.
+            description: '{{ $labels.collector }} failed. Check exporter logs, PostgreSQL version and read-only monitoring grants. A healthy HTTP scrape does not imply complete database telemetry.'
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-search-postgres
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#database
+        - alert: QuizLabsMongoUnavailable
+          expr: kube_statefulset_replicas{namespace="quizlabs",statefulset=~".*mongodb.*"} > 0 and on (namespace, statefulset) kube_statefulset_status_replicas_ready{namespace="quizlabs",statefulset=~".*mongodb.*"} == 0
+          for: 5m
+          labels:
+            scope: database
+            severity: warning
+          annotations:
+            summary: QuizLabs MongoDB has no ready replica.
+            description: Check MongoDB pod readiness, restarts, storage and quizlabs-only logs. This measures Kubernetes readiness, not successful database queries.
+            dashboard_url: https://grafana.ankilabs.org/d/quizlabs-overview
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#quizlabs
+    - name: homelab.platform
+      rules:
+        - alert: EdgeUpstreamFailure
+          expr: |
+            sum by (namespace, envoy_cluster_name) (
+              increase(envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"}[10m])
+            ) > 0
+            or
+            sum by (namespace, envoy_cluster_name) (
+              increase(envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"}[10m])
+            ) > 0
+            or
+            sum by (namespace, envoy_cluster_name) (
+              envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} > 0
+              unless
+              envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} offset 10m
+            )
+            or
+            sum by (namespace, envoy_cluster_name) (
+              envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} > 0
+              unless
+              envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} offset 10m
+            )
+          labels:
+            scope: platform
+            severity: warning
+          annotations:
+            summary: Envoy observed an application upstream connection failure or timeout.
+            description: '{{ $labels.envoy_cluster_name }} has an increased or newly observed nonzero upstream failure counter. New scrape coverage can expose older failures, and retries may mask user impact; inspect timestamps, the matching application namespace and endpoint readiness.'
+            dashboard_url: https://grafana.ankilabs.org/d/platform-delivery-edge
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests
+        - alert: EdgeScrapeFailed
+          expr: up{job=~"monitoring/(envoy-proxy|cloudflared)"} == 0 or absent(up{job="monitoring/envoy-proxy"}) or absent(up{job="monitoring/cloudflared"})
+          for: 5m
+          labels:
+            scope: platform
+            severity: warning
+          annotations:
+            summary: Native edge telemetry is missing or failing.
+            description: Check Envoy metrics on its internal metrics port and cloudflared on port 2000. Do not expose admin endpoints through the tunnel.
+            dashboard_url: https://grafana.ankilabs.org/d/platform-delivery-edge
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry

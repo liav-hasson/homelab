@@ -18,6 +18,29 @@ metadata:
   labels:
     {{- include "platform.labels" . | nindent 4 }}
 spec:
+  telemetry:
+    # Default Envoy access logs include the original request URI (including query terms).
+    accessLog:
+      settings:
+        - format:
+            type: JSON
+            json:
+              timestamp: "%START_TIME%"
+              service: envoy
+              event: edge.request.completed
+              route: "%ROUTE_NAME%"
+              method: "%REQ(:METHOD)%"
+              http_status: "%RESPONSE_CODE%"
+              duration_ms: "%DURATION%"
+              response_flags: "%RESPONSE_FLAGS%"
+              upstream_cluster: "%UPSTREAM_CLUSTER%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+    metrics:
+      prometheus:
+        disable: false
   provider:
     type: Kubernetes
     kubernetes:

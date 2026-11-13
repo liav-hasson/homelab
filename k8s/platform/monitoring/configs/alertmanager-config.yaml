@@ -25,8 +25,8 @@ spec:
       - receiver: pods-discord
         matchers:
           - name: scope
-            matchType: "="
-            value: pods
+            matchType: "=~"
+            value: pods|applications|database|platform
   receivers:
     - name: discard
     - name: nodes-discord
@@ -46,6 +46,7 @@ spec:
             Pod: {{ with .Labels.pod }}{{ . }}{{ else }}n/a{{ end }}
             Summary: {{ .Annotations.summary }}
             Description: {{ .Annotations.description }}
+            Dashboard: {{ .Annotations.dashboard_url }}
             {{- if .Annotations.runbook_url }}
             Runbook: {{ .Annotations.runbook_url }}
             {{- end }}
@@ -74,6 +75,7 @@ spec:
             Pod: {{ with .Labels.pod }}{{ . }}{{ else }}n/a{{ end }}
             Summary: {{ .Annotations.summary }}
             Description: {{ .Annotations.description }}
+            Dashboard: {{ .Annotations.dashboard_url }}
             {{- if .Annotations.runbook_url }}
             Runbook: {{ .Annotations.runbook_url }}
             {{- end }}

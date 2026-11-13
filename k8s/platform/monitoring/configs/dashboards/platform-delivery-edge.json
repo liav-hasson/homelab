@@ -1,0 +1,110 @@
+{
+  "uid": "platform-delivery-edge",
+  "title": "Platform - Delivery & Edge",
+  "description": "Flux desired-state delivery and native Envoy/cloudflared telemetry. Tunnel metrics are shared, not attributed to either application.",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "tags": ["homelab-monitoring"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {"from": "now-6h", "to": "now"},
+  "links": [{"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true}],
+  "templating": {"list": [
+    {"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"},
+    {"name": "logs", "label": "Loki", "type": "datasource", "query": "loki"}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "Delivery and edge interpretation",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 4},
+      "options": {"mode": "markdown", "content": "Flux readiness uses kube-state-metrics custom resources; reconciliation **mean duration is seconds**, not uptime. Envoy counters describe actual proxy activity. Cloudflared counters cover the whole tunnel and cannot be split by application. No log regex is used as a failure counter. Native scrape ports stay internal; no public admin route is created.\n\n[Telemetry runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry)"}
+    },
+    {
+      "id": 2, "type": "table", "title": "Flux resource readiness and delivered revisions",
+      "gridPos": {"x": 0, "y": 4, "w": 24, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "gotk_resource_info", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Flux reconciliation attempts / 15 minutes",
+      "gridPos": {"x": 0, "y": 12, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (kind, namespace) (increase(gotk_reconcile_duration_seconds_count{namespace=\"flux-system\"}[15m]))", "legendFormat": "{{namespace}} {{kind}}"}]
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Flux reconciliation mean duration (only observed attempts)",
+      "gridPos": {"x": 12, "y": 12, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (kind) (increase(gotk_reconcile_duration_seconds_sum{namespace=\"flux-system\"}[15m])) / sum by (kind) (increase(gotk_reconcile_duration_seconds_count{namespace=\"flux-system\"}[15m]))", "legendFormat": "{{kind}}"}]
+    },
+    {
+      "id": 5, "type": "table", "title": "Native edge scrape health: 1 reachable, 0 failed",
+      "gridPos": {"x": 0, "y": 19, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "up{job=~\"monitoring/(envoy-proxy|cloudflared)\"}", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Cloudflared active edge connections per replica",
+      "gridPos": {"x": 12, "y": 19, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "cloudflared_tunnel_ha_connections{namespace=\"cloudflare\"}", "legendFormat": "{{pod}}"}]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Envoy upstream requests by route cluster / 15 minutes",
+      "gridPos": {"x": 0, "y": 26, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\"}[15m]))", "legendFormat": "{{envoy_cluster_name}}"}]
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "Envoy upstream connect failures and timeouts / 15 minutes",
+      "gridPos": {"x": 12, "y": 26, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_cx_connect_fail{namespace=\"envoy-gateway-system\"}[15m]))", "legendFormat": "connect fail {{envoy_cluster_name}}"},
+        {"refId": "B", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_timeout{namespace=\"envoy-gateway-system\"}[15m]))", "legendFormat": "timeout {{envoy_cluster_name}}"}
+      ]
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Cloudflared HTTP responses by status / 15 minutes (shared)",
+      "gridPos": {"x": 0, "y": 33, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (status_code) (increase(cloudflared_tunnel_response_by_code{namespace=\"cloudflare\"}[15m]))", "legendFormat": "{{status_code}}"}]
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Cloudflared origin proxy errors / 15 minutes (shared)",
+      "gridPos": {"x": 12, "y": 33, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (pod) (increase(cloudflared_tunnel_request_errors{namespace=\"cloudflare\"}[15m]))", "legendFormat": "{{pod}}"}]
+    },
+    {
+      "id": 11, "type": "logs", "title": "Flux controller logs only",
+      "gridPos": {"x": 0, "y": 40, "w": 24, "h": 9},
+      "datasource": {"type": "loki", "uid": "${logs}"},
+      "targets": [{"refId": "A", "expr": "{namespace=\"flux-system\"}", "queryType": "range"}],
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
+    },
+    {
+      "id": 12, "type": "logs", "title": "Cloudflared logs only",
+      "gridPos": {"x": 0, "y": 49, "w": 24, "h": 8},
+      "datasource": {"type": "loki", "uid": "${logs}"},
+      "targets": [{"refId": "A", "expr": "{namespace=\"cloudflare\"}", "queryType": "range"}],
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
+    },
+    {
+      "id": 13, "type": "logs", "title": "Envoy safe access/runtime logs only (shared edge)",
+      "description": "Access records use route names, not original request paths/queries. Runtime records remain raw/UNKNOWN; these are not request-failure counts.",
+      "gridPos": {"x": 0, "y": 57, "w": 24, "h": 9},
+      "datasource": {"type": "loki", "uid": "${logs}"},
+      "targets": [{"refId": "A", "expr": "{namespace=\"envoy-gateway-system\",app=\"envoy\"}", "queryType": "range"}],
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
+    }
+  ]
+}
