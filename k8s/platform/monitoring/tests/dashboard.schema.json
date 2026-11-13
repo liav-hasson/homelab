@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Homelab provisioned classic dashboard contract (not the entire Grafana API)",
+  "type": "object",
+  "required": ["uid", "title", "schemaVersion", "version", "editable", "panels", "templating", "time"],
+  "properties": {
+    "uid": {"type": "string", "pattern": "^[a-z0-9-]{1,40}$"},
+    "title": {"type": "string", "minLength": 1},
+    "schemaVersion": {"type": "integer", "minimum": 39},
+    "version": {"type": "integer", "minimum": 1},
+    "editable": {"const": false},
+    "panels": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "title", "gridPos"],
+        "properties": {
+          "id": {"type": "integer", "minimum": 1},
+          "title": {"type": "string", "minLength": 1},
+          "type": {"enum": ["text", "table", "timeseries", "logs"]},
+          "gridPos": {
+            "type": "object",
+            "required": ["x", "y", "w", "h"],
+            "properties": {
+              "x": {"type": "integer", "minimum": 0, "maximum": 23},
+              "y": {"type": "integer", "minimum": 0},
+              "w": {"type": "integer", "minimum": 1, "maximum": 24},
+              "h": {"type": "integer", "minimum": 1}
+            }
+          },
+          "targets": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["refId", "expr"],
+              "properties": {
+                "refId": {"type": "string", "minLength": 1},
+                "expr": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "datasource": {
+            "type": "object",
+            "required": ["type", "uid"],
+            "properties": {
+              "type": {"enum": ["prometheus", "loki"]},
+              "uid": {"enum": ["${metrics}", "${logs}"]}
+            }
+          }
+        },
+        "if": {"properties": {"type": {"const": "text"}}},
+        "then": {"required": ["options"]},
+        "else": {"required": ["targets", "datasource"]}
+      }
+    },
+    "templating": {"type": "object", "required": ["list"]},
+    "time": {"type": "object", "required": ["from", "to"]}
+  }
+}

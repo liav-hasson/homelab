@@ -19,6 +19,8 @@ spec:
     remediation:
       retries: 2
   values:
+    monitoring:
+      enabled: true
     resources:
       requests:
         cpu: 250m

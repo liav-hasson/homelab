@@ -1,0 +1,94 @@
+{
+  "uid": "homelab-overview",
+  "title": "Homelab Overview",
+  "description": "Shared infrastructure, storage, workload availability and telemetry coverage. Missing data is unknown, never success.",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "tags": ["homelab-monitoring"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {"from": "now-6h", "to": "now"},
+  "links": [{"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true}],
+  "templating": {"list": [{"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"}]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "Start here",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 4},
+      "options": {"mode": "markdown", "content": "Use **Platform** for delivery/edge, **AnkiLabs Service Health** for request failures, **Search & PostgreSQL** for lookup stages/pools, and **QuizLabs** for the legacy stack. No data means **unknown**: check scrape health before interpreting any chart. Availability below is Kubernetes readiness, not a synthetic user journey.\n\n[Operator acceptance and incident runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md)"}
+    },
+    {
+      "id": 2, "type": "timeseries", "title": "Node CPU busy",
+      "gridPos": {"x": 0, "y": 4, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])))", "legendFormat": "{{instance}}"}]
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Node memory available",
+      "gridPos": {"x": 12, "y": 4, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "node_memory_MemAvailable_bytes", "legendFormat": "{{instance}}"}]
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Node filesystem space used",
+      "gridPos": {"x": 0, "y": 11, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "100 * (1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"})", "legendFormat": "{{instance}} {{mountpoint}}"}]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "Persistent volume space used",
+      "description": "Only volumes reported by kubelet. A missing volume series is not an empty volume.",
+      "gridPos": {"x": 12, "y": 11, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "100 * max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) / max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes)", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+    },
+    {
+      "id": 6, "type": "table", "title": "Scrape coverage: 1 reachable, 0 failed, absent unknown",
+      "gridPos": {"x": 0, "y": 18, "w": 24, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "up", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 7, "type": "table", "title": "Available / desired deployment replicas",
+      "gridPos": {"x": 0, "y": 26, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "kube_deployment_status_replicas_available / on (namespace, deployment) kube_deployment_spec_replicas", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 8, "type": "table", "title": "Ready / desired StatefulSet replicas",
+      "gridPos": {"x": 12, "y": 26, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "kube_statefulset_status_replicas_ready / on (namespace, statefulset) kube_statefulset_replicas", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Observed container restarts / 15 minutes",
+      "gridPos": {"x": 0, "y": 34, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[15m]))", "legendFormat": "{{namespace}} {{pod}}"}]
+    },
+    {
+      "id": 10, "type": "table", "title": "Active alerts (empty is not proof of complete coverage)",
+      "gridPos": {"x": 12, "y": 34, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "ALERTS{alertstate=~\"pending|firing\"}", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "Pod CPU consumption by namespace",
+      "gridPos": {"x": 0, "y": 41, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "cores", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (namespace) (rate(container_cpu_usage_seconds_total{container!=\"\",container!=\"POD\"}[$__rate_interval]))", "legendFormat": "{{namespace}}"}]
+    },
+    {
+      "id": 12, "type": "table", "title": "Reported node pressure conditions",
+      "gridPos": {"x": 12, "y": 41, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "kube_node_status_condition{condition=~\"MemoryPressure|DiskPressure|PIDPressure\",status=\"true\"}", "instant": true, "format": "table"}]
+    }
+  ]
+}

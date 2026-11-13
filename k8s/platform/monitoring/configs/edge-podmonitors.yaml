@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: envoy-proxy
+  labels:
+    app.kubernetes.io/component: monitoring
+spec:
+  namespaceSelector:
+    matchNames: [envoy-gateway-system]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: envoy
+      app.kubernetes.io/component: proxy
+      gateway.envoyproxy.io/owning-gateway-namespace: platform
+      gateway.envoyproxy.io/owning-gateway-name: homelab-gateway
+  podMetricsEndpoints:
+    - port: metrics
+      path: /stats/prometheus
+      interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cloudflared
+  labels:
+    app.kubernetes.io/component: monitoring
+spec:
+  namespaceSelector:
+    matchNames: [cloudflare]
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: tunnel
+      app.kubernetes.io/instance: cloudflare-tunnel
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

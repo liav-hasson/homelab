@@ -1,0 +1,135 @@
+{
+  "uid": "ankilabs-service-health",
+  "title": "AnkiLabs - Service Health",
+  "description": "AnkiLabs-only request, upstream, deployment and resource signals. Counts and sample sizes take precedence over sparse-traffic percentiles.",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "tags": ["homelab-monitoring"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {"from": "now-6h", "to": "now"},
+  "links": [{"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true}],
+  "templating": {"list": [
+    {"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"},
+    {"name": "logs", "label": "Loki", "type": "datasource", "query": "loki"},
+    {"name": "request_id", "label": "Request ID contains (query-time only)", "type": "textbox", "query": "", "current": {"text": "", "value": ""}}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "Read counts first",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 4},
+      "options": {"mode": "markdown", "content": "All application telemetry is restricted to **ankilabs**. Request failures are observed 5xx or explicit upstream `timeout`/`unavailable`, never keyword counts. Latency panels show a **mean alongside sample count**, not an unreliable sparse p95. Zero observations yield no mean. Requests killed before completion have started-event breadcrumbs but no completed latency sample. Request IDs are parsed only at query time.\n\n[Request runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests)"}
+    },
+    {
+      "id": 2, "type": "table", "title": "Core metrics scrape health (absent target is unknown)",
+      "gridPos": {"x": 0, "y": 4, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "up{namespace=\"ankilabs\",job=~\"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres)\"}", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 3, "type": "table", "title": "Available / desired AnkiLabs deployment replicas",
+      "gridPos": {"x": 12, "y": 4, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "kube_deployment_status_replicas_available{namespace=\"ankilabs\"} / on (namespace, deployment) kube_deployment_spec_replicas{namespace=\"ankilabs\"}", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Completed requests by service, route and HTTP status / 15 minutes",
+      "gridPos": {"x": 0, "y": 11, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (job, service, route, status) (increase({__name__=~\"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count\",namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{job}} {{service}} {{route}} {{status}}"}]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "Observed server failures / 15 minutes",
+      "gridPos": {"x": 12, "y": 11, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (job, service, route, status) (increase({__name__=~\"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count\",namespace=\"ankilabs\",status=~\"5..\"}[15m]))", "legendFormat": "{{job}} {{service}} {{route}} {{status}}"}]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Mean completed HTTP duration",
+      "description": "Includes recorded success and failure completions; compare sample count and status above. Missing/zero samples are not a zero-second response.",
+      "gridPos": {"x": 0, "y": 19, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (job, service, route) (increase({__name__=~\"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_sum\",namespace=\"ankilabs\"}[15m])) / sum by (job, service, route) (increase({__name__=~\"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count\",namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{job}} {{service}} {{route}}"}]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "HTTP latency sample count / 15 minutes",
+      "gridPos": {"x": 12, "y": 19, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (job, service, route) (increase({__name__=~\"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count\",namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{job}} {{service}} {{route}}"}]
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "Gateway lookup upstream completions by status / 15 minutes",
+      "gridPos": {"x": 0, "y": 26, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (service, status) (increase(ankilabs_api_gateway_upstream_request_duration_seconds_count{namespace=\"ankilabs\",service=~\"Sentence Lookup|Dictionary Lookup\"}[15m]))", "legendFormat": "{{service}} {{status}}"}]
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Gateway lookup upstream mean duration",
+      "gridPos": {"x": 12, "y": 26, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (service) (increase(ankilabs_api_gateway_upstream_request_duration_seconds_sum{namespace=\"ankilabs\",service=~\"Sentence Lookup|Dictionary Lookup\"}[15m])) / sum by (service) (increase(ankilabs_api_gateway_upstream_request_duration_seconds_count{namespace=\"ankilabs\",service=~\"Sentence Lookup|Dictionary Lookup\"}[15m]))", "legendFormat": "{{service}}"}]
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Container working set / configured memory limit",
+      "gridPos": {"x": 0, "y": 33, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "100 * max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=\"ankilabs\",container!=\"\",container!=\"POD\"}) / on (namespace, pod, container) (max by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=\"ankilabs\",resource=\"memory\",unit=\"byte\"}) > 0)", "legendFormat": "{{pod}} {{container}}"}]
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "Container CPU consumption",
+      "gridPos": {"x": 12, "y": 33, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "cores", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "sum by (pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"ankilabs\",container!=\"\",container!=\"POD\"}[$__rate_interval]))", "legendFormat": "{{pod}} {{container}}"}]
+    },
+    {
+      "id": 12, "type": "table", "title": "Recent OOM restarts (empty means none observed, not complete coverage)",
+      "gridPos": {"x": 0, "y": 40, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "(kube_pod_container_status_last_terminated_reason{namespace=\"ankilabs\",reason=\"OOMKilled\"} == 1) and on (namespace, pod, container) (increase(kube_pod_container_status_restarts_total{namespace=\"ankilabs\"}[15m]) > 0)", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "Container restarts / 15 minutes",
+      "gridPos": {"x": 12, "y": 40, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "increase(kube_pod_container_status_restarts_total{namespace=\"ankilabs\"}[15m])", "legendFormat": "{{pod}} {{container}}"}]
+    },
+    {
+      "id": 14, "type": "logs", "title": "Core request trace: started, stage and completion breadcrumbs",
+      "gridPos": {"x": 0, "y": 47, "w": 24, "h": 10},
+      "datasource": {"type": "loki", "uid": "${logs}"},
+      "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=~\"api-gateway|dictionary-lookup|sentence-lookup\"} | json | request_id=~`.*${request_id:regex}.*`", "queryType": "range"}],
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
+    },
+    {
+      "id": 15, "type": "logs", "title": "Core warnings/errors and unparsed/unknown records",
+      "description": "Preserves raw records. These are log records, not a count of failed requests.",
+      "gridPos": {"x": 0, "y": 57, "w": 24, "h": 9},
+      "datasource": {"type": "loki", "uid": "${logs}"},
+      "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=~\"api-gateway|dictionary-lookup|sentence-lookup\",severity=~\"WARNING|ERROR|CRITICAL|UNKNOWN\"}", "queryType": "range"}],
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
+    },
+    {
+      "id": 16, "type": "table", "title": "HTTP failure counters since process start (not window counts)",
+      "description": "First failure can create a nonzero series before its first scrape, making increase look zero. Compare raw counters with logs. New scrape discovery can reveal historical failures.",
+      "gridPos": {"x": 0, "y": 66, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "{__name__=~\"ankilabs_(api_gateway|sentence_lookup|dictionary_lookup)_http_request_duration_seconds_count\",namespace=\"ankilabs\",status=~\"5..\"}", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 17, "type": "table", "title": "Lookup upstream failure counters since gateway process start",
+      "gridPos": {"x": 12, "y": 66, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "ankilabs_api_gateway_upstream_request_duration_seconds_count{namespace=\"ankilabs\",service=~\"Sentence Lookup|Dictionary Lookup\",status=~\"5..|timeout|unavailable\"}", "instant": true, "format": "table"}]
+    }
+  ]
+}

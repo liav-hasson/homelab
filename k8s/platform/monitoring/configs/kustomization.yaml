@@ -4,29 +4,18 @@ namespace: monitoring
 resources:
   - podmonitor.yaml
   - ankilabs-api-gateway-podmonitor.yaml
+  - application-podmonitors.yaml
+  - edge-podmonitors.yaml
   - alerts.yaml
   - alertmanager-config.yaml
 configMapGenerator:
-  - name: flux-grafana-dashboards
+  - name: homelab-grafana-dashboards
     files:
-      - dashboards/control-plane.json
-      - dashboards/cluster.json
-      - dashboards/logs.json
-    options:
-      labels:
-        grafana_dashboard: "1"
-        app.kubernetes.io/part-of: flux
-        app.kubernetes.io/component: monitoring
-        kustomize.toolkit.fluxcd.io/substitute: disabled
-  - name: custom-grafana-dashboards
-    files:
-      - dashboards/main.json
-      - dashboards/apps.json
-      - dashboards/homelab-logs-overview.json
-      - dashboards/kubernetes-failures.json
-      - dashboards/networking-ingress.json
-      - dashboards/database-storage.json
-      - dashboards/ankilabs-api-latency.json
+      - dashboards/homelab-overview.json
+      - dashboards/platform-delivery-edge.json
+      - dashboards/ankilabs-service-health.json
+      - dashboards/ankilabs-search-postgres.json
+      - dashboards/quizlabs-overview.json
     options:
       labels:
         grafana_dashboard: "1"
