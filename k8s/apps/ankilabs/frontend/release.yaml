@@ -25,8 +25,8 @@ spec:
   values:
     image:
       repository: ghcr.io/liav-hasson/ankilabs/frontend
-      tag: "0.1.60" # {"$imagepolicy": "ankilabs:frontend:tag"}
-      digest: "sha256:610317aa82f4aefa0b1fded8e6081b74e009d6cb067d58a623bbf85577eb4b06" # {"$imagepolicy": "ankilabs:frontend:digest"}
+      tag: "0.1.61" # {"$imagepolicy": "ankilabs:frontend:tag"}
+      digest: "sha256:87739e3aa55871357ec2c379ced9b2a56823dfcb8ac7ba508c1acbdb18e359f7" # {"$imagepolicy": "ankilabs:frontend:digest"}
     containerPort: 8080
     resources:
       requests:
