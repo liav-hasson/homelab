@@ -38,6 +38,9 @@ spec:
         value: http://authorization
       - name: AI_CARD_ACTIONS_URL
         value: http://ai-card-actions
+      # DEBUG also logs request content (lookup queries and AI inputs); INFO logs only fingerprints and request IDs.
+      - name: LOG_LEVEL
+        value: INFO
     resources:
       requests:
         cpu: 20m

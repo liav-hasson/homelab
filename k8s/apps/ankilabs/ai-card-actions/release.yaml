@@ -48,6 +48,10 @@ spec:
            "review": {"model": "ankilabs-medium", "reasoning_effort": null, "max_output_tokens": 6000}}
       - name: SENTENCE_COUNT
         value: "10"
+      # DEBUG also logs request content (AI inputs, TTS text and rejected model output); INFO logs only fingerprints
+      # and request IDs.
+      - name: LOG_LEVEL
+        value: INFO
       # Text-to-speech: the logical LiteLLM model, a per-request character cap bounding one clip's cost, and the
       # voice catalog per language. ElevenLabs default voices: verify with GET /v2/voices; defaults expire
       # 2026-12-31; replace with native-accent Voice Library voices on a paid plan. The free tier allows only these
