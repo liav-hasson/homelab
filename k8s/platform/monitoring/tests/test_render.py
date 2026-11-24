@@ -139,7 +139,7 @@ class RenderTests(unittest.TestCase):
         )
 
     def test_monitoring_kustomize_build(self) -> None:
-        """Resolve exactly five provisioned dashboards without reading encrypted files."""
+        """Resolve exactly six provisioned dashboards without reading encrypted files."""
         output = run_tool("kustomize", ["build", str(MONITORING / "configs")])
         resources = load_kustomize_documents(output)
         dashboards = [
@@ -149,7 +149,7 @@ class RenderTests(unittest.TestCase):
             and item["metadata"].get("labels", {}).get("grafana_dashboard") == "1"
         ]
         self.assertEqual(len(dashboards), 1)
-        self.assertEqual(len(dashboards[0]["data"]), 5)
+        self.assertEqual(len(dashboards[0]["data"]), 6)
         self.assertFalse(any(item["kind"] == "Secret" for item in resources))
 
 

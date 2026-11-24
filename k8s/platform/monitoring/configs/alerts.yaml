@@ -32,6 +32,28 @@ spec:
             description: Memory usage on {{ $labels.instance }} has been above 90% for 5 minutes. Check working sets and OOM events.
             dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
+        - alert: NodeFilesystemLowSpace
+          expr: 100 * node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint!~"/run.*"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint!~"/run.*"} < 15
+          for: 10m
+          labels:
+            scope: nodes
+            severity: warning
+          annotations:
+            summary: Node filesystem free space is below 15%.
+            description: '{{ $labels.mountpoint }} on {{ $labels.instance }} has had less than 15% space available for 10 minutes. Every openebs-hostpath volume shares this filesystem; find the growing volume before deleting data.'
+            dashboard_url: https://grafana.ankilabs.org/d/platform-storage
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
+        - alert: NodeFilesystemFillingUp
+          expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint!~"/run.*"}[6h], 3 * 24 * 3600) < 0
+          for: 1h
+          labels:
+            scope: nodes
+            severity: warning
+          annotations:
+            summary: Node filesystem is predicted to fill within 3 days.
+            description: '{{ $labels.mountpoint }} on {{ $labels.instance }} will run out of space within 3 days if the 6-hour write trend continues. Short bursts such as restores or image pulls can trigger this; confirm the trend before acting.'
+            dashboard_url: https://grafana.ankilabs.org/d/platform-storage
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
     - name: homelab.pods
       rules:
         - alert: PodCrashLoopBackOff

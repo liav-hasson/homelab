@@ -14,6 +14,7 @@ CONFIGS = MONITORING / "configs"
 EXPECTED = {
     "homelab-overview": "Homelab Overview",
     "platform-delivery-edge": "Platform - Delivery & Edge",
+    "platform-storage": "Platform - Storage",
     "ankilabs-service-health": "AnkiLabs - Service Health",
     "ankilabs-search-postgres": "AnkiLabs - Search & PostgreSQL",
     "quizlabs-overview": "QuizLabs - Overview",
@@ -31,7 +32,7 @@ class MonitoringContractTests(unittest.TestCase):
             for path in sorted((CONFIGS / "dashboards").glob("*.json"))
         ]
 
-    def test_exact_five_dashboard_schemas_and_nonoverlapping_layouts(self) -> None:
+    def test_exact_dashboard_schemas_and_nonoverlapping_layouts(self) -> None:
         """Reject obsolete dashboards, UID collisions and invalid panel layouts."""
         schema = json.loads(
             (Path(__file__).parent / "dashboard.schema.json").read_text(
@@ -40,7 +41,7 @@ class MonitoringContractTests(unittest.TestCase):
         )
         Draft202012Validator.check_schema(schema)
         validator = Draft202012Validator(schema)
-        self.assertEqual(len(self.dashboards), 5)
+        self.assertEqual(len(self.dashboards), len(EXPECTED))
         self.assertEqual(
             {item["uid"]: item["title"] for item in self.dashboards}, EXPECTED
         )
