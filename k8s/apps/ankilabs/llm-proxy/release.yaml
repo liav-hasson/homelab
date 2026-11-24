@@ -31,6 +31,10 @@ spec:
     database:
       passwordSecret:
         name: llm-proxy-database
+      grafana:
+        enabled: true
+        passwordSecret:
+          name: llm-proxy-grafana
     config:
       # Logical model names are what Usage Codes allow and what AI Card Actions requests.
       model_list:

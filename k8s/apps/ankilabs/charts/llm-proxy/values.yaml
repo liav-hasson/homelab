@@ -35,6 +35,14 @@ database:
       name: postgres-credentials
       key: POSTGRES_PASSWORD
   bootstrapImage: postgres:18.6
+  # Read-only login for Grafana: it can read only the views in files/grafana-views.sql (Usage Code metadata and spend,
+  # never key hashes, prompts or responses). The bootstrap Job keeps its password in sync with the Secret.
+  grafana:
+    enabled: false
+    user: grafana_litellm
+    passwordSecret:
+      name: ""
+      key: GRAFANA_LITELLM_DB_PASSWORD
 
 # Rendered verbatim as LiteLLM's config.yaml; release values merge over these defaults.
 # Callers request only the logical model_name entries. A model missing from LiteLLM's bundled cost map is priced at

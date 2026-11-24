@@ -17,9 +17,27 @@ EXPECTED = {
     "platform-storage": "Platform - Storage",
     "ankilabs-service-health": "AnkiLabs - Service Health",
     "ankilabs-search-postgres": "AnkiLabs - Search & PostgreSQL",
+    "ankilabs-ai": "AnkiLabs - AI",
     "quizlabs-overview": "QuizLabs - Overview",
 }
 SENSITIVE = r"\b(request_id|query_fingerprint|db_backend_pid|cursor)\s*(=|:)"
+POSTGRES = "grafana-postgresql-datasource"
+LITELLM_VIEWS = K8S / "apps/ankilabs/charts/llm-proxy/files/grafana-views.sql"
+# LiteLLM columns holding key hashes, prompts, answers or request metadata.
+LITELLM_PRIVATE = (
+    r"\b(token|api_key|messages|response|metadata|proxy_server_request|key_name)\b"
+)
+
+
+def sql_targets(dashboards: list[dict]) -> list[str]:
+    """Every PostgreSQL panel query."""
+    return [
+        target["rawSql"]
+        for dashboard in dashboards
+        for panel in dashboard["panels"]
+        if panel.get("datasource", {}).get("type") == POSTGRES
+        for target in panel["targets"]
+    ]
 
 
 class MonitoringContractTests(unittest.TestCase):
@@ -86,6 +104,8 @@ class MonitoringContractTests(unittest.TestCase):
                 continue
             namespace = "quizlabs" if uid.startswith("quizlabs-") else "ankilabs"
             for panel in dashboard["panels"]:
+                if panel.get("datasource", {}).get("type") == POSTGRES:
+                    continue
                 for target in panel.get("targets", []):
                     expr = target["expr"]
                     if panel["type"] == "logs":
@@ -108,18 +128,96 @@ class MonitoringContractTests(unittest.TestCase):
                         self.assertNotRegex(selector, SENSITIVE)
 
     def test_no_fake_zero_health_or_sparse_percentiles(self) -> None:
-        """Keep missing observations visible and latency units honest."""
+        """Keep missing observations visible and latency units honest.
+
+        A percentile is shown only alongside a minimum sample count in the same window.
+        """
         for dashboard in self.dashboards:
             serialized = json.dumps(dashboard)
             self.assertNotRegex(serialized, r"vector\s*\(\s*0\s*\)")
             self.assertNotIn("nullAsZero", serialized)
-            self.assertNotIn("histogram_quantile", serialized)
             for panel in dashboard["panels"]:
                 for target in panel.get("targets", []):
+                    expr = target.get("expr", "")
+                    if "histogram_quantile" in expr:
+                        self.assertRegex(
+                            expr,
+                            r"\) and on \([\w, ]+\) sum by \([\w, ]+\) "
+                            r"\(increase\(\w+_count\{[^}]*\}\[\w+\]\)\) >= [1-9]\d*$",
+                        )
                     if panel["type"] == "timeseries" and (
-                        "duration_seconds_sum" in target["expr"]
+                        "duration_seconds_sum" in expr
                     ):
                         self.assertEqual(panel["fieldConfig"]["defaults"]["unit"], "s")
+
+    def test_litellm_panels_read_only_the_grafana_views(self) -> None:
+        """Grafana's LiteLLM login sees views without key hashes, prompts or answers."""
+        queries = sql_targets(self.dashboards)
+        self.assertTrue(queries)
+        for query in queries:
+            with self.subTest(query=query):
+                relations = re.findall(r"\bFROM\s+([\w.]+)", query)
+                self.assertTrue(relations)
+                self.assertLessEqual(
+                    set(relations), {"grafana.usage_codes", "grafana.spend_logs"}
+                )
+                self.assertNotRegex(query, LITELLM_PRIVATE)
+        views = LITELLM_VIEWS.read_text(encoding="utf-8")
+        statements = re.sub(r"--.*", "", views)
+        # The key hash is only a join key inside the views, never a column.
+        for predicate in ("s.api_key = t.token", "t.token = s.api_key"):
+            self.assertIn(predicate, statements)
+            statements = statements.replace(predicate, "")
+        self.assertNotRegex(statements, LITELLM_PRIVATE)
+        grants = re.findall(r"^GRANT .*$", views, re.MULTILINE)
+        self.assertEqual(
+            grants,
+            [
+                'GRANT USAGE ON SCHEMA grafana TO :"grafana_role";',
+                'GRANT SELECT ON grafana.usage_codes, grafana.spend_logs TO :"grafana_role";',
+            ],
+        )
+
+    def test_scraped_application_pods_admit_prometheus(self) -> None:
+        """Every AnkiLabs PodMonitor target's NetworkPolicy admits the monitoring namespace."""
+        apps = set()
+        for path in CONFIGS.glob("*podmonitor*.yaml"):
+            for monitor in yaml.safe_load_all(path.read_text(encoding="utf-8")):
+                spec = monitor["spec"]
+                if spec["namespaceSelector"]["matchNames"] != ["ankilabs"]:
+                    continue
+                selector = spec["selector"]
+                if "matchLabels" in selector:
+                    apps.add(selector["matchLabels"]["app.kubernetes.io/name"])
+                for expression in selector.get("matchExpressions", []):
+                    apps.update(expression["values"])
+        policies = {
+            policy["spec"]["podSelector"]["matchLabels"][
+                "app.kubernetes.io/name"
+            ]: policy
+            for path in (K8S / "apps/ankilabs").glob("*/networkpolicy.yaml")
+            for policy in yaml.safe_load_all(path.read_text(encoding="utf-8"))
+        }
+        self.assertIn("ai-card-actions", apps)
+        monitoring = {"kubernetes.io/metadata.name": "monitoring"}
+        for app in apps:
+            with self.subTest(app=app):
+                sources = [
+                    source
+                    for rule in policies[app]["spec"]["ingress"]
+                    for source in rule["from"]
+                ]
+                self.assertTrue(
+                    any(
+                        source.get("namespaceSelector", {}).get("matchLabels")
+                        == monitoring
+                        and source.get("podSelector", {})
+                        .get("matchLabels", {})
+                        .get("app.kubernetes.io/name", "prometheus")
+                        == "prometheus"
+                        for source in sources
+                    )
+                )
 
     def test_alert_links_routes_and_namespace_matcher_strategy(self) -> None:
         """Application/database alerts must reach the existing POD Discord receiver."""

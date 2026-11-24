@@ -34,19 +34,21 @@
             "minItems": 1,
             "items": {
               "type": "object",
-              "required": ["refId", "expr"],
+              "required": ["refId"],
               "properties": {
                 "refId": {"type": "string", "minLength": 1},
-                "expr": {"type": "string", "minLength": 1}
-              }
+                "expr": {"type": "string", "minLength": 1},
+                "rawSql": {"type": "string", "minLength": 1}
+              },
+              "oneOf": [{"required": ["expr"]}, {"required": ["rawSql"]}]
             }
           },
           "datasource": {
             "type": "object",
             "required": ["type", "uid"],
             "properties": {
-              "type": {"enum": ["prometheus", "loki"]},
-              "uid": {"enum": ["${metrics}", "${logs}"]}
+              "type": {"enum": ["prometheus", "loki", "grafana-postgresql-datasource"]},
+              "uid": {"enum": ["${metrics}", "${logs}", "${litellm}"]}
             }
           }
         },

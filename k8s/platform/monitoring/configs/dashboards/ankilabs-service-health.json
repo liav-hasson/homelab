@@ -25,7 +25,7 @@
       "id": 2, "type": "table", "title": "Core metrics scrape health (absent target is unknown)",
       "gridPos": {"x": 0, "y": 4, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "up{namespace=\"ankilabs\",job=~\"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres)\"}", "instant": true, "format": "table"}]
+      "targets": [{"refId": "A", "expr": "up{namespace=\"ankilabs\",job=~\"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres|ankilabs-ai-card-actions)\"}", "instant": true, "format": "table"}]
     },
     {
       "id": 3, "type": "table", "title": "Available / desired AnkiLabs deployment replicas",

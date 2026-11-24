@@ -1,0 +1,73 @@
+{{- if .Values.database.grafana.enabled }}
+# Creates Grafana's read-only views (files/grafana-views.sql) in LiteLLM's database. Helm runs post hooks only once the
+# proxy is ready, so after LiteLLM's migrations; the bootstrap Job drops the views before every upgrade. A failure only
+# leaves the AI dashboard's database panels empty, so it is logged without failing the release, which would roll back
+# the proxy. The Job is kept until the next upgrade so its log stays readable.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-grafana-views
+  labels:
+    {{- include "llm-proxy.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        # The bootstrap identity is what the postgres NetworkPolicy admits.
+        app.kubernetes.io/name: {{ .Release.Name }}-db-bootstrap
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: views
+          image: {{ .Values.database.bootstrapImage | quote }}
+          command:
+            - sh
+            - -c
+            - |
+              if ! psql -v ON_ERROR_STOP=1 --single-transaction -v grafana_role="$GRAFANA_DB_USER" <<'SQL'
+              {{- .Files.Get "files/grafana-views.sql" | trim | nindent 14 }}
+              SQL
+              then
+                echo "WARNING: Grafana's LiteLLM views were not created; see the AI section of the monitoring runbook." >&2
+              fi
+          env:
+            - name: PGHOST
+              value: {{ .Values.database.host | quote }}
+            - name: PGPORT
+              value: {{ .Values.database.port | quote }}
+            - name: PGUSER
+              value: {{ .Values.database.admin.user | quote }}
+            - name: PGDATABASE
+              value: {{ .Values.database.name | quote }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.admin.passwordSecret.name }}
+                  key: {{ .Values.database.admin.passwordSecret.key }}
+            - name: GRAFANA_DB_USER
+              value: {{ .Values.database.grafana.user | quote }}
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+{{- end }}

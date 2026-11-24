@@ -40,3 +40,24 @@ spec:
       relabelings:
         - targetLabel: service
           replacement: postgres-exporter
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ankilabs-ai-card-actions
+  labels:
+    app.kubernetes.io/component: monitoring
+spec:
+  namespaceSelector:
+    matchNames: [ankilabs]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ai-card-actions
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        - targetLabel: service
+          replacement: ai-card-actions

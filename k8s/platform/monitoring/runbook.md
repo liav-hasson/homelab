@@ -297,8 +297,8 @@ git diff --check
 
 The suite includes local JSON-contract/schema/unique-UID/layout checks, exact
 provisioning references, namespace/privacy/routing guards, `helm lint` and
-`helm template` for all three changed charts, monitoring-only `kustomize build`,
-`promtool check rules` for alerts **and all dashboard PromQL**, thirteen real
+`helm template` for the PostgreSQL, LLM Proxy, Envoy and Cloudflare charts, monitoring-only `kustomize build`,
+`promtool check rules` for alerts **and all dashboard PromQL**, eighteen real
 Prometheus evaluator cases, and actual Promtail stdin/dry-run replay tests.
 The checked-in dashboard schema is a focused provisioning contract, not the
 entire Grafana API schema.
@@ -335,9 +335,9 @@ deployment is part of these commands.
 
 After an explicitly authorized rollout:
 
-1. Grafana must contain exactly the six provisioned dashboards: Homelab
+1. Grafana must contain exactly the seven provisioned dashboards: Homelab
    Overview; Platform - Delivery & Edge; Platform - Storage; AnkiLabs - Service
-   Health; AnkiLabs - Search & PostgreSQL; QuizLabs - Overview. Check that the old two dashboard
+   Health; AnkiLabs - Search & PostgreSQL; AnkiLabs - AI; QuizLabs - Overview. Check that the old two dashboard
    ConfigMaps and all their dashboards were removed by Flux prune/Grafana
    sidecar deletion. Do not keep old dashboards as a second source of truth.
 2. Select the Prometheus and Loki data sources. Confirm each expected target is
@@ -369,7 +369,7 @@ After an explicitly authorized rollout:
 In Prometheus:
 
 ```promql
-up{namespace="ankilabs",job=~"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres)"}
+up{namespace="ankilabs",job=~"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres|ankilabs-ai-card-actions)"}
 up{job=~"monitoring/(envoy-proxy|cloudflared)"}
 pg_up{namespace="ankilabs"}
 pg_scrape_collector_success{namespace="ankilabs"}
@@ -440,6 +440,100 @@ candidate_fetch, span_fetch, matching, translations, search, counts and release;
 dictionary stages include query, resolve, translate and notes. Stages overlap;
 do not sum them into an end-to-end duration. PostgreSQL checkpointer metrics use
 the PG17+ collector, not old bgwriter checkpoint fields.
+
+## AI
+
+Use AnkiLabs - AI. It combines AI Card Actions metrics, LiteLLM's own records
+from PostgreSQL (datasource **LiteLLM**, uid `litellm`) and AI Card Actions logs.
+AI Card Actions must expose `/metrics` (ai-card-actions PR #9) before this
+scrape is deployed; otherwise `AnkiLabsScrapeFailed` reports the target.
+
+`AnkiLabsAIErrorRatioHigh` fires when more than 20% of one action's LLM calls
+failed over 15 minutes, with at least 3 calls. Usage Code errors
+(`usage_code_*`, user state) and `ai_refused` (the model declined; the user
+gets 422) are excluded; `ai_output_invalid` (an answer returned but unusable)
+counts. All codes stay visible on the dashboard. Window counts include a series
+first seen inside the window, so the first failure after a restart is not lost.
+
+```promql
+sum by (action, error_code) (increase(ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs"}[1h]))
+sum by (action, outcome) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs"}[1h]))
+```
+
+```logql
+{namespace="ankilabs",app="ai-card-actions"} | json | event="llm.request.completed" | error_code="ai_timeout"
+{namespace="ankilabs",app="ai-card-actions"} | json | event="llm.output.rejected"
+```
+
+Each call has one `llm.request.completed` record with `duration_ms`,
+`input_chars` and token/cost fields. A rejected answer logs `outcome=success`
+there but is `outcome=error` in metrics, and its tokens and cost still count.
+Compare AI Card Actions' LLM duration with LiteLLM's own duration for the same
+model: a similar value points at the provider, a larger gap at the in-cluster
+path. Calls time out at 75 seconds (`LLM_PROXY_TIMEOUT_SECONDS`); check input
+size before raising it. Reasoning tokens are part of completion tokens.
+
+### LiteLLM database access for Grafana
+
+The `llm-proxy` chart provisions everything; there is no manual SQL. Its
+pre-install/pre-upgrade bootstrap Job creates the `grafana_litellm` login
+(`NOINHERIT`, connection limit 3, read-only transactions, 10-second statement
+timeout, `CONNECT` on `litellm` only) with the password from Secret
+`ankilabs/llm-proxy-grafana`, and drops the views. After the proxy is ready,
+and so after LiteLLM's migrations, the `llm-proxy-grafana-views` Job recreates
+the views from `k8s/apps/ankilabs/charts/llm-proxy/files/grafana-views.sql`
+in schema `grafana`. The views expose no key hash, prompt, response or request
+metadata, and the login has no grant on LiteLLM's tables. Like every role, it
+can connect to the `ankilabs` database through PUBLIC's default `CONNECT`, but
+it cannot read its tables.
+
+If the database panels report that a `grafana.*` relation does not exist, read
+the Job log. A LiteLLM upgrade that changed a column the views read logs a
+warning there without failing the release:
+
+```sh
+kubectl -n ankilabs logs job/llm-proxy-grafana-views
+```
+
+Fix `grafana-views.sql` against the new LiteLLM schema. To recreate the views
+without an upgrade, from the homelab checkout:
+
+```sh
+kubectl -n ankilabs exec -i statefulset/postgres -c postgres -- \
+  psql -X -U ankilabs -d litellm -v ON_ERROR_STOP=1 --single-transaction \
+  -v grafana_role=grafana_litellm \
+  < k8s/apps/ankilabs/charts/llm-proxy/files/grafana-views.sql
+```
+
+### Rotate the Grafana LiteLLM password
+
+The same password is in two SOPS Secrets: `llm-proxy-grafana`
+(`k8s/apps/ankilabs/llm-proxy/grafana-secrets.yaml`, applied to PostgreSQL by
+the bootstrap Job) and `monitoring/grafana-litellm-database`
+(`k8s/platform/monitoring/controllers/kube-prometheus-stack/grafana-litellm-secrets.yaml`,
+read by Grafana). It must be URL-safe:
+
+```sh
+python3 -c 'import secrets; print(secrets.token_urlsafe(32))'
+sops k8s/apps/ankilabs/llm-proxy/grafana-secrets.yaml
+sops k8s/platform/monitoring/controllers/kube-prometheus-stack/grafana-litellm-secrets.yaml
+```
+
+Set the same value in both editors, then commit and merge. After Flux applies
+the Secrets, run the bootstrap Job with a forced Helm upgrade (the proxy keeps
+running; its pod template does not change) and restart Grafana, which reads the
+password only at startup:
+
+```sh
+now="$(date -u +%s)"
+kubectl -n ankilabs annotate helmrelease/llm-proxy \
+  reconcile.fluxcd.io/requestedAt="$now" reconcile.fluxcd.io/forceAt="$now" --overwrite
+kubectl -n ankilabs get helmrelease llm-proxy -w
+kubectl -n monitoring rollout restart deployment/kube-prometheus-stack-grafana
+```
+
+Between the two steps the LiteLLM panels fail authentication; nothing else is
+affected.
 
 ## Resources
 

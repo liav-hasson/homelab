@@ -36,7 +36,9 @@ def dashboard_queries() -> list[dict]:
                 queries.append(
                     {
                         "record": f"homelab_validation:panel_{len(queries)}",
-                        "expr": target["expr"].replace("$__rate_interval", "5m"),
+                        "expr": target["expr"]
+                        .replace("$__rate_interval", "5m")
+                        .replace("$__range", "6h"),
                     }
                 )
     return queries
