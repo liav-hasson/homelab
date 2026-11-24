@@ -1,4 +1,4 @@
-# PostgreSQL serves lookups, LLM Proxy/bootstrap, and the separate monitoring exporter.
+# PostgreSQL serves lookups, LLM Proxy/bootstrap, the separate monitoring exporter, and Grafana's LiteLLM datasource.
 # It makes no outbound connections.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -29,6 +29,17 @@ spec:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: postgres-exporter
+      ports:
+        - port: postgres
+          protocol: TCP
+    # Grafana's LiteLLM datasource; its login can read only the views in LiteLLM's grafana schema.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
       ports:
         - port: postgres
           protocol: TCP

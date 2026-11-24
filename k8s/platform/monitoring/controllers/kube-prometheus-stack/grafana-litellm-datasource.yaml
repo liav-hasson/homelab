@@ -1,0 +1,33 @@
+# Read-only PostgreSQL datasource for the AnkiLabs - AI dashboard: LiteLLM's database through the grafana_litellm login,
+# which can read only the views in its `grafana` schema (k8s/apps/ankilabs/charts/llm-proxy/files/grafana-views.sql).
+# Grafana expands $__env{...} from its own environment (grafana.envValueFrom in release.yaml), so no password is here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-litellm-datasource
+  namespace: monitoring
+  labels:
+    grafana_datasource: "1"
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  litellm-datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: LiteLLM
+        uid: litellm
+        type: grafana-postgresql-datasource
+        access: proxy
+        url: postgres.ankilabs.svc.cluster.local:5432
+        user: grafana_litellm
+        editable: false
+        isDefault: false
+        jsonData:
+          database: litellm
+          sslmode: disable
+          postgresVersion: 1500
+          # The login allows 3 connections; Postgres allows 50 shared by every AnkiLabs service.
+          maxOpenConns: 2
+          maxIdleConns: 1
+          connMaxLifetime: 14400
+        secureJsonData:
+          password: $__env{GRAFANA_LITELLM_DB_PASSWORD}

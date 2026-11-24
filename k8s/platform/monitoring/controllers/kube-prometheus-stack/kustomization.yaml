@@ -6,6 +6,8 @@ resources:
   - repository.yaml
   - helm-secrets.yaml
   - discord-webhook-secrets.yaml
+  - grafana-litellm-secrets.yaml
+  - grafana-litellm-datasource.yaml
   - release.yaml
   - grafana-httproute.yaml
 configMapGenerator:

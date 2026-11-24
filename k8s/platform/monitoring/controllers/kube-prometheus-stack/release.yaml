@@ -71,3 +71,11 @@ spec:
             app.kubernetes.io/component: monitoring
     grafana:
       defaultDashboardsEnabled: false
+      # Read by the LiteLLM datasource (grafana-litellm-datasource.yaml) as $__env{GRAFANA_LITELLM_DB_PASSWORD}.
+      # Optional: a missing Secret fails only that datasource, never Grafana's startup.
+      envValueFrom:
+        GRAFANA_LITELLM_DB_PASSWORD:
+          secretKeyRef:
+            name: grafana-litellm-database
+            key: password
+            optional: true
