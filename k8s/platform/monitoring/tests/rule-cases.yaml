@@ -83,6 +83,8 @@ tests:
         values: "1+0x7"
       - series: 'up{namespace="ankilabs",service="postgres-exporter"}'
         values: "1+0x7"
+      - series: 'up{namespace="ankilabs",service="ai-card-actions"}'
+        values: "1+0x7"
     alert_rule_test:
       - eval_time: 6m
         alertname: AnkiLabsExpectedTargetMissing
@@ -186,4 +188,81 @@ tests:
     alert_rule_test:
       - eval_time: 90m
         alertname: NodeFilesystemFillingUp
+        exp_alerts: []
+  - name: ai-error-ratio-above-twenty-percent-alerts-per-action
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="notes",model="ankilabs-medium",outcome="success"}'
+        values: "0x15 1 2 3 4 4 4 4"
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="notes",model="ankilabs-medium",outcome="error"}'
+        values: "0x15 0 0 1 2 2 2 2"
+      - series: 'ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",pod="ai-card-actions-fixture",action="notes",model="ankilabs-medium",error_code="ai_timeout"}'
+        values: "0x15 0 0 1 2 2 2 2"
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="sentences",model="ankilabs-medium",outcome="success"}'
+        values: "0x15 2 4 6 8 8 8 8"
+    alert_rule_test:
+      - eval_time: 21m
+        alertname: AnkiLabsAIErrorRatioHigh
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              action: notes
+              scope: applications
+              severity: warning
+  - name: ai-first-errors-before-first-scrape-are-counted
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="review",model="ankilabs-medium",outcome="success"}'
+        values: "_x4 2x5"
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="review",model="ankilabs-medium",outcome="error"}'
+        values: "_x4 1x5"
+      - series: 'ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",pod="ai-card-actions-fixture",action="review",model="ankilabs-medium",error_code="ai_output_invalid"}'
+        values: "_x4 1x5"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: AnkiLabsAIErrorRatioHigh
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              action: review
+              scope: applications
+              severity: warning
+  - name: ai-errors-below-minimum-traffic-do-not-alert
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="speech",model="ankilabs-tts",outcome="error"}'
+        values: "_x4 2x5"
+      - series: 'ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",pod="ai-card-actions-fixture",action="speech",model="ankilabs-tts",error_code="ai_timeout"}'
+        values: "_x4 2x5"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: AnkiLabsAIErrorRatioHigh
+        exp_alerts: []
+  - name: ai-usage-code-and-refusal-errors-do-not-alert
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="sentences",model="ankilabs-medium",outcome="success"}'
+        values: "_x4 1x5"
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="sentences",model="ankilabs-medium",outcome="error"}'
+        values: "_x4 5x5"
+      - series: 'ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",pod="ai-card-actions-fixture",action="sentences",model="ankilabs-medium",error_code="usage_code_exhausted"}'
+        values: "_x4 3x5"
+      - series: 'ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",pod="ai-card-actions-fixture",action="sentences",model="ankilabs-medium",error_code="ai_refused"}'
+        values: "_x4 2x5"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: AnkiLabsAIErrorRatioHigh
+        exp_alerts: []
+  - name: ai-error-ratio-at-or-below-twenty-percent-does-not-alert
+    interval: 1m
+    input_series:
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="notes",model="ankilabs-medium",outcome="success"}'
+        values: "_x4 9x5"
+      - series: 'ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs",pod="ai-card-actions-fixture",action="notes",model="ankilabs-medium",outcome="error"}'
+        values: "_x4 1x5"
+      - series: 'ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",pod="ai-card-actions-fixture",action="notes",model="ankilabs-medium",error_code="ai_unavailable"}'
+        values: "_x4 1x5"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: AnkiLabsAIErrorRatioHigh
         exp_alerts: []

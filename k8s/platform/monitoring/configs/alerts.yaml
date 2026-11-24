@@ -122,7 +122,7 @@ spec:
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests
         - alert: AnkiLabsScrapeFailed
-          expr: up{namespace="ankilabs",job=~"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres)"} == 0
+          expr: up{namespace="ankilabs",job=~"monitoring/(ankilabs-api-gateway|ankilabs-lookups|ankilabs-postgres|ankilabs-ai-card-actions)"} == 0
           for: 3m
           labels:
             scope: applications
@@ -138,6 +138,7 @@ spec:
             or absent(up{namespace="ankilabs",service="dictionary-lookup"})
             or absent(up{namespace="ankilabs",service="sentence-lookup"})
             or absent(up{namespace="ankilabs",service="postgres-exporter"})
+            or absent(up{namespace="ankilabs",service="ai-card-actions"})
           for: 5m
           labels:
             scope: applications
@@ -147,6 +148,49 @@ spec:
             description: No discovered target exists for this selector. Inspect PodMonitor selection and desired replicas, including a missing postgres-monitoring Secret.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry
+        - alert: AnkiLabsAIErrorRatioHigh
+          # Window counts include a series first seen inside the window (its first error precedes its first scrape).
+          # Usage Code errors and ai_refused are user or model outcomes, not failures of the AI path.
+          expr: |
+            (
+              sum by (namespace, action) (
+                (
+                  ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",error_code!~"usage_code_.*|ai_refused"}
+                  unless
+                  ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",error_code!~"usage_code_.*|ai_refused"} offset 15m
+                )
+                or
+                increase(ankilabs_ai_card_actions_llm_errors_total{namespace="ankilabs",error_code!~"usage_code_.*|ai_refused"}[15m])
+              )
+              /
+              sum by (namespace, action) (
+                (
+                  ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs"}
+                  unless
+                  ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs"} offset 15m
+                )
+                or
+                increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs"}[15m])
+              )
+            ) > 0.2
+            and on (namespace, action)
+            sum by (namespace, action) (
+              (
+                ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs"}
+                unless
+                ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs"} offset 15m
+              )
+              or
+              increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace="ankilabs"}[15m])
+            ) >= 3
+          labels:
+            scope: applications
+            severity: warning
+          annotations:
+            summary: AnkiLabs AI calls are failing for one action.
+            description: 'More than 20% of {{ $labels.action }} LLM calls failed over 15 minutes (at least 3 calls). Usage Code errors and ai_refused (the model declined) are excluded; ai_output_invalid (unusable answer) counts. Check errors by code, especially ai_timeout, and LiteLLM-side duration before changing timeouts.'
+            dashboard_url: https://grafana.ankilabs.org/d/ankilabs-ai
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#ai
         - alert: ApplicationDeploymentUnavailable
           expr: |
             kube_deployment_spec_replicas{namespace=~"ankilabs|quizlabs"} > 0

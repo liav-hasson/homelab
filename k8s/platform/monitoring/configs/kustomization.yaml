@@ -16,6 +16,7 @@ configMapGenerator:
       - dashboards/platform-storage.json
       - dashboards/ankilabs-service-health.json
       - dashboards/ankilabs-search-postgres.json
+      - dashboards/ankilabs-ai.json
       - dashboards/quizlabs-overview.json
     options:
       labels:

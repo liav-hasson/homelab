@@ -71,8 +71,11 @@ class RenderTests(unittest.TestCase):
 
     def test_local_helm_charts_lint_and_render(self) -> None:
         """Check selectors, resource declarations and exporter isolation after rendering."""
-        postgres_release = yaml.safe_load(
-            (K8S / "apps/ankilabs/postgres/release.yaml").read_text(encoding="utf-8")
+        postgres_release, llm_proxy_release = (
+            yaml.safe_load(
+                (K8S / f"apps/ankilabs/{name}/release.yaml").read_text(encoding="utf-8")
+            )
+            for name in ("postgres", "llm-proxy")
         )
         charts = [
             (
@@ -80,6 +83,12 @@ class RenderTests(unittest.TestCase):
                 "ankilabs",
                 K8S / "apps/ankilabs/charts/postgres",
                 postgres_release["spec"]["values"],
+            ),
+            (
+                "llm-proxy",
+                "ankilabs",
+                K8S / "apps/ankilabs/charts/llm-proxy",
+                llm_proxy_release["spec"]["values"],
             ),
             ("platform", "platform", K8S / "platform/envoy", {}),
             (
@@ -109,6 +118,8 @@ class RenderTests(unittest.TestCase):
                     self._assert_workloads(resources)
                     if name == "postgres":
                         self._assert_exporter_secret(resources)
+                    if name == "llm-proxy":
+                        self._assert_grafana_views_hook(resources)
 
     def _assert_workloads(self, resources: list[dict]) -> None:
         for resource in resources:
@@ -138,8 +149,44 @@ class RenderTests(unittest.TestCase):
             {"name": "postgres-monitoring", "key": "password"},
         )
 
+    def _assert_grafana_views_hook(self, resources: list[dict]) -> None:
+        jobs = {
+            item["metadata"]["name"]: item
+            for item in resources
+            if item["kind"] == "Job"
+        }
+        bootstrap, views = (
+            jobs["llm-proxy-db-bootstrap"],
+            jobs["llm-proxy-grafana-views"],
+        )
+        self.assertEqual(
+            bootstrap["metadata"]["annotations"]["helm.sh/hook"],
+            "pre-install,pre-upgrade",
+        )
+        self.assertIn(
+            "DROP VIEW IF EXISTS grafana.usage_codes, grafana.spend_logs;",
+            bootstrap["spec"]["template"]["spec"]["containers"][0]["command"][2],
+        )
+        # After the proxy (and its migrations) is ready; a failure must not roll the proxy back.
+        self.assertEqual(
+            views["metadata"]["annotations"]["helm.sh/hook"],
+            "post-install,post-upgrade",
+        )
+        script = views["spec"]["template"]["spec"]["containers"][0]["command"][2]
+        sql = (
+            K8S / "apps/ankilabs/charts/llm-proxy/files/grafana-views.sql"
+        ).read_text(encoding="utf-8")
+        self.assertIn(sql.strip(), script)
+        self.assertTrue(script.startswith("if ! psql "))
+        self.assertEqual(
+            views["spec"]["template"]["metadata"]["labels"]["app.kubernetes.io/name"],
+            bootstrap["spec"]["template"]["metadata"]["labels"][
+                "app.kubernetes.io/name"
+            ],
+        )
+
     def test_monitoring_kustomize_build(self) -> None:
-        """Resolve exactly six provisioned dashboards without reading encrypted files."""
+        """Resolve exactly seven provisioned dashboards without reading encrypted files."""
         output = run_tool("kustomize", ["build", str(MONITORING / "configs")])
         resources = load_kustomize_documents(output)
         dashboards = [
@@ -149,7 +196,7 @@ class RenderTests(unittest.TestCase):
             and item["metadata"].get("labels", {}).get("grafana_dashboard") == "1"
         ]
         self.assertEqual(len(dashboards), 1)
-        self.assertEqual(len(dashboards[0]["data"]), 6)
+        self.assertEqual(len(dashboards[0]["data"]), 7)
         self.assertFalse(any(item["kind"] == "Secret" for item in resources))
 
 

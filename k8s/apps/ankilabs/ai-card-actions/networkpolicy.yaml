@@ -1,4 +1,5 @@
-# AI Card Actions answers only the API Gateway and calls only the LLM Proxy (docs/spec/ai-card-actions.md).
+# AI Card Actions answers the API Gateway and monitoring scrapes, and calls only the LLM Proxy
+# (docs/spec/ai-card-actions.md).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -12,6 +13,16 @@ spec:
     - Ingress
     - Egress
   ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: http
+          protocol: TCP
     - from:
         - podSelector:
             matchLabels:
