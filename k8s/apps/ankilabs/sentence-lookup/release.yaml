@@ -35,6 +35,9 @@ spec:
           secretKeyRef:
             name: sentence-lookup-db
             key: DATABASE_URL
+      # DEBUG also logs request content (search queries); INFO logs only fingerprints and request IDs.
+      - name: LOG_LEVEL
+        value: INFO
     probes:
       # Liveness must not depend on the database: restarting the pod does not fix a database outage.
       liveness:
