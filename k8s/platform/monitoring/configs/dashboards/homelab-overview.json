@@ -15,7 +15,7 @@
     {
       "id": 1, "type": "text", "title": "Start here",
       "gridPos": {"x": 0, "y": 0, "w": 24, "h": 4},
-      "options": {"mode": "markdown", "content": "Use **Platform** for delivery/edge, **AnkiLabs Service Health** for request failures, **Search & PostgreSQL** for lookup stages/pools, and **QuizLabs** for the legacy stack. No data means **unknown**: check scrape health before interpreting any chart. Availability below is Kubernetes readiness, not a synthetic user journey.\n\n[Operator acceptance and incident runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md)"}
+      "options": {"mode": "markdown", "content": "Use **Platform** for delivery/edge, **Platform - Storage** for disk space, volumes and I/O, **AnkiLabs Service Health** for request failures, **Search & PostgreSQL** for lookup stages/pools, and **QuizLabs** for the legacy stack. No data means **unknown**: check scrape health before interpreting any chart. Availability below is Kubernetes readiness, not a synthetic user journey.\n\n[Operator acceptance and incident runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md)"}
     },
     {
       "id": 2, "type": "timeseries", "title": "Node CPU busy",

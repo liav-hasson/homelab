@@ -13,6 +13,7 @@ configMapGenerator:
     files:
       - dashboards/homelab-overview.json
       - dashboards/platform-delivery-edge.json
+      - dashboards/platform-storage.json
       - dashboards/ankilabs-service-health.json
       - dashboards/ankilabs-search-postgres.json
       - dashboards/quizlabs-overview.json

@@ -1,0 +1,234 @@
+{
+  "uid": "platform-storage",
+  "title": "Platform - Storage",
+  "description": "Node disk space and I/O, Kubernetes volume claims and application self-reported storage. openebs-hostpath volumes share the node filesystem; per-volume kubelet numbers may be filesystem-wide.",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "tags": ["homelab-monitoring"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {"from": "now-24h", "to": "now"},
+  "links": [{"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true}],
+  "templating": {"list": [
+    {"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"},
+    {"name": "logs", "label": "Loki", "type": "datasource", "query": "loki"}
+  ]},
+  "panels": [
+    {
+      "id": 1, "type": "text", "title": "Storage interpretation",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 6},
+      "options": {"mode": "markdown", "content": "Three views of the same disk: **node filesystem** (node-exporter; authoritative for free space), **Kubernetes volumes** (kube-state-metrics claims plus kubelet volume stats) and **application self-metrics**. Every PVC uses `openebs-hostpath`: a directory under `/var/openebs/local` on the node filesystem, shared by all volumes. Requested PVC sizes are **not enforced**. Kubelet volume stats for these volumes may be missing or report **filesystem-wide** capacity/used instead of per-volume usage: if several PVCs show identical numbers, trust the node filesystem and application panels instead.\n\nPrometheus keeps 7 days or 8GB, whichever is reached first. Loki, MinIO, MongoDB and Redis have no scraped storage metrics yet; only their claims are shown. Days until full uses a linear 24h trend and the 3-day projection uses the same 6h trend as the alert: absent means not filling, and short write bursts (image pulls, restores, compaction) exaggerate both. Missing data is unknown, never zero. [Storage runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage)"}
+    },
+    {
+      "id": 2, "type": "text", "title": "Node filesystem",
+      "gridPos": {"x": 0, "y": 6, "w": 24, "h": 2},
+      "options": {"mode": "markdown", "content": "Real filesystems only (tmpfs, overlay, squashfs and `/run` excluded). All hostpath volumes consume this space."}
+    },
+    {
+      "id": 3, "type": "timeseries", "title": "Node filesystem space used",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "100 * (1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"})", "legendFormat": "{{instance}} {{mountpoint}}"}]
+    },
+    {
+      "id": 4, "type": "timeseries", "title": "Node filesystem available / size",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"}", "legendFormat": "available {{instance}} {{mountpoint}}"},
+        {"refId": "B", "expr": "node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"}", "legendFormat": "size {{instance}} {{mountpoint}}"}
+      ]
+    },
+    {
+      "id": 5, "type": "table", "title": "Days until full at the 24h trend (absent = not filling)",
+      "description": "Available bytes divided by the 24h least-squares decline rate. Only shrinking filesystems appear; a stable or growing filesystem has no row.",
+      "gridPos": {"x": 0, "y": 15, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "d", "min": 0, "decimals": 1}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "(node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"} / -deriv(node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"}[24h]) / 86400) and deriv(node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"}[24h]) < 0", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Projected available space in 3 days (6h linear trend, same as alert; below 0 = full)",
+      "gridPos": {"x": 8, "y": 15, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "predict_linear(node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"}[6h], 3 * 86400)", "legendFormat": "{{instance}} {{mountpoint}}"}]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Node filesystem inodes used",
+      "gridPos": {"x": 16, "y": 15, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "100 * (1 - node_filesystem_files_free{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"} / node_filesystem_files{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"})", "legendFormat": "{{instance}} {{mountpoint}}"}]
+    },
+    {
+      "id": 8, "type": "text", "title": "Disk performance",
+      "gridPos": {"x": 0, "y": 22, "w": 24, "h": 2},
+      "options": {"mode": "markdown", "content": "Whole block devices from node-exporter (loop and RAM devices excluded). Latency is shown only while operations complete; idle gaps are not zero latency."}
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Disk throughput: read / write",
+      "gridPos": {"x": 0, "y": 24, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "Bps", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "rate(node_disk_read_bytes_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval])", "legendFormat": "read {{instance}} {{device}}"},
+        {"refId": "B", "expr": "rate(node_disk_written_bytes_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval])", "legendFormat": "write {{instance}} {{device}}"}
+      ]
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Disk IOPS: completed reads / writes",
+      "gridPos": {"x": 12, "y": 24, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "iops", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "rate(node_disk_reads_completed_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval])", "legendFormat": "read {{instance}} {{device}}"},
+        {"refId": "B", "expr": "rate(node_disk_writes_completed_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval])", "legendFormat": "write {{instance}} {{device}}"}
+      ]
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "Average latency per completed read / write",
+      "gridPos": {"x": 0, "y": 31, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "rate(node_disk_read_time_seconds_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval]) / (rate(node_disk_reads_completed_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval]) > 0)", "legendFormat": "read {{instance}} {{device}}"},
+        {"refId": "B", "expr": "rate(node_disk_write_time_seconds_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval]) / (rate(node_disk_writes_completed_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval]) > 0)", "legendFormat": "write {{instance}} {{device}}"}
+      ]
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "Disk busy time (utilisation)",
+      "description": "Share of wall time with at least one I/O in flight. NVMe serves many requests in parallel, so 100% busy is not necessarily saturated; compare with queue depth and latency.",
+      "gridPos": {"x": 8, "y": 31, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "rate(node_disk_io_time_seconds_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval])", "legendFormat": "{{instance}} {{device}}"}]
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "Average I/O queue depth (saturation)",
+      "gridPos": {"x": 16, "y": 31, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "rate(node_disk_io_time_weighted_seconds_total{device!~\"(z?ram|loop)[0-9]+\"}[$__rate_interval])", "legendFormat": "{{instance}} {{device}}"}]
+    },
+    {
+      "id": 14, "type": "text", "title": "Persistent volumes",
+      "gridPos": {"x": 0, "y": 38, "w": 24, "h": 2},
+      "options": {"mode": "markdown", "content": "Claims come from kube-state-metrics; used/available come from kubelet and may be **filesystem-wide** for hostpath volumes (see interpretation above)."}
+    },
+    {
+      "id": 15, "type": "table", "title": "PVC inventory: requested size, storage class and bound volume",
+      "description": "Requested size is a scheduling hint only for openebs-hostpath; nothing stops a volume from growing past it.",
+      "gridPos": {"x": 0, "y": 40, "w": 14, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": [{"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "displayName", "value": "Requested"}]}]},
+      "targets": [{"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes) * on (namespace, persistentvolumeclaim) group_left (storageclass, volumename) max by (namespace, persistentvolumeclaim, storageclass, volumename) (kube_persistentvolumeclaim_info)", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 16, "type": "table", "title": "PVCs without kubelet volume stats (empty = all reported)",
+      "description": "Claims known to kube-state-metrics that kubelet does not report. Their used/available panels below stay empty; that is unknown, not an empty volume.",
+      "gridPos": {"x": 14, "y": 40, "w": 10, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "targets": [{"refId": "A", "expr": "max by (namespace, persistentvolumeclaim, storageclass) (kube_persistentvolumeclaim_info) unless on (namespace, persistentvolumeclaim) kubelet_volume_stats_capacity_bytes", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 17, "type": "timeseries", "title": "Kubelet volume used / capacity",
+      "description": "For openebs-hostpath both lines may equal the whole node filesystem rather than this volume.",
+      "gridPos": {"x": 0, "y": 48, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes)", "legendFormat": "used {{namespace}} / {{persistentvolumeclaim}}"},
+        {"refId": "B", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes)", "legendFormat": "capacity {{namespace}} / {{persistentvolumeclaim}}"}
+      ]
+    },
+    {
+      "id": 18, "type": "timeseries", "title": "Kubelet volume available",
+      "description": "For openebs-hostpath this may be the node filesystem free space, shared by every volume.",
+      "gridPos": {"x": 12, "y": 48, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_available_bytes)", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+    },
+    {
+      "id": 19, "type": "timeseries", "title": "Kubelet volume used % of reported capacity",
+      "description": "Percent of kubelet-reported capacity, not of the requested PVC size. Identical lines across PVCs mean filesystem-wide reporting.",
+      "gridPos": {"x": 0, "y": 55, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "100 * max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) / max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes)", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+    },
+    {
+      "id": 20, "type": "timeseries", "title": "Kubelet volume used growth / 1 hour",
+      "description": "Change of kubelet used bytes over the previous hour; negative means space was freed. Filesystem-wide reporting makes every PVC show the same node-level growth.",
+      "gridPos": {"x": 8, "y": 55, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (delta(kubelet_volume_stats_used_bytes[1h]))", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+    },
+    {
+      "id": 21, "type": "timeseries", "title": "Kubelet volume used growth / 24 hours",
+      "description": "Change of kubelet used bytes over the previous 24 hours; negative means space was freed. Needs 24h of retained history.",
+      "gridPos": {"x": 16, "y": 55, "w": 8, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (delta(kubelet_volume_stats_used_bytes[24h]))", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+    },
+    {
+      "id": 22, "type": "text", "title": "Application storage (self-reported)",
+      "gridPos": {"x": 0, "y": 62, "w": 24, "h": 2},
+      "options": {"mode": "markdown", "content": "Per-application usage from each application's own metrics; unaffected by hostpath volume-stat limitations. Loki, MinIO, MongoDB and Redis are not scraped for storage metrics yet."}
+    },
+    {
+      "id": 23, "type": "timeseries", "title": "Prometheus TSDB on-disk size vs size cap",
+      "description": "Blocks, WAL and memory-mapped head chunks together approximate the Prometheus volume usage. The size cap is retentionSize; 0 would mean disabled.",
+      "gridPos": {"x": 0, "y": 64, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "prometheus_tsdb_storage_blocks_bytes{namespace=\"monitoring\"}", "legendFormat": "blocks {{pod}}"},
+        {"refId": "B", "expr": "prometheus_tsdb_wal_storage_size_bytes{namespace=\"monitoring\"}", "legendFormat": "WAL {{pod}}"},
+        {"refId": "C", "expr": "prometheus_tsdb_head_chunks_storage_size_bytes{namespace=\"monitoring\"}", "legendFormat": "head chunks {{pod}}"},
+        {"refId": "D", "expr": "prometheus_tsdb_retention_limit_bytes{namespace=\"monitoring\"}", "legendFormat": "size cap {{pod}}"}
+      ]
+    },
+    {
+      "id": 24, "type": "timeseries", "title": "Prometheus head series",
+      "description": "Active series in memory; sustained growth drives both memory and block size.",
+      "gridPos": {"x": 12, "y": 64, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "prometheus_tsdb_head_series{namespace=\"monitoring\"}", "legendFormat": "{{pod}}"}]
+    },
+    {
+      "id": 25, "type": "timeseries", "title": "Prometheus retention block deletions / 24 hours: size vs time",
+      "description": "Size-triggered deletions mean the 8GB cap, not the 7d retention, is limiting history.",
+      "gridPos": {"x": 0, "y": 71, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "increase(prometheus_tsdb_size_retentions_total{namespace=\"monitoring\"}[24h])", "legendFormat": "size {{pod}}"},
+        {"refId": "B", "expr": "increase(prometheus_tsdb_time_retentions_total{namespace=\"monitoring\"}[24h])", "legendFormat": "time {{pod}}"}
+      ]
+    },
+    {
+      "id": 26, "type": "timeseries", "title": "AnkiLabs PostgreSQL database size",
+      "description": "pg_database_size per database from the ankilabs postgres-exporter. Excludes WAL; compare with the node filesystem for total impact.",
+      "gridPos": {"x": 12, "y": 71, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "pg_database_size_bytes{namespace=\"ankilabs\"}", "legendFormat": "{{datname}}"}]
+    },
+    {
+      "id": 27, "type": "logs", "title": "OpenEBS hostpath provisioner logs only",
+      "description": "Volume create/delete activity and provisioning failures. A pending PVC with no matching record here points at scheduling or storage-class selection instead.",
+      "gridPos": {"x": 0, "y": 78, "w": 24, "h": 8},
+      "datasource": {"type": "loki", "uid": "${logs}"},
+      "targets": [{"refId": "A", "expr": "{namespace=\"openebs\"}", "queryType": "range"}],
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
+    }
+  ]
+}

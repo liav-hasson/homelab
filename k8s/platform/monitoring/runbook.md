@@ -298,7 +298,7 @@ git diff --check
 The suite includes local JSON-contract/schema/unique-UID/layout checks, exact
 provisioning references, namespace/privacy/routing guards, `helm lint` and
 `helm template` for all three changed charts, monitoring-only `kustomize build`,
-`promtool check rules` for alerts **and all dashboard PromQL**, nine real
+`promtool check rules` for alerts **and all dashboard PromQL**, thirteen real
 Prometheus evaluator cases, and actual Promtail stdin/dry-run replay tests.
 The checked-in dashboard schema is a focused provisioning contract, not the
 entire Grafana API schema.
@@ -335,9 +335,9 @@ deployment is part of these commands.
 
 After an explicitly authorized rollout:
 
-1. Grafana must contain exactly the five provisioned dashboards: Homelab
-   Overview; Platform - Delivery & Edge; AnkiLabs - Service Health; AnkiLabs -
-   Search & PostgreSQL; QuizLabs - Overview. Check that the old two dashboard
+1. Grafana must contain exactly the six provisioned dashboards: Homelab
+   Overview; Platform - Delivery & Edge; Platform - Storage; AnkiLabs - Service
+   Health; AnkiLabs - Search & PostgreSQL; QuizLabs - Overview. Check that the old two dashboard
    ConfigMaps and all their dashboards were removed by Flux prune/Grafana
    sidecar deletion. Do not keep old dashboards as a second source of truth.
 2. Select the Prometheus and Loki data sources. Confirm each expected target is
@@ -448,6 +448,35 @@ restarts, OOM reasons, working set versus configured limits, node pressure and
 volume capacity. Confirm a recent restart alongside a last-terminated OOM reason;
 the latter alone can be stale. Missing resource limits/volume metrics stay absent.
 Investigate cause before changing resources, retries or timeouts.
+
+## Storage
+
+Use Platform - Storage. Every PVC is an `openebs-hostpath` directory under
+`/var/openebs/local` on the node filesystem, so all volumes share one pool of free
+space and requested PVC sizes are not enforced. The node filesystem panels are
+authoritative for free space; kubelet volume stats for hostpath volumes may be
+absent or filesystem-wide, so identical numbers across PVCs are not per-volume
+usage. Prometheus keeps 7 days or 8GB of TSDB data on a 10Gi claim, whichever
+limit is reached first; Alertmanager keeps silences on a 1Gi claim.
+
+`NodeFilesystemLowSpace` fires below 15% free for 10 minutes and
+`NodeFilesystemFillingUp` when the 6-hour trend reaches zero within 3 days for
+an hour. Both route to the node receiver. Find the growing consumer first:
+
+```promql
+sort_desc(max by (namespace, persistentvolumeclaim) (delta(kubelet_volume_stats_used_bytes[24h])))
+prometheus_tsdb_storage_blocks_bytes{namespace="monitoring"}
+pg_database_size_bytes{namespace="ankilabs"}
+```
+
+```sh
+kubectl get pvc -A
+sudo du -sh /var/openebs/local/* | sort -h
+```
+
+Loki, MinIO, MongoDB and Redis expose no scraped storage metrics; measure their
+directories on the node. Do not delete volume directories by hand: remove data
+through the owning application, or lower its retention and let it compact.
 
 ## QuizLabs
 

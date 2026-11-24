@@ -40,9 +40,27 @@ spec:
         alertmanagerConfigNamespaceSelector:
           matchLabels:
             kubernetes.io/metadata.name: monitoring
+        # Persist silences and notification state across restarts.
+        storage:
+          volumeClaimTemplate:
+            spec:
+              accessModes: [ "ReadWriteOnce" ]
+              resources:
+                requests:
+                  storage: 1Gi
     prometheus:
       prometheusSpec:
         retention: 7d
+        # openebs-hostpath does not enforce PVC size, so retentionSize is the
+        # real cap; it stays below the claim to leave compaction headroom.
+        retentionSize: 8GB
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              accessModes: [ "ReadWriteOnce" ]
+              resources:
+                requests:
+                  storage: 10Gi
         resources:
           requests:
             cpu: 200m
