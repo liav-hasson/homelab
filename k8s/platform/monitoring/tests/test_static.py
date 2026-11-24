@@ -146,6 +146,30 @@ class MonitoringContractTests(unittest.TestCase):
         strategy = release["spec"]["values"]["alertmanager"]["alertmanagerSpec"]
         self.assertEqual(strategy["alertmanagerConfigMatcherStrategy"]["type"], "None")
 
+    def test_prometheus_and_alertmanager_state_is_persistent(self) -> None:
+        """History and silences survive restarts; retentionSize caps the 10Gi claim."""
+        values = yaml.safe_load(
+            (MONITORING / "controllers/kube-prometheus-stack/release.yaml").read_text(
+                encoding="utf-8"
+            )
+        )["spec"]["values"]
+        prometheus = values["prometheus"]["prometheusSpec"]
+        alertmanager = values["alertmanager"]["alertmanagerSpec"]
+        for claim in (
+            prometheus["storageSpec"]["volumeClaimTemplate"]["spec"],
+            alertmanager["storage"]["volumeClaimTemplate"]["spec"],
+        ):
+            self.assertEqual(claim["accessModes"], ["ReadWriteOnce"])
+            self.assertTrue(claim["resources"]["requests"]["storage"])
+        self.assertEqual(prometheus["retention"], "7d")
+        self.assertEqual(prometheus["retentionSize"], "8GB")
+        self.assertEqual(
+            prometheus["storageSpec"]["volumeClaimTemplate"]["spec"]["resources"][
+                "requests"
+            ]["storage"],
+            "10Gi",
+        )
+
     def test_postgres_privacy_and_monitoring_credentials(self) -> None:
         """Keep stderr, suppress query text and require a separate monitoring login."""
         chart = K8S / "apps/ankilabs/charts/postgres"
