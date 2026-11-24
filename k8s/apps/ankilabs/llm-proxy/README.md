@@ -56,6 +56,10 @@ Never change `LITELLM_SALT_KEY`: it encrypts data in LiteLLM's database.
 The chart's bootstrap Job creates the `litellm` role and database before every install and upgrade, and resets the
 role's password to the Secret's value, so rotating that password is a Secret edit only.
 
+`grafana-secrets.yaml` holds `llm-proxy-grafana`, the password of Grafana's read-only `grafana_litellm` login. The
+same value is in the monitoring namespace's `grafana-litellm-database` Secret; rotate both together as described in the
+AI section of `k8s/platform/monitoring/runbook.md`.
+
 ## Models
 
 Models are Helm values (`config.model_list` in `release.yaml`): a logical `model_name` maps to a provider model and
@@ -78,4 +82,6 @@ budget as the chat models. Its price comes only from the bundled cost map: LiteL
 ## Upgrades
 
 The image is pinned by hand. Before bumping it, take a dump of the `litellm` database, then run the same tag in the
-dev stack and pass `dev/litellm-checks.sh`.
+dev stack and pass `dev/litellm-checks.sh`. Also compare the columns `charts/llm-proxy/files/grafana-views.sql` reads
+with the new tag's `schema.prisma`: after the upgrade, `kubectl -n ankilabs logs job/llm-proxy-grafana-views` must not
+show a warning.

@@ -1,4 +1,5 @@
-# Creates LiteLLM's role and database on the shared Postgres, and keeps the role's password in sync with its Secret.
+# Creates LiteLLM's role and database on the shared Postgres, and keeps the role's password in sync with its Secret
+# (likewise Grafana's read-only login, when enabled).
 # Idempotent, so it runs before every install and upgrade; the Postgres init script stays limited to its own roles.
 apiVersion: batch/v1
 kind: Job
@@ -41,6 +42,20 @@ spec:
               -- Other AnkiLabs roles (the lookups' readers) cannot connect to LiteLLM's database.
               REVOKE ALL ON DATABASE :"db" FROM PUBLIC;
               SQL
+              {{- if .Values.database.grafana.enabled }}
+              # Grafana's read-only login. LiteLLM's migrations cannot alter a column that a view reads, so the views are
+              # dropped before the proxy starts and recreated by the grafana-views Job once it is ready.
+              psql -v ON_ERROR_STOP=1 -v db="$LITELLM_DB_NAME" -v role="$GRAFANA_DB_USER" -v pw="$GRAFANA_DB_PASSWORD" <<'SQL'
+              SELECT format('CREATE ROLE %I', :'role') WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'role')\gexec
+              ALTER ROLE :"role" WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS
+                CONNECTION LIMIT 3 PASSWORD :'pw';
+              ALTER ROLE :"role" SET default_transaction_read_only = on;
+              ALTER ROLE :"role" SET statement_timeout = '10s';
+              GRANT CONNECT ON DATABASE :"db" TO :"role";
+              \connect :"db"
+              DROP VIEW IF EXISTS grafana.usage_codes, grafana.spend_logs;
+              SQL
+              {{- end }}
           env:
             - name: PGHOST
               value: {{ .Values.database.host | quote }}
@@ -60,6 +75,15 @@ spec:
             - name: LITELLM_DB_NAME
               value: {{ .Values.database.name | quote }}
             {{- include "llm-proxy.dbPasswordEnv" . | nindent 12 }}
+            {{- if .Values.database.grafana.enabled }}
+            - name: GRAFANA_DB_USER
+              value: {{ .Values.database.grafana.user | quote }}
+            - name: GRAFANA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "database.grafana.passwordSecret.name is required" .Values.database.grafana.passwordSecret.name }}
+                  key: {{ .Values.database.grafana.passwordSecret.key }}
+            {{- end }}
           resources:
             requests:
               cpu: 10m
