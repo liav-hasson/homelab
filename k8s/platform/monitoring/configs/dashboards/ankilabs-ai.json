@@ -1,15 +1,18 @@
 {
   "uid": "ankilabs-ai",
   "title": "AnkiLabs - AI",
-  "description": "AI Card Actions calls through the LLM Proxy: outcomes, latency, input size, tokens and cost, with Usage Codes and spend from LiteLLM's database and the matching logs.",
+  "description": "AI Card Actions calls through the LLM Proxy: outcomes, latency, input size, tokens and cost, with Usage Codes and spend from LiteLLM's database and the matching logs. Missing data is unknown, never zero.",
   "schemaVersion": 39,
   "version": 1,
   "editable": false,
-  "tags": ["homelab-monitoring"],
+  "tags": ["homelab-monitoring", "ankilabs", "ai"],
   "timezone": "browser",
   "refresh": "1m",
   "time": {"from": "now-24h", "to": "now"},
-  "links": [{"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true}],
+  "links": [
+    {"type": "link", "title": "Runbook", "tooltip": "How to read this dashboard", "url": "https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#ankilabs-ai", "icon": "doc", "targetBlank": true},
+    {"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true, "includeVars": true}
+  ],
   "templating": {"list": [
     {"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"},
     {"name": "logs", "label": "Loki", "type": "datasource", "query": "loki"},
@@ -17,18 +20,14 @@
   ]},
   "panels": [
     {
-      "id": 1, "type": "text", "title": "Read counts first",
-      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 7},
-      "options": {"mode": "markdown", "content": "AI Card Actions metrics (Prometheus, **ankilabs** only), LiteLLM's own request records (PostgreSQL, read-only views: Usage Code metadata and spend, never key hashes, prompts or answers) and AI Card Actions logs (Loki). Window counts include a series first seen inside the window, so the first call after a restart is not lost; they can still be fractional. Percentiles need at least 5 calls in their 30-minute window and stay empty otherwise: read them next to counts and means. Latency buckets step 10, 30, 60, 120 s, so upper percentiles are coarse; calls time out at 75 s (`ai_timeout`).\n\n**Outcomes:** an answer LiteLLM returned (HTTP 200) that AI Card Actions rejected (`ai_output_invalid`) is `outcome=error` in these metrics, while its `llm.request.completed` log record says `outcome=success`; its tokens and cost are still counted. `ai_refused` (the model declined; the user gets 422) and Usage Code errors are errors here but are excluded from the error-ratio alert. **Tokens:** reasoning tokens are already part of completion tokens, so a total is prompt + completion, never the sum over every type. **LiteLLM duration** is the proxy's own call time (provider plus proxy); the gap to AI Card Actions' LLM duration is the in-cluster path, and the gap to HTTP duration is AI Card Actions' own work. Missing data is unknown, never zero.\n\n[AI runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#ai)"}
-    },
-    {
-      "id": 2, "type": "text", "title": "Traffic and errors",
-      "gridPos": {"x": 0, "y": 7, "w": 24, "h": 2},
-      "options": {"mode": "markdown", "content": "LLM calls are one per action request (`sentences`, `notes`, `review`, `speech`) and are never retried. Errors by code keep every code visible; `ai_timeout` is highlighted."}
+      "id": 2, "type": "row", "title": "Traffic and errors", "collapsed": false,
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+      "panels": []
     },
     {
       "id": 3, "type": "timeseries", "title": "LLM calls by action and outcome / 15 minutes",
-      "gridPos": {"x": 0, "y": 9, "w": 12, "h": 7},
+      "description": "LLM calls per action (sentences, notes, review, speech) and outcome over 15 minutes; one per action request, never retried. An answer rejected after LiteLLM returned it (ai_output_invalid) is an error here; counts can be fractional.",
+      "gridPos": {"x": 0, "y": 1, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (action, outcome) ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{action}} {{outcome}}"}]
@@ -36,14 +35,15 @@
     {
       "id": 4, "type": "timeseries", "title": "Error ratio by action (alert definition) / 15 minutes",
       "description": "Errors over all LLM calls, excluding Usage Code errors and ai_refused, as in AnkiLabsAIErrorRatioHigh (the line is its 20% threshold; it also needs at least 3 calls in 15 minutes). Absent means no calls.",
-      "gridPos": {"x": 12, "y": 9, "w": 12, "h": 7},
+      "gridPos": {"x": 12, "y": 1, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "custom": {"thresholdsStyle": {"mode": "line"}}, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0.2}]}}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"}[15m])) / (sum by (action) ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[15m])) > 0)", "legendFormat": "{{action}}"}]
     },
     {
       "id": 5, "type": "timeseries", "title": "LLM errors by action and error code / 15 minutes (ai_timeout highlighted)",
-      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 7},
+      "description": "LLM errors per action and code over 15 minutes, every code visible and ai_timeout highlighted. Usage Code errors and ai_refused (the model declined) are errors here but not in the error-ratio alert.",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*ai_timeout.*"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}, {"id": "custom.lineWidth", "value": 4}]}]},
       "targets": [{"refId": "A", "expr": "sum by (action, error_code) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{action}} {{error_code}}"}]
@@ -51,25 +51,26 @@
     {
       "id": 6, "type": "table", "title": "LLM error counters since process start (not window counts)",
       "description": "Raw counters per pod lifetime, for checking window counts against logs.",
-      "gridPos": {"x": 12, "y": 16, "w": 6, "h": 7},
+      "gridPos": {"x": 12, "y": 8, "w": 6, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [{"refId": "A", "expr": "sum by (action, model, error_code) (ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"})", "instant": true, "format": "table"}]
     },
     {
       "id": 7, "type": "table", "title": "Scrape health (absent target is unknown)",
-      "gridPos": {"x": 18, "y": 16, "w": 6, "h": 7},
+      "description": "AI Card Actions metrics target: 1 reachable, 0 failed. A missing row is unknown, not healthy; AnkiLabsScrapeFailed alerts on it.",
+      "gridPos": {"x": 18, "y": 8, "w": 6, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [{"refId": "A", "expr": "up{namespace=\"ankilabs\",job=\"monitoring/ankilabs-ai-card-actions\"}", "instant": true, "format": "table"}]
     },
     {
-      "id": 8, "type": "text", "title": "Latency",
-      "gridPos": {"x": 0, "y": 23, "w": 24, "h": 2},
-      "options": {"mode": "markdown", "content": "LLM duration is AI Card Actions' call to the LLM Proxy, until the answer is accepted or rejected. HTTP duration is the whole action request. LiteLLM duration (successful calls only) is the proxy's own record."}
+      "id": 8, "type": "row", "title": "Latency", "collapsed": false,
+      "gridPos": {"x": 0, "y": 15, "w": 24, "h": 1},
+      "panels": []
     },
     {
       "id": 9, "type": "timeseries", "title": "LLM duration p50 / p95 / p99 by action (30m window, at least 5 calls)",
-      "description": "Both outcomes; a timeout lands in the 60-120 s bucket. Empty means too few calls, not zero latency.",
-      "gridPos": {"x": 0, "y": 25, "w": 12, "h": 8},
+      "description": "Time from calling the LLM Proxy until the answer is accepted or rejected, both outcomes. Buckets step 10, 30, 60, 120 s and calls time out at 75 s, so upper percentiles are coarse; empty means fewer than 5 calls, not zero latency.",
+      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
       "targets": [
@@ -80,15 +81,16 @@
     },
     {
       "id": 10, "type": "timeseries", "title": "Mean LLM duration by action and outcome (30m window)",
-      "gridPos": {"x": 12, "y": 25, "w": 12, "h": 8},
+      "description": "Average LLM call time per action and outcome over 30 minutes; empty when there were no calls. Read it next to the call counts.",
+      "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (action, outcome) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_sum{namespace=\"ankilabs\"}[30m])) / (sum by (action, outcome) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[30m])) > 0)", "legendFormat": "{{action}} {{outcome}}"}]
     },
     {
       "id": 11, "type": "timeseries", "title": "HTTP duration by route: mean and p95 (30m window, p95 needs 5 requests)",
-      "description": "End-to-end action requests (/v1 routes; health checks excluded), all statuses.",
-      "gridPos": {"x": 0, "y": 33, "w": 12, "h": 8},
+      "description": "Whole action requests (/v1 routes, health checks excluded), all statuses; p95 needs at least 5 requests in 30 minutes. The gap to LLM duration is AI Card Actions' own work.",
+      "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
       "targets": [
@@ -98,20 +100,21 @@
     },
     {
       "id": 12, "type": "timeseries", "title": "LiteLLM duration by model group: mean and p95 (successful calls, 15m buckets)",
-      "description": "From LiteLLM's spend logs: exact per-call percentiles, not histogram estimates.",
-      "gridPos": {"x": 12, "y": 33, "w": 12, "h": 8},
+      "description": "The proxy's own time (provider plus proxy) for successful calls, from LiteLLM's spend logs: exact percentiles, not histogram estimates. Close to LLM duration points at the provider, a larger gap at the in-cluster path.",
+      "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0, "displayName": "${__field.name} ${__field.labels.metric}"}, "overrides": []},
       "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '15m'), model_group AS metric,\n  avg(duration_ms) / 1000.0 AS mean,\n  percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms) / 1000.0 AS p95\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND status = 'success' AND duration_ms IS NOT NULL\nGROUP BY 1, 2\nORDER BY 1"}]
     },
     {
-      "id": 13, "type": "text", "title": "Input size",
-      "gridPos": {"x": 0, "y": 41, "w": 24, "h": 2},
-      "options": {"mode": "markdown", "content": "Characters of user input per LLM call (card text, or the text to speak). Means are per call over 30 minutes; per-request size and duration pairs are in the `llm.request.completed` logs below."}
+      "id": 13, "type": "row", "title": "Input size", "collapsed": false,
+      "gridPos": {"x": 0, "y": 32, "w": 24, "h": 1},
+      "panels": []
     },
     {
       "id": 14, "type": "timeseries", "title": "Input characters by action: mean and p95 (30m window, p95 needs 5 calls)",
-      "gridPos": {"x": 0, "y": 43, "w": 12, "h": 8},
+      "description": "Characters of user input per LLM call (card text, or the text to speak): mean and p95 over 30 minutes, p95 only with at least 5 calls. Per-request size and duration are in the llm.request.completed logs.",
+      "gridPos": {"x": 0, "y": 33, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [
@@ -122,14 +125,14 @@
     {
       "id": 15, "type": "table", "title": "Calls at or below each input size (cumulative buckets, dashboard range)",
       "description": "le is the bucket's upper bound in characters; +Inf is every call.",
-      "gridPos": {"x": 12, "y": 43, "w": 12, "h": 8},
+      "gridPos": {"x": 12, "y": 33, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [{"refId": "A", "expr": "sum by (action, le) ((ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"}[$__range]))", "instant": true, "format": "table"}]
     },
     {
       "id": 16, "type": "timeseries", "title": "Mean LLM duration vs mean input size by action (30m window)",
       "description": "Duration on the left axis, input characters on the right. Moving together suggests size drives latency; confirm per request in the logs.",
-      "gridPos": {"x": 0, "y": 51, "w": 12, "h": 8},
+      "gridPos": {"x": 0, "y": 41, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*input chars.*"}, "properties": [{"id": "unit", "value": "short"}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "decimals", "value": 0}]}]},
       "targets": [
@@ -139,8 +142,8 @@
     },
     {
       "id": 17, "type": "timeseries", "title": "ai_timeout calls vs mean input size by action (30m window)",
-      "description": "Timeouts on the left axis, input characters on the right.",
-      "gridPos": {"x": 12, "y": 51, "w": 12, "h": 8},
+      "description": "ai_timeout calls (left axis) against mean input characters (right axis) per action. Timeouts rising with input size suggest trimming input before raising the 75 s timeout.",
+      "gridPos": {"x": 12, "y": 41, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*input chars.*"}, "properties": [{"id": "unit", "value": "short"}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "decimals", "value": 0}]}]},
       "targets": [
@@ -149,34 +152,38 @@
       ]
     },
     {
-      "id": 18, "type": "text", "title": "Tokens and cost",
-      "gridPos": {"x": 0, "y": 59, "w": 24, "h": 2},
-      "options": {"mode": "markdown", "content": "As LiteLLM reported them to AI Card Actions, including answers rejected afterwards. Reasoning tokens are a subset of completion tokens. Speech is priced per character and reports no tokens."}
+      "id": 18, "type": "row", "title": "Tokens and cost", "collapsed": false,
+      "gridPos": {"x": 0, "y": 49, "w": 24, "h": 1},
+      "panels": []
     },
     {
       "id": 19, "type": "timeseries", "title": "Tokens by action and type / hour (reasoning is part of completion; do not add it)",
-      "gridPos": {"x": 0, "y": 61, "w": 12, "h": 8},
+      "description": "Tokens per action and type per hour as LiteLLM reported them, including answers rejected afterwards. Reasoning is already part of completion, so a total is prompt + completion; speech reports no tokens.",
+      "gridPos": {"x": 0, "y": 50, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (action, type) ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\"} offset 1h) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\"}[1h]))", "legendFormat": "{{action}} {{type}}"}]
     },
     {
       "id": 20, "type": "timeseries", "title": "Cost by action and model / hour",
-      "gridPos": {"x": 12, "y": 61, "w": 12, "h": 8},
+      "description": "LLM cost in USD per action and model per hour as LiteLLM reported it, including answers rejected afterwards. Speech is priced per character.",
+      "gridPos": {"x": 12, "y": 50, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "currencyUSD", "min": 0, "decimals": 4}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset 1h) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[1h]))", "legendFormat": "{{action}} {{model}}"}]
     },
     {
       "id": 21, "type": "table", "title": "Cost by action and model (dashboard range)",
-      "gridPos": {"x": 0, "y": 69, "w": 8, "h": 8},
+      "description": "Total cost per action and model over the dashboard time range, including rejected answers. Shows which action and model drive spend.",
+      "gridPos": {"x": 0, "y": 58, "w": 8, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 4}, "overrides": [{"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "displayName", "value": "Cost"}]}]},
       "targets": [{"refId": "A", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range]))", "instant": true, "format": "table"}]
     },
     {
       "id": 22, "type": "table", "title": "Cost share by action (dashboard range)",
-      "gridPos": {"x": 8, "y": 69, "w": 8, "h": 8},
+      "description": "Each action's share of total cost over the dashboard time range. A sudden shift points at a change in usage or pricing for that action.",
+      "gridPos": {"x": 8, "y": 58, "w": 8, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1}, "overrides": [{"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "displayName", "value": "Share"}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "basic"}}]}]},
       "targets": [{"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range])) / on () group_left () (sum ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range])) > 0)", "instant": true, "format": "table"}]
@@ -184,7 +191,7 @@
     {
       "id": 23, "type": "table", "title": "Tokens by action and model (dashboard range)",
       "description": "Total is prompt + completion; reasoning is included in it and shown only for scale.",
-      "gridPos": {"x": 16, "y": 69, "w": 8, "h": 8},
+      "gridPos": {"x": 16, "y": 58, "w": 8, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": [{"matcher": {"id": "byName", "options": "Value #A"}, "properties": [{"id": "displayName", "value": "Total (prompt + completion)"}]}, {"matcher": {"id": "byName", "options": "Value #B"}, "properties": [{"id": "displayName", "value": "Reasoning (included)"}]}]},
       "transformations": [{"id": "merge", "options": {}}],
@@ -194,28 +201,30 @@
       ]
     },
     {
-      "id": 24, "type": "text", "title": "Usage Codes and LiteLLM spend",
-      "gridPos": {"x": 0, "y": 77, "w": 24, "h": 2},
-      "options": {"mode": "markdown", "content": "LiteLLM's database through read-only views (`grafana` schema). Times are UTC in the database and shown in the browser's zone. Spend is what draws down a Usage Code's budget; Authorization's own key is not listed."}
+      "id": 24, "type": "row", "title": "Usage Codes and LiteLLM spend", "collapsed": false,
+      "gridPos": {"x": 0, "y": 66, "w": 24, "h": 1},
+      "panels": []
     },
     {
       "id": 25, "type": "table", "title": "Usage Codes",
-      "description": "Current state, not limited to the dashboard range. Last request includes rejected calls.",
-      "gridPos": {"x": 0, "y": 79, "w": 24, "h": 9},
+      "description": "Every Usage Code from LiteLLM's read-only views: spend, budget and state now, not limited to the dashboard range. Last request includes rejected calls; Authorization's own key is not listed.",
+      "gridPos": {"x": 0, "y": 67, "w": 24, "h": 9},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
       "fieldConfig": {"defaults": {}, "overrides": [{"matcher": {"id": "byName", "options": "Spend"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}, {"matcher": {"id": "byName", "options": "Budget"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}, {"matcher": {"id": "byName", "options": "Remaining"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}]},
       "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT key_alias AS \"Usage Code\", created_at AS \"Created\", spend AS \"Spend\",\n  max_budget AS \"Budget\", remaining AS \"Remaining\", blocked AS \"Blocked\", expires AS \"Expires\",\n  last_request_at AS \"Last request\", array_to_string(models, ', ') AS \"Models\"\nFROM grafana.usage_codes\nORDER BY last_request_at DESC NULLS LAST, key_alias"}]
     },
     {
       "id": 26, "type": "timeseries", "title": "LiteLLM spend by Usage Code / hour",
-      "gridPos": {"x": 0, "y": 88, "w": 12, "h": 8},
+      "description": "LiteLLM spend per Usage Code per hour: what draws down each code's budget. Times are stored in UTC and shown in the browser's time zone.",
+      "gridPos": {"x": 0, "y": 76, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
       "fieldConfig": {"defaults": {"unit": "currencyUSD", "min": 0, "custom": {"drawStyle": "bars", "fillOpacity": 60, "stacking": {"mode": "normal", "group": "A"}}, "decimals": 4}, "overrides": []},
       "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'), coalesce(key_alias, 'unknown key') AS metric,\n  sum(spend) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND spend > 0\nGROUP BY 1, 2\nORDER BY 1"}]
     },
     {
       "id": 27, "type": "timeseries", "title": "LiteLLM spend by model group / hour",
-      "gridPos": {"x": 12, "y": 88, "w": 12, "h": 8},
+      "description": "LiteLLM spend per model group per hour, from its own records. It should roughly match Cost by action and model above.",
+      "gridPos": {"x": 12, "y": 76, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
       "fieldConfig": {"defaults": {"unit": "currencyUSD", "min": 0, "custom": {"drawStyle": "bars", "fillOpacity": 60, "stacking": {"mode": "normal", "group": "A"}}, "decimals": 4}, "overrides": []},
       "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'), model_group AS metric, sum(spend) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND spend > 0\nGROUP BY 1, 2\nORDER BY 1"}]
@@ -223,34 +232,36 @@
     {
       "id": 28, "type": "timeseries", "title": "LiteLLM calls by model group and status / hour",
       "description": "Includes calls LiteLLM rejected itself (invalid, blocked or exhausted Usage Codes).",
-      "gridPos": {"x": 0, "y": 96, "w": 12, "h": 8},
+      "gridPos": {"x": 0, "y": 84, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0, "custom": {"drawStyle": "bars", "fillOpacity": 60, "stacking": {"mode": "normal", "group": "A"}}}, "overrides": []},
       "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'),\n  model_group || ' ' || coalesce(status, 'unknown') AS metric, count(*) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time)\nGROUP BY 1, 2\nORDER BY 1"}]
     },
     {
       "id": 29, "type": "table", "title": "Latest LiteLLM calls (100 in the dashboard range)",
-      "gridPos": {"x": 12, "y": 96, "w": 12, "h": 8},
+      "description": "The 100 most recent LiteLLM calls in the dashboard range with Usage Code, model, status, duration, tokens and spend. The views hold no prompts or answers.",
+      "gridPos": {"x": 12, "y": 84, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
       "fieldConfig": {"defaults": {}, "overrides": [{"matcher": {"id": "byName", "options": "Duration"}, "properties": [{"id": "unit", "value": "s"}]}, {"matcher": {"id": "byName", "options": "Spend"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}]},
       "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT start_time AS \"Started\", key_alias AS \"Usage Code\", model_group AS \"Model group\",\n  status AS \"Status\", duration_ms / 1000.0 AS \"Duration\", prompt_tokens AS \"Prompt tokens\",\n  completion_tokens AS \"Completion tokens\", spend AS \"Spend\"\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time)\nORDER BY start_time DESC\nLIMIT 100"}]
     },
     {
-      "id": 30, "type": "text", "title": "Logs",
-      "gridPos": {"x": 0, "y": 104, "w": 24, "h": 2},
-      "options": {"mode": "markdown", "content": "Parsed at query time; request and Usage Code identifiers are never index labels. Log records are not a failure count."}
+      "id": 30, "type": "row", "title": "Logs", "collapsed": false,
+      "gridPos": {"x": 0, "y": 92, "w": 24, "h": 1},
+      "panels": []
     },
     {
       "id": 31, "type": "logs", "title": "LLM call warnings and errors: llm.request.completed and llm.output.rejected",
       "description": "Each failed call has one llm.request.completed record (error_code, duration_ms, input_chars); a rejected answer adds llm.output.rejected with its reason.",
-      "gridPos": {"x": 0, "y": 106, "w": 24, "h": 10},
+      "gridPos": {"x": 0, "y": 93, "w": 24, "h": 10},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=\"ai-card-actions\"} | json | event=~\"llm.request.completed|llm.output.rejected\" | level=~\"WARNING|ERROR|CRITICAL\"", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
     },
     {
       "id": 32, "type": "logs", "title": "AI Card Actions warnings/errors and unparsed records",
-      "gridPos": {"x": 0, "y": 116, "w": 24, "h": 9},
+      "description": "Warning and error records from AI Card Actions, plus records that are not valid JSON. Log records are not a failure count; identifiers are parsed at query time, never indexed.",
+      "gridPos": {"x": 0, "y": 103, "w": 24, "h": 9},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=\"ai-card-actions\"} | json | level=~\"WARNING|ERROR|CRITICAL\" or __error__!=\"\"", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}

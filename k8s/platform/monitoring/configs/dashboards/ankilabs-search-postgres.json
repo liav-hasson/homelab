@@ -1,15 +1,18 @@
 {
   "uid": "ankilabs-search-postgres",
   "title": "AnkiLabs - Search & PostgreSQL",
-  "description": "AnkiLabs lookup stages, row distributions, pool pressure and read-only PostgreSQL telemetry. No query text or statement statistics are collected.",
+  "description": "AnkiLabs lookup stages, connection pools, search row counts and read-only PostgreSQL health. No query text or statement statistics are collected.",
   "schemaVersion": 39,
   "version": 1,
   "editable": false,
-  "tags": ["homelab-monitoring"],
+  "tags": ["homelab-monitoring", "ankilabs", "database"],
   "timezone": "browser",
   "refresh": "30s",
   "time": {"from": "now-6h", "to": "now"},
-  "links": [{"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true}],
+  "links": [
+    {"type": "link", "title": "Runbook", "tooltip": "How to read this dashboard", "url": "https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#ankilabs-search-and-postgresql", "icon": "doc", "targetBlank": true},
+    {"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true, "includeVars": true}
+  ],
   "templating": {"list": [
     {"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"},
     {"name": "logs", "label": "Loki", "type": "datasource", "query": "loki"},
@@ -19,63 +22,65 @@
   ]},
   "panels": [
     {
-      "id": 1, "type": "text", "title": "Investigate without raw queries",
-      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 5},
-      "options": {"mode": "markdown", "content": "All data is **ankilabs-only**. Compare stage mean with stage sample/error counts; stages overlap, so their times must not be added into a request total. Started events locate the last stage when a process dies before completion. Pools expose size/available/waiting/max separately: these states are **not additive**. Row histograms are phase-specific observations, not SQL execution plans. Request IDs, fingerprints and backend PIDs remain query-time fields, never indexed labels.\n\nPostgreSQL requires the separate monitoring role/Secret preflight. HTTP scrape success alone does not prove database collector success. No slow SQL text, statement collector or extension is enabled. [Database runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#database)"}
-    },
-    {
       "id": 2, "type": "timeseries", "title": "Sentence stage mean duration by outcome",
-      "gridPos": {"x": 0, "y": 5, "w": 12, "h": 8},
+      "description": "Average duration of each sentence-lookup stage by outcome over 15 minutes. Stages overlap, so never add them into a request total; read them with the sample counts beside.",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (stage, outcome) (increase(ankilabs_sentence_lookup_stage_duration_seconds_sum{namespace=\"ankilabs\"}[15m])) / sum by (stage, outcome) (increase(ankilabs_sentence_lookup_stage_duration_seconds_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{stage}} {{outcome}}"}]
     },
     {
       "id": 3, "type": "timeseries", "title": "Sentence stage sample count / 15 minutes (including errors)",
-      "gridPos": {"x": 12, "y": 5, "w": 12, "h": 8},
+      "description": "Sentence-lookup stage observations over 15 minutes, including errors. A mean from a handful of samples is anecdotal; an error outcome points at the failing stage.",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (stage, outcome) (increase(ankilabs_sentence_lookup_stage_duration_seconds_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{stage}} {{outcome}}"}]
     },
     {
       "id": 4, "type": "timeseries", "title": "Dictionary stage mean duration by outcome",
-      "gridPos": {"x": 0, "y": 13, "w": 12, "h": 7},
+      "description": "Average duration of each dictionary-lookup stage (query, resolve, translate, notes) by outcome over 15 minutes. Stages overlap; do not add them up.",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (stage, outcome) (increase(ankilabs_dictionary_lookup_stage_duration_seconds_sum{namespace=\"ankilabs\"}[15m])) / sum by (stage, outcome) (increase(ankilabs_dictionary_lookup_stage_duration_seconds_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{stage}} {{outcome}}"}]
     },
     {
       "id": 5, "type": "timeseries", "title": "Dictionary stage sample count / 15 minutes (including errors)",
-      "gridPos": {"x": 12, "y": 13, "w": 12, "h": 7},
+      "description": "Dictionary-lookup stage observations over 15 minutes, including errors. Use them to judge how far the means beside can be trusted.",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (stage, outcome) (increase(ankilabs_dictionary_lookup_stage_duration_seconds_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{stage}} {{outcome}}"}]
     },
     {
       "id": 6, "type": "timeseries", "title": "Sentence DB pool: separate states, per pod",
-      "gridPos": {"x": 0, "y": 20, "w": 12, "h": 7},
+      "description": "Sentence-lookup connection pool per pod: size, available, waiting and max are separate states, not additive. Waiters for 3 minutes fire LookupPoolWaiting.",
+      "gridPos": {"x": 0, "y": 15, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "ankilabs_sentence_lookup_db_pool_connections{namespace=\"ankilabs\"}", "legendFormat": "{{pod}} {{state}}"}]
     },
     {
       "id": 7, "type": "timeseries", "title": "Dictionary DB pool: separate states, per pod",
-      "gridPos": {"x": 12, "y": 20, "w": 12, "h": 7},
+      "description": "Dictionary-lookup connection pool per pod: separate states, not additive. Waiters mean requests are queuing for a database connection (LookupPoolWaiting).",
+      "gridPos": {"x": 12, "y": 15, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "ankilabs_dictionary_lookup_db_pool_connections{namespace=\"ankilabs\"}", "legendFormat": "{{pod}} {{state}}"}]
     },
     {
       "id": 8, "type": "timeseries", "title": "Mean rows observed per search phase",
-      "description": "Candidate, matched and returned are distinct phases. Not all requests necessarily reach every phase.",
-      "gridPos": {"x": 0, "y": 27, "w": 12, "h": 7},
+      "description": "Average rows per search phase over 15 minutes; candidate, matched and returned are distinct phases and not every request reaches each. These are observations, not SQL execution plans.",
+      "gridPos": {"x": 0, "y": 22, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (phase) (increase(ankilabs_sentence_lookup_search_rows_sum{namespace=\"ankilabs\"}[15m])) / sum by (phase) (increase(ankilabs_sentence_lookup_search_rows_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{phase}}"}]
     },
     {
       "id": 9, "type": "timeseries", "title": "Search row histogram sample count / 15 minutes",
-      "gridPos": {"x": 12, "y": 27, "w": 12, "h": 7},
+      "description": "Searches observed per phase over 15 minutes. Use it to judge how many searches the mean rows beside represent.",
+      "gridPos": {"x": 12, "y": 22, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (phase) (increase(ankilabs_sentence_lookup_search_rows_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{phase}}"}]
@@ -83,14 +88,15 @@
     {
       "id": 10, "type": "timeseries", "title": "Search row distribution: cumulative observations by bucket / 15 minutes",
       "description": "Cumulative buckets, including zero and +Inf. These are sample counts, not a row-rate or percentile.",
-      "gridPos": {"x": 0, "y": 34, "w": 24, "h": 8},
+      "gridPos": {"x": 0, "y": 29, "w": 24, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (phase, le) (increase(ankilabs_sentence_lookup_search_rows_bucket{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{phase}} <= {{le}}"}]
     },
     {
       "id": 11, "type": "table", "title": "PostgreSQL connection and collector health: 1 success, 0 failure",
-      "gridPos": {"x": 0, "y": 42, "w": 12, "h": 8},
+      "description": "pg_up and every enabled collector: 1 success, 0 failure. A reachable exporter can still fail collectors (for example without the monitoring login), so check both.",
+      "gridPos": {"x": 0, "y": 37, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [
         {"refId": "A", "expr": "pg_up{namespace=\"ankilabs\"}", "instant": true, "format": "table"},
@@ -99,14 +105,16 @@
     },
     {
       "id": 12, "type": "timeseries", "title": "PostgreSQL client connections by state and wait type",
-      "gridPos": {"x": 12, "y": 42, "w": 12, "h": 8},
+      "description": "Client connections to the ankilabs database by state and wait type. Many idle-in-transaction or lock waits point at stuck requests; compare with the lookup pools.",
+      "gridPos": {"x": 12, "y": 37, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (state, wait_event_type) (pg_stat_activity_count{namespace=\"ankilabs\",datname=\"ankilabs\",backend_type=\"client backend\"})", "legendFormat": "{{state}} {{wait_event_type}}"}]
     },
     {
       "id": 13, "type": "timeseries", "title": "Oldest observed PostgreSQL transaction by state",
-      "gridPos": {"x": 0, "y": 50, "w": 12, "h": 7},
+      "description": "Age of the oldest open transaction per state. A steadily growing value, especially idle in transaction, means a session holds a transaction open; find its PID in the PostgreSQL logs.",
+      "gridPos": {"x": 0, "y": 45, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "max by (state) (pg_stat_activity_max_tx_duration{namespace=\"ankilabs\",datname=\"ankilabs\"})", "legendFormat": "{{state}}"}]
@@ -114,7 +122,7 @@
     {
       "id": 14, "type": "timeseries", "title": "Database backends and configured server-wide connection ceiling",
       "description": "The ceiling includes reserved/server-wide capacity. This is not a claim that all connections are available to lookups.",
-      "gridPos": {"x": 12, "y": 50, "w": 12, "h": 7},
+      "gridPos": {"x": 12, "y": 45, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [
@@ -125,7 +133,7 @@
     {
       "id": 15, "type": "timeseries", "title": "PostgreSQL commits and rollbacks / 15 minutes",
       "description": "A rollback is not necessarily a user-visible error. Correlate with request outcomes and SQLSTATE.",
-      "gridPos": {"x": 0, "y": 57, "w": 12, "h": 7},
+      "gridPos": {"x": 0, "y": 52, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [
@@ -136,7 +144,7 @@
     {
       "id": 16, "type": "timeseries", "title": "PostgreSQL 18 checkpoints / 15 minutes",
       "description": "Uses pg_stat_checkpointer (PostgreSQL 17+), not removed checkpoint fields in pg_stat_bgwriter.",
-      "gridPos": {"x": 12, "y": 57, "w": 12, "h": 7},
+      "gridPos": {"x": 12, "y": 52, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [
@@ -146,7 +154,8 @@
     },
     {
       "id": 17, "type": "timeseries", "title": "PostgreSQL PVC used / capacity",
-      "gridPos": {"x": 0, "y": 64, "w": 12, "h": 7},
+      "description": "Kubelet-reported used and capacity bytes of data-postgres-0. On openebs-hostpath both may be the whole node filesystem; Platform - Storage has the authoritative view.",
+      "gridPos": {"x": 0, "y": 59, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
       "targets": [
@@ -156,14 +165,16 @@
     },
     {
       "id": 18, "type": "timeseries", "title": "PostgreSQL locks by mode (not blocked-request counts)",
-      "gridPos": {"x": 12, "y": 64, "w": 12, "h": 7},
+      "description": "Locks held in the ankilabs database by mode. These are held locks, not blocked requests; check the oldest transaction and wait types when they climb.",
+      "gridPos": {"x": 12, "y": 59, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (mode) (pg_locks_count{namespace=\"ankilabs\",datname=\"ankilabs\"})", "legendFormat": "{{mode}}"}]
     },
     {
       "id": 19, "type": "logs", "title": "Lookup breadcrumbs by request ID / fingerprint",
-      "gridPos": {"x": 0, "y": 71, "w": 24, "h": 10},
+      "description": "Sentence and dictionary lookup events filtered by the request_id and fingerprint variables (parsed at query time, never indexed). Started events show the last stage reached when a process died.",
+      "gridPos": {"x": 0, "y": 66, "w": 24, "h": 10},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=~\"sentence-lookup|dictionary-lookup\"} | json | request_id=~`.*${request_id:regex}.*` | query_fingerprint=~`.*${fingerprint:regex}.*`", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
@@ -171,7 +182,7 @@
     {
       "id": 20, "type": "logs", "title": "PostgreSQL stderr: native severity, normalized level and raw fallback",
       "description": "EOF with an open transaction retains pg_severity=LOG and gets level=WARNING. PID is query-time only; correlate within a narrow time range because PIDs can be reused.",
-      "gridPos": {"x": 0, "y": 81, "w": 24, "h": 10},
+      "gridPos": {"x": 0, "y": 76, "w": 24, "h": 10},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=\"postgres\",container=\"postgres\"} | json | db_backend_pid=~`.*${backend_pid:regex}.*`", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}

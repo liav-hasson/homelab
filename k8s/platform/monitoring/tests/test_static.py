@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 import yaml
+from dashboard_panels import iter_panels
 from jsonschema import Draft202012Validator
 
 MONITORING = Path(__file__).resolve().parents[1]
@@ -20,6 +21,10 @@ EXPECTED = {
     "ankilabs-ai": "AnkiLabs - AI",
     "quizlabs-overview": "QuizLabs - Overview",
 }
+NAVIGATION_TAG = "homelab-monitoring"
+APP_TAGS = {"ankilabs", "quizlabs", "platform", "homelab"}
+RUNBOOK = MONITORING / "runbook.md"
+RUNBOOK_URL = "https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md"
 SENSITIVE = r"\b(request_id|query_fingerprint|db_backend_pid|cursor)\s*(=|:)"
 POSTGRES = "grafana-postgresql-datasource"
 LITELLM_VIEWS = K8S / "apps/ankilabs/charts/llm-proxy/files/grafana-views.sql"
@@ -34,10 +39,64 @@ def sql_targets(dashboards: list[dict]) -> list[str]:
     return [
         target["rawSql"]
         for dashboard in dashboards
-        for panel in dashboard["panels"]
+        for panel in iter_panels(dashboard)
         if panel.get("datasource", {}).get("type") == POSTGRES
         for target in panel["targets"]
     ]
+
+
+def dashboard_validator() -> Draft202012Validator:
+    """The checked-in dashboard contract."""
+    schema = json.loads(
+        (Path(__file__).parent / "dashboard.schema.json").read_text(encoding="utf-8")
+    )
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
+
+
+def runbook_anchors() -> set[str]:
+    """GitHub heading anchors of the runbook."""
+    headings = re.findall(
+        r"^#{1,6} (.+)$", RUNBOOK.read_text(encoding="utf-8"), re.MULTILINE
+    )
+    return {
+        re.sub(r"[^\w\- ]", "", heading.strip().lower()).replace(" ", "-")
+        for heading in headings
+    }
+
+
+def query_violations(panel: dict) -> list[str]:
+    """Honesty rules for one panel's queries, whatever the panel type.
+
+    A percentile is shown only alongside a minimum sample count in the same window,
+    a duration sum is shown in seconds, and a heatmap reads one le-aggregated
+    bucket rate per target.
+    """
+    violations = []
+    for target in panel.get("targets", []):
+        expr = target.get("expr", "")
+        if "histogram_quantile" in expr and not re.search(
+            r"\) and on \([\w, ]+\) sum by \([\w, ]+\) "
+            r"\(increase\(\w+_count\{[^}]*\}\[\w+\]\)\) >= [1-9]\d*$",
+            expr,
+        ):
+            violations.append(f"percentile without a sample guard: {expr}")
+        if "duration_seconds_sum" in expr and (
+            panel.get("fieldConfig", {}).get("defaults", {}).get("unit") != "s"
+        ):
+            violations.append(f"duration sum not in seconds: {expr}")
+        if panel["type"] != "heatmap" or panel["datasource"]["type"] != "prometheus":
+            continue
+        if target.get("format") != "heatmap" or not re.fullmatch(
+            r"sum by \(le\) \((?:rate|increase)\(\w+_bucket\{[^{}]*\}\[[^\]]+\]\)\)",
+            expr,
+        ):
+            violations.append(f"heatmap needs a by (le) bucket rate: {expr}")
+        if "_seconds_bucket" in expr and (
+            panel.get("options", {}).get("yAxis", {}).get("unit") != "s"
+        ):
+            violations.append(f"duration heatmap not in seconds: {expr}")
+    return violations
 
 
 class MonitoringContractTests(unittest.TestCase):
@@ -52,13 +111,7 @@ class MonitoringContractTests(unittest.TestCase):
 
     def test_exact_dashboard_schemas_and_nonoverlapping_layouts(self) -> None:
         """Reject obsolete dashboards, UID collisions and invalid panel layouts."""
-        schema = json.loads(
-            (Path(__file__).parent / "dashboard.schema.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        Draft202012Validator.check_schema(schema)
-        validator = Draft202012Validator(schema)
+        validator = dashboard_validator()
         self.assertEqual(len(self.dashboards), len(EXPECTED))
         self.assertEqual(
             {item["uid"]: item["title"] for item in self.dashboards}, EXPECTED
@@ -66,20 +119,81 @@ class MonitoringContractTests(unittest.TestCase):
         for dashboard in self.dashboards:
             with self.subTest(dashboard=dashboard["uid"]):
                 validator.validate(dashboard)
-                occupied = set()
-                panel_ids = set()
-                for panel in dashboard["panels"]:
-                    self.assertNotIn(panel["id"], panel_ids)
-                    panel_ids.add(panel["id"])
-                    grid = panel["gridPos"]
-                    self.assertLessEqual(grid["x"] + grid["w"], 24)
-                    cells = {
-                        (x, y)
-                        for x in range(grid["x"], grid["x"] + grid["w"])
-                        for y in range(grid["y"], grid["y"] + grid["h"])
-                    }
-                    self.assertFalse(occupied & cells)
-                    occupied |= cells
+                ids = [panel["id"] for panel in iter_panels(dashboard)]
+                self.assertEqual(len(ids), len(set(ids)))
+                self.assert_no_overlap(dashboard["panels"])
+                for row in dashboard["panels"]:
+                    if row["type"] == "row" and row["collapsed"]:
+                        self.assert_no_overlap(row["panels"])
+                        for panel in row["panels"]:
+                            self.assertGreater(
+                                panel["gridPos"]["y"], row["gridPos"]["y"]
+                            )
+
+    def test_schema_rejects_text_beta_and_undescribed_panels(self) -> None:
+        """Explain panels with descriptions; rows only group them."""
+        validator = dashboard_validator()
+        dashboard = self.dashboards[0]
+        panel = next(item for item in dashboard["panels"] if item["type"] != "row")
+        row = {
+            "id": 1000,
+            "type": "row",
+            "title": "Logs",
+            "collapsed": True,
+            "gridPos": {"x": 0, "y": 1000, "w": 24, "h": 1},
+            "panels": [panel],
+        }
+        self.assertTrue(validator.is_valid({**dashboard, "panels": [row]}))
+        undescribed = {k: v for k, v in panel.items() if k != "description"}
+        for panels in (
+            [{**panel, "type": "text", "options": {"content": "Read me"}}],
+            [{**panel, "type": "trend"}],
+            [{**panel, "type": "datagrid"}],
+            [{**panel, "description": " "}],
+            [undescribed],
+            [{**row, "panels": [undescribed]}],
+            [{**row, "panels": [row]}],
+            [{**row, "collapsed": False}],
+            [{**row, "targets": panel["targets"]}],
+            [{**panel, "panels": []}],
+        ):
+            with self.subTest(panels=[item["type"] for item in panels]):
+                self.assertFalse(validator.is_valid({**dashboard, "panels": panels}))
+
+    def assert_no_overlap(self, panels: list[dict]) -> None:
+        """Panels sharing one grid must not cover the same cell."""
+        occupied = set()
+        for panel in panels:
+            grid = panel["gridPos"]
+            self.assertLessEqual(grid["x"] + grid["w"], 24)
+            cells = {
+                (x, y)
+                for x in range(grid["x"], grid["x"] + grid["w"])
+                for y in range(grid["y"], grid["y"] + grid["h"])
+            }
+            self.assertFalse(occupied & cells, panel["title"])
+            occupied |= cells
+
+    def test_dashboards_are_tagged_linked_and_described(self) -> None:
+        """Each dashboard explains itself through descriptions and its runbook section."""
+        anchors = runbook_anchors()
+        for dashboard in self.dashboards:
+            with self.subTest(dashboard=dashboard["uid"]):
+                tags = set(dashboard["tags"])
+                self.assertIn(NAVIGATION_TAG, tags)
+                self.assertEqual(tags & APP_TAGS, {dashboard["uid"].split("-")[0]})
+                links = {link["type"]: link for link in dashboard["links"]}
+                self.assertEqual(len(links), len(dashboard["links"]))
+                self.assertEqual(set(links), {"dashboards", "link"})
+                self.assertEqual(links["dashboards"]["tags"], [NAVIGATION_TAG])
+                for option in ("asDropdown", "keepTime", "includeVars"):
+                    self.assertIs(links["dashboards"][option], True)
+                runbook = links["link"]
+                page, _, anchor = runbook["url"].partition("#")
+                self.assertEqual(page, RUNBOOK_URL)
+                self.assertIn(anchor, anchors)
+                self.assertIs(runbook["targetBlank"], True)
+                self.assertEqual(runbook["icon"], "doc")
 
     def test_provisioning_is_exact_and_references_existing_resources(self) -> None:
         """Require one coherent source of provisioned dashboards."""
@@ -103,7 +217,7 @@ class MonitoringContractTests(unittest.TestCase):
             if not uid.startswith(("ankilabs-", "quizlabs-")):
                 continue
             namespace = "quizlabs" if uid.startswith("quizlabs-") else "ankilabs"
-            for panel in dashboard["panels"]:
+            for panel in iter_panels(dashboard):
                 if panel.get("datasource", {}).get("type") == POSTGRES:
                     continue
                 for target in panel.get("targets", []):
@@ -128,27 +242,65 @@ class MonitoringContractTests(unittest.TestCase):
                         self.assertNotRegex(selector, SENSITIVE)
 
     def test_no_fake_zero_health_or_sparse_percentiles(self) -> None:
-        """Keep missing observations visible and latency units honest.
-
-        A percentile is shown only alongside a minimum sample count in the same window.
-        """
+        """Keep missing observations visible and latency units honest."""
         for dashboard in self.dashboards:
             serialized = json.dumps(dashboard)
             self.assertNotRegex(serialized, r"vector\s*\(\s*0\s*\)")
             self.assertNotIn("nullAsZero", serialized)
-            for panel in dashboard["panels"]:
-                for target in panel.get("targets", []):
-                    expr = target.get("expr", "")
-                    if "histogram_quantile" in expr:
-                        self.assertRegex(
-                            expr,
-                            r"\) and on \([\w, ]+\) sum by \([\w, ]+\) "
-                            r"\(increase\(\w+_count\{[^}]*\}\[\w+\]\)\) >= [1-9]\d*$",
-                        )
-                    if panel["type"] == "timeseries" and (
-                        "duration_seconds_sum" in expr
-                    ):
-                        self.assertEqual(panel["fieldConfig"]["defaults"]["unit"], "s")
+            for panel in iter_panels(dashboard):
+                self.assertEqual(query_violations(panel), [], panel["title"])
+
+    def test_query_rules_reach_nested_and_new_panel_types(self) -> None:
+        """The rules hold in collapsed rows and for panel types not used yet."""
+        prometheus = {"type": "prometheus", "uid": "${metrics}"}
+        bucket = 'x_duration_seconds_bucket{namespace="ankilabs"}'
+        heatmap = {
+            "type": "heatmap",
+            "title": "Latency distribution",
+            "datasource": prometheus,
+            "options": {"yAxis": {"unit": "s"}},
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": f"sum by (le) (rate({bucket}[$__rate_interval]))",
+                    "format": "heatmap",
+                }
+            ],
+        }
+        stat = {
+            "type": "stat",
+            "title": "Mean latency",
+            "datasource": prometheus,
+            "fieldConfig": {"defaults": {"unit": "ms"}},
+            "targets": [{"refId": "A", "expr": "sum(x_duration_seconds_sum)"}],
+        }
+        gauge = {
+            "type": "gauge",
+            "title": "p95",
+            "datasource": prometheus,
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": f"histogram_quantile(0.95, sum by (le) ({bucket}))",
+                }
+            ],
+        }
+        row = {"type": "row", "collapsed": True, "panels": [heatmap, stat, gauge]}
+        nested = list(iter_panels({"panels": [row]}))
+        self.assertEqual(nested, [row, heatmap, stat, gauge])
+        self.assertEqual(query_violations(heatmap), [])
+        self.assertEqual(len(query_violations(stat)), 1)
+        self.assertEqual(len(query_violations(gauge)), 1)
+        for change in (
+            {"format": "time_series"},
+            {"expr": f"sum by (le, pod) (rate({bucket}[5m]))"},
+            {"expr": f"sum by (le) ({bucket})"},
+            {"expr": "sum by (le) (rate(x_duration_seconds_count[5m]))"},
+        ):
+            with self.subTest(change=change):
+                broken = {**heatmap, "targets": [{**heatmap["targets"][0], **change}]}
+                self.assertTrue(query_violations(broken))
+        self.assertTrue(query_violations({**heatmap, "options": {}}))
 
     def test_litellm_panels_read_only_the_grafana_views(self) -> None:
         """Grafana's LiteLLM login sees views without key hashes, prompts or answers."""
@@ -222,11 +374,14 @@ class MonitoringContractTests(unittest.TestCase):
     def test_alert_links_routes_and_namespace_matcher_strategy(self) -> None:
         """Application/database alerts must reach the existing POD Discord receiver."""
         rules = yaml.safe_load((CONFIGS / "alerts.yaml").read_text(encoding="utf-8"))
+        anchors = runbook_anchors()
         for group in rules["spec"]["groups"]:
             for rule in group["rules"]:
                 annotations = rule["annotations"]
                 self.assertIn("/d/", annotations["dashboard_url"])
-                self.assertIn("runbook.md#", annotations["runbook_url"])
+                page, _, anchor = annotations["runbook_url"].partition("#")
+                self.assertEqual(page, RUNBOOK_URL)
+                self.assertIn(anchor, anchors)
                 self.assertTrue(annotations["description"])
         routes = yaml.safe_load(
             (CONFIGS / "alertmanager-config.yaml").read_text(encoding="utf-8")

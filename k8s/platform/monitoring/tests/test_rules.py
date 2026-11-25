@@ -10,6 +10,7 @@ import unittest
 from pathlib import Path
 
 import yaml
+from dashboard_panels import iter_panels
 
 MONITORING = Path(__file__).resolve().parents[1]
 
@@ -29,7 +30,7 @@ def dashboard_queries() -> list[dict]:
     queries = []
     for path in (MONITORING / "configs/dashboards").glob("*.json"):
         dashboard = json.loads(path.read_text(encoding="utf-8"))
-        for panel in dashboard["panels"]:
+        for panel in iter_panels(dashboard):
             if panel.get("datasource", {}).get("type") != "prometheus":
                 continue
             for target in panel["targets"]:
