@@ -2,6 +2,7 @@
 
 import json
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -348,6 +349,43 @@ class MonitoringContractTests(unittest.TestCase):
         for endpoint in gateway["spec"]["podMetricsEndpoints"]:
             for relabeling in endpoint.get("relabelings", []):
                 self.assertNotEqual(relabeling.get("targetLabel"), "service")
+
+
+class LocalChartVersionTests(unittest.TestCase):
+    """Flux rebuilds a GitRepository chart only when its Chart.yaml version changes."""
+
+    def git(self, *args: str) -> str:
+        # Repository root, so pathspecs and `rev:path` resolve the same way.
+        return subprocess.run(
+            ["git", "-C", str(K8S.parent), *args],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+
+    def test_changed_local_charts_bump_their_version(self) -> None:
+        """Otherwise new values meet the old templates, as with llm-proxy 0.1.0."""
+        try:
+            base = self.git("merge-base", "HEAD", "origin/main").strip()
+        except (OSError, subprocess.CalledProcessError):
+            self.skipTest("needs a git checkout with origin/main")
+        for chart in sorted(K8S.rglob("Chart.yaml")):
+            directory = chart.parent.relative_to(K8S.parent).as_posix()
+            # Working-tree diff, so uncommitted chart edits are checked too.
+            if not self.git("diff", "--name-only", base, "--", directory).strip():
+                continue
+            try:
+                before = yaml.safe_load(
+                    self.git("show", f"{base}:{directory}/Chart.yaml")
+                )
+            except subprocess.CalledProcessError:
+                continue  # new chart
+            with self.subTest(chart=directory):
+                self.assertNotEqual(
+                    yaml.safe_load(chart.read_text(encoding="utf-8"))["version"],
+                    before["version"],
+                    f"{directory} changed since {base[:7]}; bump its Chart.yaml version",
+                )
 
 
 if __name__ == "__main__":
