@@ -20,59 +20,157 @@
   ]},
   "panels": [
     {
-      "id": 2, "type": "row", "title": "Traffic and errors", "collapsed": false,
-      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+      "id": 2, "type": "stat", "title": "AI calls",
+      "description": "LLM calls over the dashboard range, one per action request and never retried, with activity over time. Window counts keep the first call after a restart and can be fractional.",
+      "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["sum"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "sum ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[$__interval]))", "legendFormat": "calls"}
+      ]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Error ratio",
+      "description": "Failed share of LLM calls over the dashboard range, as AnkiLabsAIErrorRatioHigh counts it: Usage Code errors and ai_refused excluded, ai_output_invalid included. Red from the alert's 20%; empty means no calls.",
+      "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "percentunit", "decimals": 1, "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.1}, {"color": "red", "value": 0.2}]}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "sum ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"}[$__range])) / (sum ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[$__range])) > 0)", "legendFormat": "error ratio"}
+      ]
+    },
+    {
+      "id": 4, "type": "stat", "title": "p95 LLM duration (24h)",
+      "description": "95th percentile LLM call time over the last 24 hours, both outcomes; empty with fewer than 5 calls. Buckets step 10, 30, 60, 120 s and calls time out at 75 s, so it is coarse above 10 s.",
+      "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 30}, {"color": "red", "value": 60}]}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "histogram_quantile(0.95, sum by (namespace, le) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_bucket{namespace=\"ankilabs\"}[24h]))) and on (namespace) sum by (namespace) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[24h])) >= 5", "legendFormat": "p95"}
+      ]
+    },
+    {
+      "id": 5, "type": "stat", "title": "Cost",
+      "description": "LLM cost in USD over the dashboard range as LiteLLM reported it, including answers rejected afterwards. Speech is priced per character.",
+      "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 2, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["sum"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "sum ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__interval]))", "legendFormat": "cost"}
+      ]
+    },
+    {
+      "id": 6, "type": "stat", "title": "Tokens",
+      "description": "Prompt plus completion tokens over the dashboard range. Reasoning tokens are already part of completion, so they are not added; speech reports no tokens.",
+      "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["sum"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "sum ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"}[$__interval]))", "legendFormat": "tokens"}
+      ]
+    },
+    {
+      "id": 7, "type": "stat", "title": "Usage Codes",
+      "description": "Usage Codes that are neither blocked nor expired, and the budget they have left in total, from LiteLLM now (not the dashboard range). Codes without a budget add nothing to Budget left.",
+      "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": [{"matcher": {"id": "byName", "options": "Budget left"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 2}]}]},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "none", "colorMode": "value", "justifyMode": "auto", "textMode": "value_and_name", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT count(*) FILTER (WHERE NOT blocked AND (expires IS NULL OR expires > now())) AS \"Active\",\n  sum(remaining) FILTER (WHERE NOT blocked AND (expires IS NULL OR expires > now())) AS \"Budget left\"\nFROM grafana.usage_codes"}
+      ]
+    },
+    {
+      "id": 8, "type": "row", "title": "Traffic and errors", "collapsed": false,
+      "gridPos": {"x": 0, "y": 4, "w": 24, "h": 1},
       "panels": []
     },
     {
-      "id": 3, "type": "timeseries", "title": "LLM calls by action and outcome / 15 minutes",
-      "description": "LLM calls per action (sentences, notes, review, speech) and outcome over 15 minutes; one per action request, never retried. An answer rejected after LiteLLM returned it (ai_output_invalid) is an error here; counts can be fractional.",
-      "gridPos": {"x": 0, "y": 1, "w": 12, "h": 7},
+      "id": 9, "type": "timeseries", "title": "Calls by action",
+      "description": "LLM calls per bar (hover for its time span), stacked by action (sentences, notes, review, speech) to the total. An answer rejected after LiteLLM returned it (ai_output_invalid) is still a call here.",
+      "gridPos": {"x": 0, "y": 5, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "sum by (action, outcome) ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{action}} {{outcome}}"}]
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0, "decimals": 0, "custom": {"drawStyle": "bars", "barAlignment": -1, "fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "stacking": {"mode": "normal", "group": "A"}}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[$__interval]))", "legendFormat": "{{action}}"}
+      ]
     },
     {
-      "id": 4, "type": "timeseries", "title": "Error ratio by action (alert definition) / 15 minutes",
-      "description": "Errors over all LLM calls, excluding Usage Code errors and ai_refused, as in AnkiLabsAIErrorRatioHigh (the line is its 20% threshold; it also needs at least 3 calls in 15 minutes). Absent means no calls.",
-      "gridPos": {"x": 12, "y": 1, "w": 12, "h": 7},
+      "id": 10, "type": "timeseries", "title": "Error ratio by action (alert definition, 15m)",
+      "description": "Errors over all LLM calls in 15 minutes, excluding Usage Code errors and ai_refused, as in AnkiLabsAIErrorRatioHigh; the dashed line is its 20% threshold (it also needs at least 3 calls). Absent means no calls.",
+      "gridPos": {"x": 12, "y": 5, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "custom": {"thresholdsStyle": {"mode": "line"}}, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0.2}]}}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"}[15m])) / (sum by (action) ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[15m])) > 0)", "legendFormat": "{{action}}"}]
+      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "spanNulls": false, "thresholdsStyle": {"mode": "dashed"}}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0.2}]}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code!~\"usage_code_.*|ai_refused\"}[15m])) / (sum by (action) ((ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[15m])) > 0)", "legendFormat": "{{action}}"}
+      ]
     },
     {
-      "id": 5, "type": "timeseries", "title": "LLM errors by action and error code / 15 minutes (ai_timeout highlighted)",
-      "description": "LLM errors per action and code over 15 minutes, every code visible and ai_timeout highlighted. Usage Code errors and ai_refused (the model declined) are errors here but not in the error-ratio alert.",
-      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 7},
+      "id": 11, "type": "timeseries", "title": "Errors by code",
+      "description": "Failed LLM calls per bar stacked by error code, ai_timeout in red. ai_output_invalid is an answer rejected after LiteLLM returned it (success in its llm.request.completed log); usage_code_* and ai_refused (the model declined) are errors here but not in the alert.",
+      "gridPos": {"x": 0, "y": 13, "w": 16, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*ai_timeout.*"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}, {"id": "custom.lineWidth", "value": 4}]}]},
-      "targets": [{"refId": "A", "expr": "sum by (action, error_code) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"} offset 15m) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"}[15m]))", "legendFormat": "{{action}} {{error_code}}"}]
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0, "decimals": 0, "custom": {"drawStyle": "bars", "barAlignment": -1, "fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "stacking": {"mode": "normal", "group": "A"}}}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*ai_timeout.*"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]}]},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"refId": "A", "expr": "sum by (error_code) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"}[$__interval]))", "legendFormat": "{{error_code}}"}
+      ]
     },
     {
-      "id": 6, "type": "table", "title": "LLM error counters since process start (not window counts)",
-      "description": "Raw counters per pod lifetime, for checking window counts against logs.",
-      "gridPos": {"x": 12, "y": 8, "w": 6, "h": 7},
+      "id": 12, "type": "state-timeline", "title": "Scrape health",
+      "description": "Whether Prometheus could scrape AI Card Actions metrics: up or down per pod. A gap is unknown, not healthy; AnkiLabsScrapeFailed alerts on down.",
+      "gridPos": {"x": 16, "y": 13, "w": 8, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "sum by (action, model, error_code) (ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\"})", "instant": true, "format": "table"}]
+      "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": "green"}, "mappings": [{"type": "value", "options": {"0": {"text": "down", "color": "red", "index": 0}, "1": {"text": "up", "color": "green", "index": 1}}}], "custom": {"lineWidth": 0, "fillOpacity": 70}}, "overrides": []},
+      "options": {"showValue": "auto", "rowHeight": 0.8, "mergeValues": true, "alignValue": "left", "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false, "calcs": []}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"refId": "A", "expr": "up{namespace=\"ankilabs\",job=\"monitoring/ankilabs-ai-card-actions\"}", "legendFormat": "{{pod}}"}
+      ]
     },
     {
-      "id": 7, "type": "table", "title": "Scrape health (absent target is unknown)",
-      "description": "AI Card Actions metrics target: 1 reachable, 0 failed. A missing row is unknown, not healthy; AnkiLabsScrapeFailed alerts on it.",
-      "gridPos": {"x": 18, "y": 8, "w": 6, "h": 7},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "up{namespace=\"ankilabs\",job=\"monitoring/ankilabs-ai-card-actions\"}", "instant": true, "format": "table"}]
-    },
-    {
-      "id": 8, "type": "row", "title": "Latency", "collapsed": false,
-      "gridPos": {"x": 0, "y": 15, "w": 24, "h": 1},
+      "id": 13, "type": "row", "title": "Latency", "collapsed": false,
+      "gridPos": {"x": 0, "y": 20, "w": 24, "h": 1},
       "panels": []
     },
     {
-      "id": 9, "type": "timeseries", "title": "LLM duration p50 / p95 / p99 by action (30m window, at least 5 calls)",
+      "id": 14, "type": "heatmap", "title": "LLM duration distribution",
+      "description": "LLM calls per duration bucket and time slice, darker means more calls, both outcomes. Buckets step 10, 30, 60, 120 s and calls time out at 75 s, so timeouts land in the 60-120 s band; the first call after a pod restart can be missing.",
+      "gridPos": {"x": 0, "y": 21, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "options": {"calculate": false, "yAxis": {"axisPlacement": "left", "unit": "s", "reverse": false}, "rowsFrame": {"layout": "le"}, "color": {"mode": "scheme", "scheme": "Oranges", "fill": "dark-orange", "scale": "exponential", "exponent": 0.5, "steps": 64, "reverse": false}, "cellGap": 1, "cellValues": {"unit": "short", "decimals": 1}, "filterValues": {"le": 1e-09}, "showValue": "never", "legend": {"show": true}, "tooltip": {"mode": "single", "yHistogram": true, "showColorScale": true}, "exemplars": {"color": "rgba(255,0,255,0.7)"}, "selectionMode": "x"},
+      "targets": [
+        {"refId": "A", "expr": "sum by (le) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_bucket{namespace=\"ankilabs\"}[$__interval]))", "legendFormat": "{{le}}", "format": "heatmap"}
+      ]
+    },
+    {
+      "id": 15, "type": "timeseries", "title": "LLM duration p50 / p95 / p99 by action (30m window, at least 5 calls)",
       "description": "Time from calling the LLM Proxy until the answer is accepted or rejected, both outcomes. Buckets step 10, 30, 60, 120 s and calls time out at 75 s, so upper percentiles are coarse; empty means fewer than 5 calls, not zero latency.",
-      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+      "gridPos": {"x": 12, "y": 21, "w": 12, "h": 9},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
+      "fieldConfig": {"defaults": {"unit": "s", "min": 0, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "spanNulls": false}}, "overrides": [{"matcher": {"id": "byRegexp", "options": "p99 .*"}, "properties": [{"id": "custom.lineStyle", "value": {"fill": "dash", "dash": [10, 10]}}]}]},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [
         {"refId": "A", "expr": "histogram_quantile(0.5, sum by (action, le) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_bucket{namespace=\"ankilabs\"}[30m]))) and on (action) sum by (action) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[30m])) >= 5", "legendFormat": "p50 {{action}}"},
         {"refId": "B", "expr": "histogram_quantile(0.95, sum by (action, le) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_bucket{namespace=\"ankilabs\"}[30m]))) and on (action) sum by (action) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[30m])) >= 5", "legendFormat": "p95 {{action}}"},
@@ -80,191 +178,202 @@
       ]
     },
     {
-      "id": 10, "type": "timeseries", "title": "Mean LLM duration by action and outcome (30m window)",
-      "description": "Average LLM call time per action and outcome over 30 minutes; empty when there were no calls. Read it next to the call counts.",
-      "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "sum by (action, outcome) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_sum{namespace=\"ankilabs\"}[30m])) / (sum by (action, outcome) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[30m])) > 0)", "legendFormat": "{{action}} {{outcome}}"}]
-    },
-    {
-      "id": 11, "type": "timeseries", "title": "HTTP duration by route: mean and p95 (30m window, p95 needs 5 requests)",
+      "id": 16, "type": "timeseries", "title": "HTTP duration by route: mean and p95 (30m window, p95 needs 5 requests)",
       "description": "Whole action requests (/v1 routes, health checks excluded), all statuses; p95 needs at least 5 requests in 30 minutes. The gap to LLM duration is AI Card Actions' own work.",
-      "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+      "gridPos": {"x": 0, "y": 30, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": []},
+      "fieldConfig": {"defaults": {"unit": "s", "min": 0, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "spanNulls": false}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [
         {"refId": "A", "expr": "sum by (route) (increase(ankilabs_ai_card_actions_http_request_duration_seconds_sum{namespace=\"ankilabs\",route=~\"/v1/.+\"}[30m])) / (sum by (route) (increase(ankilabs_ai_card_actions_http_request_duration_seconds_count{namespace=\"ankilabs\",route=~\"/v1/.+\"}[30m])) > 0)", "legendFormat": "mean {{route}}"},
         {"refId": "B", "expr": "histogram_quantile(0.95, sum by (route, le) (increase(ankilabs_ai_card_actions_http_request_duration_seconds_bucket{namespace=\"ankilabs\",route=~\"/v1/.+\"}[30m]))) and on (route) sum by (route) (increase(ankilabs_ai_card_actions_http_request_duration_seconds_count{namespace=\"ankilabs\",route=~\"/v1/.+\"}[30m])) >= 5", "legendFormat": "p95 {{route}}"}
       ]
     },
     {
-      "id": 12, "type": "timeseries", "title": "LiteLLM duration by model group: mean and p95 (successful calls, 15m buckets)",
+      "id": 17, "type": "timeseries", "title": "LiteLLM duration by model group: mean and p95 (successful calls, 15m buckets)",
       "description": "The proxy's own time (provider plus proxy) for successful calls, from LiteLLM's spend logs: exact percentiles, not histogram estimates. Close to LLM duration points at the provider, a larger gap at the in-cluster path.",
-      "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
+      "gridPos": {"x": 12, "y": 30, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
-      "fieldConfig": {"defaults": {"unit": "s", "min": 0, "displayName": "${__field.name} ${__field.labels.metric}"}, "overrides": []},
-      "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '15m'), model_group AS metric,\n  avg(duration_ms) / 1000.0 AS mean,\n  percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms) / 1000.0 AS p95\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND status = 'success' AND duration_ms IS NOT NULL\nGROUP BY 1, 2\nORDER BY 1"}]
+      "fieldConfig": {"defaults": {"unit": "s", "min": 0, "displayName": "${__field.name} ${__field.labels.metric}", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "spanNulls": false}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '15m'), model_group AS metric,\n  avg(duration_ms) / 1000.0 AS mean,\n  percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms) / 1000.0 AS p95\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND status = 'success' AND duration_ms IS NOT NULL\nGROUP BY 1, 2\nORDER BY 1"}
+      ]
     },
     {
-      "id": 13, "type": "row", "title": "Input size", "collapsed": false,
-      "gridPos": {"x": 0, "y": 32, "w": 24, "h": 1},
+      "id": 18, "type": "row", "title": "Input size", "collapsed": false,
+      "gridPos": {"x": 0, "y": 38, "w": 24, "h": 1},
       "panels": []
     },
     {
-      "id": 14, "type": "timeseries", "title": "Input characters by action: mean and p95 (30m window, p95 needs 5 calls)",
-      "description": "Characters of user input per LLM call (card text, or the text to speak): mean and p95 over 30 minutes, p95 only with at least 5 calls. Per-request size and duration are in the llm.request.completed logs.",
-      "gridPos": {"x": 0, "y": 33, "w": 12, "h": 8},
+      "id": 19, "type": "heatmap", "title": "Input size distribution",
+      "description": "LLM calls per input-size bucket (characters of card text, or of the text to speak) and time slice, darker means more calls. Per-request size and duration are in the llm.request.completed logs.",
+      "gridPos": {"x": 0, "y": 39, "w": 8, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "options": {"calculate": false, "yAxis": {"axisPlacement": "left", "unit": "short", "reverse": false}, "rowsFrame": {"layout": "le"}, "color": {"mode": "scheme", "scheme": "Oranges", "fill": "dark-orange", "scale": "exponential", "exponent": 0.5, "steps": 64, "reverse": false}, "cellGap": 1, "cellValues": {"unit": "short", "decimals": 1}, "filterValues": {"le": 1e-09}, "showValue": "never", "legend": {"show": true}, "tooltip": {"mode": "single", "yHistogram": true, "showColorScale": true}, "exemplars": {"color": "rgba(255,0,255,0.7)"}, "selectionMode": "x"},
       "targets": [
-        {"refId": "A", "expr": "sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_sum{namespace=\"ankilabs\"}[30m])) / (sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_count{namespace=\"ankilabs\"}[30m])) > 0)", "legendFormat": "mean {{action}}"},
-        {"refId": "B", "expr": "histogram_quantile(0.95, sum by (action, le) (increase(ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"}[30m]))) and on (action) sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_count{namespace=\"ankilabs\"}[30m])) >= 5", "legendFormat": "p95 {{action}}"}
+        {"refId": "A", "expr": "sum by (le) (increase(ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"}[$__interval]))", "legendFormat": "{{le}}", "format": "heatmap"}
       ]
     },
     {
-      "id": 15, "type": "table", "title": "Calls at or below each input size (cumulative buckets, dashboard range)",
-      "description": "le is the bucket's upper bound in characters; +Inf is every call.",
-      "gridPos": {"x": 12, "y": 33, "w": 12, "h": 8},
+      "id": 20, "type": "bargauge", "title": "Calls by input size (dashboard range)",
+      "description": "LLM calls per input-size bucket over the dashboard range; each bar is labelled with its upper bound in characters, +Inf is above 100,000.",
+      "gridPos": {"x": 8, "y": 39, "w": 8, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "sum by (action, le) ((ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"}[$__range]))", "instant": true, "format": "table"}]
-    },
-    {
-      "id": 16, "type": "timeseries", "title": "Mean LLM duration vs mean input size by action (30m window)",
-      "description": "Duration on the left axis, input characters on the right. Moving together suggests size drives latency; confirm per request in the logs.",
-      "gridPos": {"x": 0, "y": 41, "w": 12, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "s", "min": 0}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*input chars.*"}, "properties": [{"id": "unit", "value": "short"}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "decimals", "value": 0}]}]},
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "min": 0, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color", "namePlacement": "auto", "showUnfilled": true, "sizing": "auto", "minVizWidth": 8, "minVizHeight": 16, "maxVizHeight": 300},
       "targets": [
-        {"refId": "A", "expr": "sum by (action) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_sum{namespace=\"ankilabs\"}[30m])) / (sum by (action) (increase(ankilabs_ai_card_actions_llm_request_duration_seconds_count{namespace=\"ankilabs\"}[30m])) > 0)", "legendFormat": "{{action}} mean duration"},
-        {"refId": "B", "expr": "sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_sum{namespace=\"ankilabs\"}[30m])) / (sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_count{namespace=\"ankilabs\"}[30m])) > 0)", "legendFormat": "{{action}} mean input chars"}
+        {"refId": "A", "expr": "sum by (le) ((ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_input_chars_bucket{namespace=\"ankilabs\"}[$__range]))", "instant": true, "format": "heatmap", "legendFormat": "{{le}}"}
       ]
     },
     {
-      "id": 17, "type": "timeseries", "title": "ai_timeout calls vs mean input size by action (30m window)",
-      "description": "ai_timeout calls (left axis) against mean input characters (right axis) per action. Timeouts rising with input size suggest trimming input before raising the 75 s timeout.",
-      "gridPos": {"x": 12, "y": 41, "w": 12, "h": 8},
+      "id": 21, "type": "timeseries", "title": "ai_timeout calls vs mean input size by action",
+      "description": "ai_timeout calls per bar (left axis) against the mean input characters per call (right axis) for each action. Timeouts rising with input size suggest trimming input before raising the 75 s timeout.",
+      "gridPos": {"x": 16, "y": 39, "w": 8, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*input chars.*"}, "properties": [{"id": "unit", "value": "short"}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "decimals", "value": 0}]}]},
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0, "decimals": 0, "custom": {"drawStyle": "bars", "barAlignment": -1, "fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "stacking": {"mode": "normal", "group": "A"}}}, "overrides": [{"matcher": {"id": "byFrameRefID", "options": "B"}, "properties": [{"id": "custom.drawStyle", "value": "line"}, {"id": "custom.lineWidth", "value": 2}, {"id": "custom.fillOpacity", "value": 0}, {"id": "custom.stacking", "value": {"mode": "none", "group": "A"}}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "custom.axisLabel", "value": "input characters"}]}]},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [
-        {"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code=\"ai_timeout\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code=\"ai_timeout\"} offset 30m) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code=\"ai_timeout\"}[30m]))", "legendFormat": "{{action}} ai_timeout calls"},
-        {"refId": "B", "expr": "sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_sum{namespace=\"ankilabs\"}[30m])) / (sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_count{namespace=\"ankilabs\"}[30m])) > 0)", "legendFormat": "{{action}} mean input chars"}
+        {"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code=\"ai_timeout\"} unless ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code=\"ai_timeout\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_errors_total{namespace=\"ankilabs\",error_code=\"ai_timeout\"}[$__interval]))", "legendFormat": "{{action}} ai_timeout calls"},
+        {"refId": "B", "expr": "sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_sum{namespace=\"ankilabs\"}[$__interval])) / (sum by (action) (increase(ankilabs_ai_card_actions_llm_input_chars_count{namespace=\"ankilabs\"}[$__interval])) > 0)", "legendFormat": "{{action}} mean input chars"}
       ]
     },
     {
-      "id": 18, "type": "row", "title": "Tokens and cost", "collapsed": false,
-      "gridPos": {"x": 0, "y": 49, "w": 24, "h": 1},
+      "id": 22, "type": "row", "title": "Tokens and cost", "collapsed": false,
+      "gridPos": {"x": 0, "y": 47, "w": 24, "h": 1},
       "panels": []
     },
     {
-      "id": 19, "type": "timeseries", "title": "Tokens by action and type / hour (reasoning is part of completion; do not add it)",
-      "description": "Tokens per action and type per hour as LiteLLM reported them, including answers rejected afterwards. Reasoning is already part of completion, so a total is prompt + completion; speech reports no tokens.",
-      "gridPos": {"x": 0, "y": 50, "w": 12, "h": 8},
+      "id": 23, "type": "timeseries", "title": "Tokens by action and type",
+      "description": "Prompt and completion tokens per bar, stacked by action to the total, as LiteLLM reported them (including answers rejected afterwards). The dashed line is reasoning tokens, already part of completion: never add it to the stack. Speech reports no tokens.",
+      "gridPos": {"x": 0, "y": 48, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "sum by (action, type) ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\"} offset 1h) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\"}[1h]))", "legendFormat": "{{action}} {{type}}"}]
-    },
-    {
-      "id": 20, "type": "timeseries", "title": "Cost by action and model / hour",
-      "description": "LLM cost in USD per action and model per hour as LiteLLM reported it, including answers rejected afterwards. Speech is priced per character.",
-      "gridPos": {"x": 12, "y": 50, "w": 12, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "currencyUSD", "min": 0, "decimals": 4}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset 1h) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[1h]))", "legendFormat": "{{action}} {{model}}"}]
-    },
-    {
-      "id": 21, "type": "table", "title": "Cost by action and model (dashboard range)",
-      "description": "Total cost per action and model over the dashboard time range, including rejected answers. Shows which action and model drive spend.",
-      "gridPos": {"x": 0, "y": 58, "w": 8, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 4}, "overrides": [{"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "displayName", "value": "Cost"}]}]},
-      "targets": [{"refId": "A", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range]))", "instant": true, "format": "table"}]
-    },
-    {
-      "id": 22, "type": "table", "title": "Cost share by action (dashboard range)",
-      "description": "Each action's share of total cost over the dashboard time range. A sudden shift points at a change in usage or pricing for that action.",
-      "gridPos": {"x": 8, "y": 58, "w": 8, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1}, "overrides": [{"matcher": {"id": "byName", "options": "Value"}, "properties": [{"id": "displayName", "value": "Share"}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "basic"}}]}]},
-      "targets": [{"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range])) / on () group_left () (sum ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range])) > 0)", "instant": true, "format": "table"}]
-    },
-    {
-      "id": 23, "type": "table", "title": "Tokens by action and model (dashboard range)",
-      "description": "Total is prompt + completion; reasoning is included in it and shown only for scale.",
-      "gridPos": {"x": 16, "y": 58, "w": 8, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": [{"matcher": {"id": "byName", "options": "Value #A"}, "properties": [{"id": "displayName", "value": "Total (prompt + completion)"}]}, {"matcher": {"id": "byName", "options": "Value #B"}, "properties": [{"id": "displayName", "value": "Reasoning (included)"}]}]},
-      "transformations": [{"id": "merge", "options": {}}],
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0, "decimals": 0, "custom": {"drawStyle": "bars", "barAlignment": -1, "fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "stacking": {"mode": "normal", "group": "A"}}}, "overrides": [{"matcher": {"id": "byFrameRefID", "options": "B"}, "properties": [{"id": "custom.drawStyle", "value": "line"}, {"id": "custom.lineWidth", "value": 2}, {"id": "custom.fillOpacity", "value": 0}, {"id": "custom.stacking", "value": {"mode": "none", "group": "A"}}, {"id": "custom.lineStyle", "value": {"fill": "dash", "dash": [10, 10]}}, {"id": "color", "value": {"mode": "fixed", "fixedColor": "purple"}}]}]},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [
-        {"refId": "A", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"}[$__range]))", "instant": true, "format": "table"},
-        {"refId": "B", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"}[$__range]))", "instant": true, "format": "table"}
+        {"refId": "A", "expr": "sum by (action, type) ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"}[$__interval]))", "legendFormat": "{{action}} {{type}}"},
+        {"refId": "B", "expr": "sum ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"}[$__interval]))", "legendFormat": "reasoning (part of completion)"}
       ]
     },
     {
-      "id": 24, "type": "row", "title": "Usage Codes and LiteLLM spend", "collapsed": false,
-      "gridPos": {"x": 0, "y": 66, "w": 24, "h": 1},
+      "id": 24, "type": "timeseries", "title": "Cost by action and model",
+      "description": "LLM cost in USD per bar, stacked by action and model to the total, as LiteLLM reported it (including answers rejected afterwards). Speech is priced per character.",
+      "gridPos": {"x": 12, "y": 48, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "2m",
+      "maxDataPoints": 48,
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 4, "min": 0, "custom": {"drawStyle": "bars", "barAlignment": -1, "fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "stacking": {"mode": "normal", "group": "A"}}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"refId": "A", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__interval) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__interval]))", "legendFormat": "{{action}} {{model}}"}
+      ]
+    },
+    {
+      "id": 25, "type": "piechart", "title": "Cost share by action",
+      "description": "Each action's share of LLM cost over the dashboard range. A sudden shift points at a change in usage or pricing for that action.",
+      "gridPos": {"x": 0, "y": 56, "w": 8, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 2}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "pieType": "donut", "displayLabels": ["percent"], "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["value", "percent"], "calcs": []}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"refId": "A", "expr": "sum by (action) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range]))", "instant": true, "format": "time_series", "legendFormat": "{{action}}"}
+      ]
+    },
+    {
+      "id": 26, "type": "table", "title": "Cost and tokens by action and model (dashboard range)",
+      "description": "Total cost and tokens per action and model over the dashboard range, including rejected answers. Tokens are prompt + completion; reasoning is included in them and shown only for scale.",
+      "gridPos": {"x": 8, "y": 56, "w": 16, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "transformations": [{"id": "merge", "options": {}}, {"id": "organize", "options": {"excludeByName": {"Time": true}, "indexByName": {"action": 0, "model": 1, "Value #A": 2, "Value #B": 3, "Value #C": 4}, "renameByName": {"action": "Action", "model": "Model", "Value #A": "Cost", "Value #B": "Tokens", "Value #C": "Reasoning (included)"}}}],
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}, "overrides": [{"matcher": {"id": "byName", "options": "Cost"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}, {"id": "min", "value": 0}, {"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "basic", "valueDisplayMode": "text"}}]}]},
+      "options": {"showHeader": true, "cellHeight": "sm", "sortBy": [{"displayName": "Cost", "desc": true}]},
+      "targets": [
+        {"refId": "A", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} unless ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_cost_usd_total{namespace=\"ankilabs\"}[$__range]))", "instant": true, "format": "table"},
+        {"refId": "B", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=~\"prompt|completion\"}[$__range]))", "instant": true, "format": "table"},
+        {"refId": "C", "expr": "sum by (action, model) ((ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"} unless ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"} offset $__range) or increase(ankilabs_ai_card_actions_llm_tokens_total{namespace=\"ankilabs\",type=\"reasoning\"}[$__range]))", "instant": true, "format": "table"}
+      ]
+    },
+    {
+      "id": 27, "type": "row", "title": "Usage Codes and LiteLLM spend", "collapsed": false,
+      "gridPos": {"x": 0, "y": 64, "w": 24, "h": 1},
       "panels": []
     },
     {
-      "id": 25, "type": "table", "title": "Usage Codes",
-      "description": "Every Usage Code from LiteLLM's read-only views: spend, budget and state now, not limited to the dashboard range. Last request includes rejected calls; Authorization's own key is not listed.",
-      "gridPos": {"x": 0, "y": 67, "w": 24, "h": 9},
+      "id": 28, "type": "table", "title": "Usage Codes",
+      "description": "Every Usage Code from LiteLLM's read-only views, now rather than in the dashboard range: state, spend, budget and the share of it left. Exhausted means spend reached the budget, so LiteLLM rejects its calls; last request includes rejected calls. Authorization's own key is not listed.",
+      "gridPos": {"x": 0, "y": 65, "w": 24, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
-      "fieldConfig": {"defaults": {}, "overrides": [{"matcher": {"id": "byName", "options": "Spend"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}, {"matcher": {"id": "byName", "options": "Budget"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}, {"matcher": {"id": "byName", "options": "Remaining"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}]},
-      "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT key_alias AS \"Usage Code\", created_at AS \"Created\", spend AS \"Spend\",\n  max_budget AS \"Budget\", remaining AS \"Remaining\", blocked AS \"Blocked\", expires AS \"Expires\",\n  last_request_at AS \"Last request\", array_to_string(models, ', ') AS \"Models\"\nFROM grafana.usage_codes\nORDER BY last_request_at DESC NULLS LAST, key_alias"}]
+      "fieldConfig": {"defaults": {}, "overrides": [{"matcher": {"id": "byName", "options": "State"}, "properties": [{"id": "mappings", "value": [{"type": "value", "options": {"active": {"text": "active", "color": "green", "index": 0}, "exhausted": {"text": "exhausted", "color": "orange", "index": 1}, "expired": {"text": "expired", "color": "orange", "index": 2}, "blocked": {"text": "blocked", "color": "red", "index": 3}}}]}, {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}}]}, {"matcher": {"id": "byName", "options": "Spend"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}, {"matcher": {"id": "byName", "options": "Budget"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}, {"matcher": {"id": "byName", "options": "Remaining"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}, {"matcher": {"id": "byName", "options": "Budget left"}, "properties": [{"id": "unit", "value": "percentunit"}, {"id": "decimals", "value": 0}, {"id": "min", "value": 0}, {"id": "max", "value": 1}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.1}, {"color": "green", "value": 0.25}]}}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "lcd", "valueDisplayMode": "text"}}]}]},
+      "options": {"showHeader": true, "cellHeight": "sm"},
+      "targets": [
+        {"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT key_alias AS \"Usage Code\",\n  CASE WHEN blocked THEN 'blocked' WHEN expires <= now() THEN 'expired'\n    WHEN remaining <= 0 THEN 'exhausted' ELSE 'active' END AS \"State\",\n  spend AS \"Spend\", max_budget AS \"Budget\", remaining AS \"Remaining\",\n  greatest(remaining, 0) / nullif(max_budget, 0) AS \"Budget left\",\n  expires AS \"Expires\", last_request_at AS \"Last request\", created_at AS \"Created\",\n  array_to_string(models, ', ') AS \"Models\"\nFROM grafana.usage_codes\nORDER BY last_request_at DESC NULLS LAST, key_alias"}
+      ]
     },
     {
-      "id": 26, "type": "timeseries", "title": "LiteLLM spend by Usage Code / hour",
-      "description": "LiteLLM spend per Usage Code per hour: what draws down each code's budget. Times are stored in UTC and shown in the browser's time zone.",
-      "gridPos": {"x": 0, "y": 76, "w": 12, "h": 8},
+      "id": 29, "type": "timeseries", "title": "LiteLLM spend by Usage Code / hour",
+      "description": "LiteLLM spend per Usage Code per hour, stacked to the total: what draws down each code's budget. It should roughly match the Cost panels. Times are stored in UTC and shown in the browser's time zone.",
+      "gridPos": {"x": 0, "y": 73, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
-      "fieldConfig": {"defaults": {"unit": "currencyUSD", "min": 0, "custom": {"drawStyle": "bars", "fillOpacity": 60, "stacking": {"mode": "normal", "group": "A"}}, "decimals": 4}, "overrides": []},
-      "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'), coalesce(key_alias, 'unknown key') AS metric,\n  sum(spend) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND spend > 0\nGROUP BY 1, 2\nORDER BY 1"}]
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 4, "min": 0, "custom": {"drawStyle": "bars", "barAlignment": -1, "fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "stacking": {"mode": "normal", "group": "A"}}}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'), coalesce(key_alias, 'unknown key') AS metric,\n  sum(spend) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND spend > 0\nGROUP BY 1, 2\nORDER BY 1"}
+      ]
     },
     {
-      "id": 27, "type": "timeseries", "title": "LiteLLM spend by model group / hour",
-      "description": "LiteLLM spend per model group per hour, from its own records. It should roughly match Cost by action and model above.",
-      "gridPos": {"x": 12, "y": 76, "w": 12, "h": 8},
+      "id": 30, "type": "timeseries", "title": "LiteLLM calls by status / hour",
+      "description": "Calls LiteLLM logged per hour by status, stacked to the total, including calls it rejected itself (invalid, blocked or exhausted Usage Codes). Failures in red.",
+      "gridPos": {"x": 12, "y": 73, "w": 12, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
-      "fieldConfig": {"defaults": {"unit": "currencyUSD", "min": 0, "custom": {"drawStyle": "bars", "fillOpacity": 60, "stacking": {"mode": "normal", "group": "A"}}, "decimals": 4}, "overrides": []},
-      "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'), model_group AS metric, sum(spend) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time) AND spend > 0\nGROUP BY 1, 2\nORDER BY 1"}]
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0, "decimals": 0, "custom": {"drawStyle": "bars", "barAlignment": -1, "fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "stacking": {"mode": "normal", "group": "A"}}}, "overrides": [{"matcher": {"id": "byRegexp", "options": ".*success.*"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]}, {"matcher": {"id": "byRegexp", "options": ".*failure.*"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]}]},
+      "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["sum"]}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'), coalesce(status, 'unknown') AS metric,\n  count(*) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time)\nGROUP BY 1, 2\nORDER BY 1"}
+      ]
     },
     {
-      "id": 28, "type": "timeseries", "title": "LiteLLM calls by model group and status / hour",
-      "description": "Includes calls LiteLLM rejected itself (invalid, blocked or exhausted Usage Codes).",
-      "gridPos": {"x": 0, "y": 84, "w": 12, "h": 8},
-      "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
-      "fieldConfig": {"defaults": {"unit": "short", "min": 0, "custom": {"drawStyle": "bars", "fillOpacity": 60, "stacking": {"mode": "normal", "group": "A"}}}, "overrides": []},
-      "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "time_series", "rawQuery": true, "rawSql": "SELECT $__timeGroupAlias(start_time, '1h'),\n  model_group || ' ' || coalesce(status, 'unknown') AS metric, count(*) AS value\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time)\nGROUP BY 1, 2\nORDER BY 1"}]
-    },
-    {
-      "id": 29, "type": "table", "title": "Latest LiteLLM calls (100 in the dashboard range)",
+      "id": 31, "type": "table", "title": "Latest LiteLLM calls (100 in the dashboard range)",
       "description": "The 100 most recent LiteLLM calls in the dashboard range with Usage Code, model, status, duration, tokens and spend. The views hold no prompts or answers.",
-      "gridPos": {"x": 12, "y": 84, "w": 12, "h": 8},
+      "gridPos": {"x": 0, "y": 81, "w": 24, "h": 8},
       "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"},
-      "fieldConfig": {"defaults": {}, "overrides": [{"matcher": {"id": "byName", "options": "Duration"}, "properties": [{"id": "unit", "value": "s"}]}, {"matcher": {"id": "byName", "options": "Spend"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}]},
-      "targets": [{"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT start_time AS \"Started\", key_alias AS \"Usage Code\", model_group AS \"Model group\",\n  status AS \"Status\", duration_ms / 1000.0 AS \"Duration\", prompt_tokens AS \"Prompt tokens\",\n  completion_tokens AS \"Completion tokens\", spend AS \"Spend\"\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time)\nORDER BY start_time DESC\nLIMIT 100"}]
+      "fieldConfig": {"defaults": {}, "overrides": [{"matcher": {"id": "byName", "options": "Status"}, "properties": [{"id": "mappings", "value": [{"type": "value", "options": {"success": {"color": "green", "index": 0}, "failure": {"color": "red", "index": 1}}}]}, {"id": "custom.cellOptions", "value": {"type": "color-text"}}]}, {"matcher": {"id": "byName", "options": "Duration"}, "properties": [{"id": "unit", "value": "s"}]}, {"matcher": {"id": "byName", "options": "Spend"}, "properties": [{"id": "unit", "value": "currencyUSD"}, {"id": "decimals", "value": 4}]}]},
+      "options": {"showHeader": true, "cellHeight": "sm"},
+      "targets": [
+        {"refId": "A", "datasource": {"type": "grafana-postgresql-datasource", "uid": "${litellm}"}, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT start_time AS \"Started\", key_alias AS \"Usage Code\", model_group AS \"Model group\",\n  status AS \"Status\", duration_ms / 1000.0 AS \"Duration\", prompt_tokens AS \"Prompt tokens\",\n  completion_tokens AS \"Completion tokens\", spend AS \"Spend\"\nFROM grafana.spend_logs\nWHERE $__timeFilter(start_time)\nORDER BY start_time DESC\nLIMIT 100"}
+      ]
     },
     {
-      "id": 30, "type": "row", "title": "Logs", "collapsed": false,
-      "gridPos": {"x": 0, "y": 92, "w": 24, "h": 1},
-      "panels": []
-    },
-    {
-      "id": 31, "type": "logs", "title": "LLM call warnings and errors: llm.request.completed and llm.output.rejected",
-      "description": "Each failed call has one llm.request.completed record (error_code, duration_ms, input_chars); a rejected answer adds llm.output.rejected with its reason.",
-      "gridPos": {"x": 0, "y": 93, "w": 24, "h": 10},
-      "datasource": {"type": "loki", "uid": "${logs}"},
-      "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=\"ai-card-actions\"} | json | event=~\"llm.request.completed|llm.output.rejected\" | level=~\"WARNING|ERROR|CRITICAL\"", "queryType": "range"}],
-      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
-    },
-    {
-      "id": 32, "type": "logs", "title": "AI Card Actions warnings/errors and unparsed records",
-      "description": "Warning and error records from AI Card Actions, plus records that are not valid JSON. Log records are not a failure count; identifiers are parsed at query time, never indexed.",
-      "gridPos": {"x": 0, "y": 103, "w": 24, "h": 9},
-      "datasource": {"type": "loki", "uid": "${logs}"},
-      "targets": [{"refId": "A", "expr": "{namespace=\"ankilabs\",app=\"ai-card-actions\"} | json | level=~\"WARNING|ERROR|CRITICAL\" or __error__!=\"\"", "queryType": "range"}],
-      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
+      "id": 34, "type": "row", "title": "Logs", "collapsed": true,
+      "gridPos": {"x": 0, "y": 89, "w": 24, "h": 1},
+      "panels": [
+        {
+          "id": 32, "type": "logs", "title": "LLM call warnings and errors: llm.request.completed and llm.output.rejected",
+          "description": "Each failed call has one llm.request.completed record (error_code, duration_ms, input_chars); a rejected answer adds llm.output.rejected with its reason.",
+          "gridPos": {"x": 0, "y": 90, "w": 24, "h": 10},
+          "datasource": {"type": "loki", "uid": "${logs}"},
+          "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
+          "targets": [
+            {"refId": "A", "expr": "{namespace=\"ankilabs\",app=\"ai-card-actions\"} | json | event=~\"llm.request.completed|llm.output.rejected\" | level=~\"WARNING|ERROR|CRITICAL\"", "queryType": "range"}
+          ]
+        },
+        {
+          "id": 33, "type": "logs", "title": "AI Card Actions warnings/errors and unparsed records",
+          "description": "Warning and error records from AI Card Actions, plus records that are not valid JSON. Log records are not a failure count; identifiers are parsed at query time, never indexed.",
+          "gridPos": {"x": 0, "y": 100, "w": 24, "h": 9},
+          "datasource": {"type": "loki", "uid": "${logs}"},
+          "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
+          "targets": [
+            {"refId": "A", "expr": "{namespace=\"ankilabs\",app=\"ai-card-actions\"} | json | level=~\"WARNING|ERROR|CRITICAL\" or __error__!=\"\"", "queryType": "range"}
+          ]
+        }
+      ]
     }
   ]
 }

@@ -471,15 +471,32 @@ ports stay internal; there is no public admin route. Target checks are under
 
 ### Platform Storage
 
-Three views of the same disk: the **node filesystem** (node-exporter,
-authoritative for free space), **Kubernetes volumes** (kube-state-metrics
-claims plus kubelet volume stats) and **application self-metrics** (Prometheus
-TSDB, PostgreSQL). Every PVC is an `openebs-hostpath` directory on the node
-filesystem, so requested sizes are not enforced and kubelet stats may be
-missing or filesystem-wide: if several PVCs show identical numbers, trust the
-node filesystem and application panels. Days until full uses a 24h linear
-trend and the 3-day projection the alert's 6h trend; absent means not filling,
-and short write bursts (image pulls, restores, compaction) exaggerate both.
+Read it top to bottom: headline numbers, then the **node disk**
+(node-exporter, authoritative for free space), **persistent volumes**
+(kube-state-metrics claims plus kubelet volume stats), **disk performance**,
+**application self-metrics** (Prometheus TSDB, PostgreSQL) and, collapsed, the
+OpenEBS provisioner logs.
+
+- Every PVC is an `openebs-hostpath` directory on the node filesystem, so all
+  volumes share one pool of free space and requested sizes are not enforced.
+  The per-volume bars show kubelet used bytes against the **requested** size,
+  not against the reported capacity (which can be the whole filesystem); over
+  100% means the volume outgrew its request, not that it is full.
+- kubelet stats for hostpath volumes may be missing or filesystem-wide. In the
+  Volume inventory, an empty Used cell is unknown, and a kubelet capacity equal
+  to the node disk size, or the same used bytes on every claim, means the
+  per-volume panels (and Total and Largest PVC) are not per volume: trust Disk
+  used and the application panels instead.
+- Days until full uses the 24h linear decline of free space; **Not filling**
+  means free space did not shrink over 24h. The 3-day projection uses the
+  alert's 6h trend. Short write bursts (image pulls, restores, compaction)
+  exaggerate both.
+- Throughput and IOPS draw reads above zero and writes below it. 100% busy is
+  not saturation on NVMe; read it with queue depth and latency.
+- Prometheus at 100% of its size cap is expected once the cap is reached: it
+  then deletes the oldest blocks (retention block deletions, size) and keeps
+  less than 7 days.
+
 Loki, MinIO, MongoDB and Redis expose no storage metrics; only their claims are
 shown. Incident steps are under [Storage](#storage).
 
@@ -519,22 +536,38 @@ is enabled. Incident steps are under [Database](#database).
 
 AI Card Actions metrics (Prometheus), LiteLLM's own records through read-only
 views (datasource **LiteLLM**: Usage Code metadata and spend, never key hashes,
-prompts or answers) and AI Card Actions logs (Loki).
+prompts or answers) and AI Card Actions logs (Loki). The rows are headline
+numbers, traffic and errors, latency, input size, tokens and cost, Usage Codes
+and LiteLLM spend, and the collapsed logs.
 
-- Window counts include a series first seen inside the window, so the first
-  call after a restart is not lost; they can still be fractional.
-- Percentiles need at least 5 calls in their 30-minute window and stay empty
-  otherwise. Latency buckets step 10, 30, 60, 120 s, so upper percentiles are
-  coarse; calls time out at 75 s (`ai_timeout`).
+- Bar charts count per bar (about 48 bars over the range; hover for each bar's
+  time span), and the AI calls, Cost and Tokens stats add those bars up over
+  the dashboard range. Window counts include a series first seen inside the
+  window, so the first call after a restart is not lost; they can still be
+  fractional. The heatmaps cannot use that correction, so they can miss the
+  first call after a restart.
+- The Error ratio stat and the per-action ratio follow
+  `AnkiLabsAIErrorRatioHigh` (the dashed 20% line): Usage Code errors and
+  `ai_refused` are excluded. Errors by code shows every code, `ai_timeout` in
+  red.
+- Percentiles need at least 5 calls in their window (24 hours for the p95
+  stat, 30 minutes for the per-action lines) and stay empty otherwise. Latency
+  buckets step 10, 30, 60, 120 s, so upper percentiles are coarse; calls time
+  out at 75 s (`ai_timeout`), which the duration heatmap shows in the 60-120 s
+  band.
 - An answer that AI Card Actions rejected (`ai_output_invalid`) is
   `outcome=error` in metrics but `outcome=success` in its
   `llm.request.completed` record; its tokens and cost still count. `ai_refused`
   and Usage Code errors are errors on the dashboard but not in the alert.
 - Reasoning tokens are part of completion tokens: a total is prompt +
-  completion.
+  completion. The token bars stack only prompt and completion; reasoning is a
+  separate dashed line, never added *(tested)*.
 - Durations nest: LiteLLM duration (provider plus proxy) inside LLM duration
   (adds the in-cluster path) inside HTTP duration (adds AI Card Actions' own
   work).
+- Usage Code states come from the view: blocked, expired (past `expires`),
+  exhausted (spend reached the budget, so LiteLLM rejects its calls) or active.
+  They show the current state, not the dashboard range.
 
 Incident steps and the LiteLLM database access are under [AI](#ai).
 
