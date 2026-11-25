@@ -295,8 +295,10 @@ markdownlint-cli2 k8s/platform/monitoring/runbook.md
 git diff --check
 ```
 
-The suite includes local JSON-contract/schema/unique-UID/layout checks, exact
-provisioning references, namespace/privacy/routing guards, `helm lint` and
+The suite includes local JSON-contract/schema/unique-UID/layout checks
+(including panels nested in collapsed rows), panel descriptions, dashboard
+tags and runbook links against this file's headings, exact per-folder
+provisioning and its sidecar settings, namespace/privacy/routing guards, `helm lint` and
 `helm template` for the PostgreSQL, LLM Proxy, Envoy and Cloudflare charts, monitoring-only `kustomize build`,
 `promtool check rules` for alerts **and all dashboard PromQL**, eighteen real
 Prometheus evaluator cases, and actual Promtail stdin/dry-run replay tests.
@@ -327,6 +329,19 @@ python3 -c 'from pathlib import Path; import yaml; print(yaml.safe_dump(yaml.saf
     --version 6.17.1 --namespace monitoring --values -
 ```
 
+After changing Grafana values, render kube-prometheus-stack the same way and
+check the dashboard sidecar and provider (expect `FOLDER_ANNOTATION` set to
+`grafana_folder`, `foldersFromFilesStructure: true` and
+`allowUiUpdates: false`). The encrypted `grafana-helm-values` Secret is not
+included:
+
+```sh
+python3 -c 'from pathlib import Path; import yaml; print(yaml.safe_dump(yaml.safe_load(Path("k8s/platform/monitoring/controllers/kube-prometheus-stack/release.yaml").read_text())["spec"]["values"]))' |
+  helm template kube-prometheus-stack oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack \
+    --version 69.8.2 --namespace monitoring --values - |
+  grep -E -A1 'FOLDER_ANNOTATION|foldersFromFilesStructure|allowUiUpdates'
+```
+
 Inspect changed-file editor diagnostics as well; no editor Problems API is
 available to the command-line suite. No workflow, commit, image push or live
 deployment is part of these commands.
@@ -335,11 +350,12 @@ deployment is part of these commands.
 
 After an explicitly authorized rollout:
 
-1. Grafana must contain exactly the seven provisioned dashboards: Homelab
-   Overview; Platform - Delivery & Edge; Platform - Storage; AnkiLabs - Service
-   Health; AnkiLabs - Search & PostgreSQL; AnkiLabs - AI; QuizLabs - Overview. Check that the old two dashboard
-   ConfigMaps and all their dashboards were removed by Flux prune/Grafana
-   sidecar deletion. Do not keep old dashboards as a second source of truth.
+1. Grafana must contain exactly the seven provisioned dashboards, in the
+   folders listed under [Dashboards](#dashboards) and none in General. Check
+   that Flux pruned every older dashboard ConfigMap, leaving only
+   `homelab-grafana-dashboards-ankilabs`, `-quizlabs` and `-platform`, and that
+   the Grafana sidecar removed their dashboards. Do not keep old dashboards as
+   a second source of truth.
 2. Select the Prometheus and Loki data sources. Confirm each expected target is
    present and reachable, `pg_up=1`, and every enabled collector reports success.
    Missing series remain **unknown**. An idle histogram can legitimately have no
@@ -363,6 +379,156 @@ After an explicitly authorized rollout:
    port `/stats/prometheus`, selected for the platform/homelab-gateway proxy.
    Cloudflared already binds `:2000`; it now declares that named port and permits
    monitoring ingress only. No public admin Service/HTTPRoute is added.
+
+## Dashboards
+
+Seven dashboards are provisioned from `configs/dashboards/*.json`, one
+ConfigMap per Grafana folder:
+
+| Folder | Dashboards |
+| --- | --- |
+| AnkiLabs | AnkiLabs - Service Health, AnkiLabs - Search & PostgreSQL, AnkiLabs - AI |
+| QuizLabs | QuizLabs - Overview |
+| Platform | Homelab Overview, Platform - Delivery & Edge, Platform - Storage |
+
+Each dashboard's **Runbook** link opens its section below, and its
+**Monitoring** menu lists the others, keeping the time range and variables.
+Every panel explains itself in its description (the info icon next to its
+title). Missing data is unknown, never zero or healthy: check scrape health
+before reading any chart.
+
+The kube-prometheus-stack Grafana sidecar writes each ConfigMap into the
+subdirectory named by its `grafana_folder` annotation, and the dashboard
+provider (`foldersFromFilesStructure`) makes every subdirectory a folder.
+Dashboards are addressed by UID (`/d/<uid>`), so moving one to another folder
+keeps its URL, alert links and bookmarks. During the move Grafana can delete
+and re-create a dashboard, which drops its stars and version history.
+
+### Dashboard conventions
+
+Rules for new and redesigned panels; existing dashboards adopt them as they are
+redesigned. The schema and `tests/test_static.py` enforce the ones marked
+*(tested)*.
+
+- **Headline numbers**: stat with a sparkline.
+- **Share of a capacity** (memory of its limit, disk used): gauge or bar gauge
+  with thresholds.
+- **Latency**: a heatmap of the histogram buckets for the distribution, plus a
+  p95 time series. Heatmap targets are
+  `sum by (le) (rate(<metric>_bucket{...}[...]))` (or `increase`) with format
+  **Heatmap**, and seconds buckets use unit `s` *(tested)*. A percentile is shown
+  only with a minimum sample count in the same window *(tested)*.
+- **Counts over time**: bars. Stack only series that add up to a true total.
+- **Shares of a whole**: pie/donut or bar gauge.
+- **Up/down and other states over time**: state timeline.
+- **Inventories** (targets, replicas, claims, Usage Codes): tables with cell
+  styling.
+- **Logs**: in a collapsed row at the bottom.
+- **No text panels** *(tested)*. A panel explains itself in a one- or
+  two-sentence description: what it shows, how to read it, what to do when it
+  looks bad *(tested)*. A dashboard explains itself in its description and its
+  section below; group panels with rows.
+- **No fake data**: no `vector(0)` or null-as-zero, an absent series stays
+  empty, and durations are in seconds *(tested)*.
+- **Panel types**: Grafana 11.5 core panels that are generally available, plus
+  rows. Beta (`trend`, `datagrid`) and `text` panels fail the schema.
+- **Folders and tags** *(tested)*: add a dashboard to its folder's ConfigMap in
+  `configs/kustomization.yaml`. Tag it `homelab-monitoring` (feeds the
+  Monitoring menu), its app (`ankilabs`, `quizlabs`, `platform` or `homelab`)
+  and, where obvious, its layer (`ai`, `storage`, `database`, `edge`,
+  `overview`, `services`).
+
+### Homelab Overview
+
+Start here: node CPU, memory and filesystems, persistent volumes, scrape
+coverage, Deployment and StatefulSet availability, restarts, active alerts and
+node pressure. Availability is Kubernetes readiness, not a synthetic user
+journey. Then go to Platform - Delivery & Edge for Flux, Envoy and cloudflared;
+Platform - Storage for disk space, volumes and I/O; AnkiLabs - Service Health
+for request failures; AnkiLabs - Search & PostgreSQL for lookup stages and
+pools; AnkiLabs - AI for AI calls, Usage Codes and spend; QuizLabs - Overview
+for the legacy stack. Node and pod alerts link here; their steps are under
+[Resources](#resources).
+
+### Platform Delivery and Edge
+
+Flux readiness comes from kube-state-metrics custom-resource metrics;
+reconciliation mean duration is in seconds, not uptime. Envoy counters are
+real proxy activity per route cluster. Cloudflared counters cover the whole
+tunnel and cannot be split per application, so application dashboards show only
+route-bound Envoy data. No log regex is used as a failure counter. Native scrape
+ports stay internal; there is no public admin route. Target checks are under
+[Telemetry](#telemetry).
+
+### Platform Storage
+
+Three views of the same disk: the **node filesystem** (node-exporter,
+authoritative for free space), **Kubernetes volumes** (kube-state-metrics
+claims plus kubelet volume stats) and **application self-metrics** (Prometheus
+TSDB, PostgreSQL). Every PVC is an `openebs-hostpath` directory on the node
+filesystem, so requested sizes are not enforced and kubelet stats may be
+missing or filesystem-wide: if several PVCs show identical numbers, trust the
+node filesystem and application panels. Days until full uses a 24h linear
+trend and the 3-day projection the alert's 6h trend; absent means not filling,
+and short write bursts (image pulls, restores, compaction) exaggerate both.
+Loki, MinIO, MongoDB and Redis expose no storage metrics; only their claims are
+shown. Incident steps are under [Storage](#storage).
+
+### AnkiLabs Service Health
+
+All data is restricted to the `ankilabs` namespace. A failure is an observed
+5xx or an explicit upstream `timeout`/`unavailable`, never a keyword count.
+Latency is a mean next to its sample count rather than a sparse p95; zero
+observations give no mean. A request killed before completing leaves started
+breadcrumbs but no latency sample. Request IDs are parsed only at query time.
+Incident steps are under [Requests](#requests) and [Resources](#resources).
+
+### AnkiLabs Search and PostgreSQL
+
+All data is restricted to `ankilabs`. Compare each stage's mean with its sample
+and error counts; stages overlap, so never add their times into a request
+total. Started events locate the last stage when a process dies before
+completing. Pool states (size, available, waiting, max) are separate, not
+additive. Row histograms are per-phase observations, not SQL execution plans.
+Request IDs, fingerprints and backend PIDs are query-time fields, never index
+labels. The PostgreSQL panels need the
+[monitoring login](#postgresql-monitoring-login); a reachable exporter does not
+prove its collectors succeed. No query text, statement collector or extension
+is enabled. Incident steps are under [Database](#database).
+
+### AnkiLabs AI
+
+AI Card Actions metrics (Prometheus), LiteLLM's own records through read-only
+views (datasource **LiteLLM**: Usage Code metadata and spend, never key hashes,
+prompts or answers) and AI Card Actions logs (Loki).
+
+- Window counts include a series first seen inside the window, so the first
+  call after a restart is not lost; they can still be fractional.
+- Percentiles need at least 5 calls in their 30-minute window and stay empty
+  otherwise. Latency buckets step 10, 30, 60, 120 s, so upper percentiles are
+  coarse; calls time out at 75 s (`ai_timeout`).
+- An answer that AI Card Actions rejected (`ai_output_invalid`) is
+  `outcome=error` in metrics but `outcome=success` in its
+  `llm.request.completed` record; its tokens and cost still count. `ai_refused`
+  and Usage Code errors are errors on the dashboard but not in the alert.
+- Reasoning tokens are part of completion tokens: a total is prompt +
+  completion.
+- Durations nest: LiteLLM duration (provider plus proxy) inside LLM duration
+  (adds the in-cluster path) inside HTTP duration (adds AI Card Actions' own
+  work).
+
+Incident steps and the LiteLLM database access are under [AI](#ai).
+
+### QuizLabs Overview
+
+quiz-backend, quiz-multiplayer (Socket.IO), MongoDB and Redis, scoped to
+`quizlabs`. Envoy panels select only `httproute/quizlabs/quizlabs/` clusters
+(rule 0 backend, rule 1 Socket.IO, rule 2 frontend): proxy requests and
+connections, not players, rooms, games, messages or WebSocket sessions. Shared
+cloudflared data stays on Platform - Delivery & Edge. MongoDB and Redis have no
+exporters, so readiness, resources, claims and logs are evidence, not command
+latency or replication health. Legacy logs stay raw; no regex counts pretend
+to be failures. Incident steps are under [QuizLabs](#quizlabs).
 
 ## Telemetry
 

@@ -1,48 +1,49 @@
 {
   "uid": "quizlabs-overview",
   "title": "QuizLabs - Overview",
-  "description": "Central legacy-stack view: quiz-backend, quiz-multiplayer/Socket.IO, MongoDB and Redis. Kubernetes/resource/storage signals and namespace-bound edge traffic only; no invented application metrics.",
+  "description": "QuizLabs legacy stack (quiz-backend, quiz-multiplayer/Socket.IO, MongoDB, Redis): readiness, route-bound edge traffic, resources, storage and logs. There are no application metrics, so nothing here counts players or games.",
   "schemaVersion": 39,
   "version": 1,
   "editable": false,
-  "tags": ["homelab-monitoring"],
+  "tags": ["homelab-monitoring", "quizlabs", "overview"],
   "timezone": "browser",
   "refresh": "30s",
   "time": {"from": "now-6h", "to": "now"},
-  "links": [{"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true}],
+  "links": [
+    {"type": "link", "title": "Runbook", "tooltip": "How to read this dashboard", "url": "https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#quizlabs-overview", "icon": "doc", "targetBlank": true},
+    {"type": "dashboards", "tags": ["homelab-monitoring"], "title": "Monitoring", "asDropdown": true, "keepTime": true, "includeVars": true}
+  ],
   "templating": {"list": [
     {"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"},
     {"name": "logs", "label": "Loki", "type": "datasource", "query": "loki"}
   ]},
   "panels": [
     {
-      "id": 1, "type": "text", "title": "One bounded view of the legacy stack",
-      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 5},
-      "options": {"mode": "markdown", "content": "**quiz-backend**, **quiz-multiplayer / Socket.IO**, **MongoDB**, **Redis** are scoped to **quizlabs**. Envoy runs in envoy-gateway-system; its panels below select only `httproute/quizlabs/quizlabs/` clusters (rule 0 backend, rule 1 Socket.IO, rule 2 frontend). They are proxy requests/connections, **not players, rooms, successful games, message delivery or WebSocket session counts**. Shared cloudflared data stays on Platform.\n\nThere are no MongoDB/Redis application exporters in this phase: readiness/resources/PVC/logs are evidence, not database command latency or replication health. Legacy unstructured logs remain raw; no regex counts pretend to be failures. Missing data is unknown. [QuizLabs runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#quizlabs)"}
-    },
-    {
       "id": 2, "type": "table", "title": "Backend, multiplayer, frontend and Redis: available / desired replicas",
-      "gridPos": {"x": 0, "y": 5, "w": 12, "h": 8},
+      "description": "Available over desired replicas for each QuizLabs Deployment, from Kubernetes readiness. Readiness is not a successful datastore command; below 1, check restarts and logs.",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [{"refId": "A", "expr": "kube_deployment_status_replicas_available{namespace=\"quizlabs\"} / on (namespace, deployment) kube_deployment_spec_replicas{namespace=\"quizlabs\"}", "instant": true, "format": "table"}]
     },
     {
       "id": 3, "type": "table", "title": "MongoDB: ready / desired StatefulSet replicas",
-      "gridPos": {"x": 12, "y": 5, "w": 12, "h": 8},
+      "description": "Ready over desired MongoDB StatefulSet replicas; QuizLabsMongoUnavailable fires when none is ready. Readiness says nothing about replication or command latency.",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [{"refId": "A", "expr": "kube_statefulset_status_replicas_ready{namespace=\"quizlabs\"} / on (namespace, statefulset) kube_statefulset_replicas{namespace=\"quizlabs\"}", "instant": true, "format": "table"}]
     },
     {
       "id": 4, "type": "timeseries", "title": "QuizLabs route upstream requests / 15 minutes",
-      "description": "Edge scrape namespace is envoy-gateway-system; route cluster prefix enforces QuizLabs traffic isolation. HTTP polling/upgrade requests are not game messages.",
-      "gridPos": {"x": 0, "y": 13, "w": 12, "h": 8},
+      "description": "Envoy requests to the httproute/quizlabs/quizlabs/ clusters only: rule 0 backend, rule 1 Socket.IO, rule 2 frontend. Polling and upgrade requests are not game messages.",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/quizlabs/quizlabs/.*\"}[15m]))", "legendFormat": "{{envoy_cluster_name}}"}]
     },
     {
       "id": 5, "type": "timeseries", "title": "QuizLabs route upstream connect failures and timeouts / 15 minutes",
-      "gridPos": {"x": 12, "y": 13, "w": 12, "h": 8},
+      "description": "Failed upstream connections and request timeouts per QuizLabs route (rule 0 backend, 1 Socket.IO, 2 frontend). Any value means Envoy could not reach that backend; check its readiness and logs.",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [
@@ -52,49 +53,55 @@
     },
     {
       "id": 6, "type": "timeseries", "title": "Socket.IO route active proxy connections (not users or sessions)",
-      "gridPos": {"x": 0, "y": 21, "w": 12, "h": 7},
+      "description": "Open Envoy connections to the Socket.IO backend (route rule 1). These are proxy connections, not players, rooms or WebSocket sessions.",
+      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (envoy_cluster_name) (envoy_cluster_upstream_cx_active{namespace=\"envoy-gateway-system\",envoy_cluster_name=\"httproute/quizlabs/quizlabs/rule/1\"})", "legendFormat": "{{envoy_cluster_name}}"}]
     },
     {
       "id": 7, "type": "timeseries", "title": "QuizLabs container restarts / 15 minutes",
-      "gridPos": {"x": 12, "y": 21, "w": 12, "h": 7},
+      "description": "Container restarts over the previous 15 minutes. Check Recent OOM restarts and the component's logs below for the cause.",
+      "gridPos": {"x": 12, "y": 16, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "increase(kube_pod_container_status_restarts_total{namespace=\"quizlabs\"}[15m])", "legendFormat": "{{pod}} {{container}}"}]
     },
     {
       "id": 8, "type": "timeseries", "title": "QuizLabs container CPU",
-      "gridPos": {"x": 0, "y": 28, "w": 12, "h": 7},
+      "description": "CPU cores used per QuizLabs container. A sustained climb alongside restarts points at that component.",
+      "gridPos": {"x": 0, "y": 23, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "cores", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "sum by (pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"quizlabs\",container!=\"\",container!=\"POD\"}[$__rate_interval]))", "legendFormat": "{{pod}} {{container}}"}]
     },
     {
       "id": 9, "type": "timeseries", "title": "QuizLabs container memory working set",
-      "gridPos": {"x": 12, "y": 28, "w": 12, "h": 7},
+      "description": "Memory working set per QuizLabs container. Compare with its limit in the panel below before changing limits.",
+      "gridPos": {"x": 12, "y": 23, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "max by (pod, container) (container_memory_working_set_bytes{namespace=\"quizlabs\",container!=\"\",container!=\"POD\"})", "legendFormat": "{{pod}} {{container}}"}]
     },
     {
       "id": 10, "type": "timeseries", "title": "QuizLabs memory working set / configured limit",
-      "gridPos": {"x": 0, "y": 35, "w": 12, "h": 7},
+      "description": "Working set as a percentage of the configured memory limit; containers without a limit have no line. Near 100% the container is OOM-killed.",
+      "gridPos": {"x": 0, "y": 30, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percent", "min": 0}, "overrides": []},
       "targets": [{"refId": "A", "expr": "100 * max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=\"quizlabs\",container!=\"\",container!=\"POD\"}) / on (namespace, pod, container) (max by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=\"quizlabs\",resource=\"memory\",unit=\"byte\"}) > 0)", "legendFormat": "{{pod}} {{container}}"}]
     },
     {
       "id": 11, "type": "table", "title": "Recent OOM restarts",
-      "gridPos": {"x": 12, "y": 35, "w": 12, "h": 7},
+      "description": "Containers whose last termination was an OOM kill and that restarted in the last 15 minutes. Empty means none observed, not complete coverage.",
+      "gridPos": {"x": 12, "y": 30, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [{"refId": "A", "expr": "(kube_pod_container_status_last_terminated_reason{namespace=\"quizlabs\",reason=\"OOMKilled\"} == 1) and on (namespace, pod, container) (increase(kube_pod_container_status_restarts_total{namespace=\"quizlabs\"}[15m]) > 0)", "instant": true, "format": "table"}]
     },
     {
       "id": 12, "type": "timeseries", "title": "QuizLabs data-store PVC used / capacity",
-      "description": "Includes MongoDB/Redis volumes reported by kubelet; no exporter or invented datastore command metrics.",
-      "gridPos": {"x": 0, "y": 42, "w": 12, "h": 7},
+      "description": "Kubelet-reported used and capacity bytes of the QuizLabs PVCs (MongoDB, Redis). openebs-hostpath volumes may report the whole node filesystem; see Platform - Storage.",
+      "gridPos": {"x": 0, "y": 37, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
       "targets": [
@@ -104,34 +111,39 @@
     },
     {
       "id": 13, "type": "table", "title": "QuizLabs Flux delivery state",
-      "gridPos": {"x": 12, "y": 42, "w": 12, "h": 7},
+      "description": "Readiness of the Flux objects that deliver QuizLabs. A not-ready object means the cluster is not running what Git says; see Platform - Delivery & Edge.",
+      "gridPos": {"x": 12, "y": 37, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "targets": [{"refId": "A", "expr": "gotk_resource_info{exported_namespace=\"quizlabs\"}", "instant": true, "format": "table"}]
     },
     {
       "id": 14, "type": "logs", "title": "quiz-backend logs only",
-      "gridPos": {"x": 0, "y": 49, "w": 24, "h": 8},
+      "description": "Raw quiz-backend logs. Legacy logs are unstructured: evidence, not a failure count.",
+      "gridPos": {"x": 0, "y": 44, "w": 24, "h": 8},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"quizlabs\",app=\"quiz-backend\"}", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
     },
     {
       "id": 15, "type": "logs", "title": "quiz-multiplayer / Socket.IO logs only",
-      "gridPos": {"x": 0, "y": 57, "w": 24, "h": 8},
+      "description": "Raw quiz-multiplayer (Socket.IO) logs. Legacy logs are unstructured: evidence, not a failure count.",
+      "gridPos": {"x": 0, "y": 52, "w": 24, "h": 8},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"quizlabs\",app=\"quiz-multiplayer\"}", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
     },
     {
       "id": 16, "type": "logs", "title": "QuizLabs MongoDB logs only",
-      "gridPos": {"x": 0, "y": 65, "w": 24, "h": 8},
+      "description": "Raw MongoDB logs. Without a MongoDB exporter these are the only view of the database itself.",
+      "gridPos": {"x": 0, "y": 60, "w": 24, "h": 8},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"quizlabs\",app=\"mongodb\"}", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}
     },
     {
       "id": 17, "type": "logs", "title": "QuizLabs Redis logs only",
-      "gridPos": {"x": 0, "y": 73, "w": 24, "h": 8},
+      "description": "Raw Redis logs. Without a Redis exporter these are the only view of the cache itself.",
+      "gridPos": {"x": 0, "y": 68, "w": 24, "h": 8},
       "datasource": {"type": "loki", "uid": "${logs}"},
       "targets": [{"refId": "A", "expr": "{namespace=\"quizlabs\",app=\"redis\"}", "queryType": "range"}],
       "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"}

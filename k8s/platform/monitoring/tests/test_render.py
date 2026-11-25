@@ -186,17 +186,31 @@ class RenderTests(unittest.TestCase):
         )
 
     def test_monitoring_kustomize_build(self) -> None:
-        """Resolve exactly seven provisioned dashboards without reading encrypted files."""
+        """Resolve seven dashboards into one ConfigMap per Grafana folder, without secrets."""
         output = run_tool("kustomize", ["build", str(MONITORING / "configs")])
         resources = load_kustomize_documents(output)
-        dashboards = [
-            item
+        dashboards = {
+            item["metadata"]["annotations"]["grafana_folder"]: set(item["data"])
             for item in resources
             if item["kind"] == "ConfigMap"
             and item["metadata"].get("labels", {}).get("grafana_dashboard") == "1"
-        ]
-        self.assertEqual(len(dashboards), 1)
-        self.assertEqual(len(dashboards[0]["data"]), 7)
+        }
+        self.assertEqual(
+            dashboards,
+            {
+                "AnkiLabs": {
+                    "ankilabs-service-health.json",
+                    "ankilabs-search-postgres.json",
+                    "ankilabs-ai.json",
+                },
+                "QuizLabs": {"quizlabs-overview.json"},
+                "Platform": {
+                    "homelab-overview.json",
+                    "platform-delivery-edge.json",
+                    "platform-storage.json",
+                },
+            },
+        )
         self.assertFalse(any(item["kind"] == "Secret" for item in resources))
 
 

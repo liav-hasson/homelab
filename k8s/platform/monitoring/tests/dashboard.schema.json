@@ -2,62 +2,91 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Homelab provisioned classic dashboard contract (not the entire Grafana API)",
   "type": "object",
-  "required": ["uid", "title", "schemaVersion", "version", "editable", "panels", "templating", "time"],
+  "required": ["uid", "title", "description", "schemaVersion", "version", "editable", "tags", "links", "panels", "templating", "time"],
   "properties": {
     "uid": {"type": "string", "pattern": "^[a-z0-9-]{1,40}$"},
     "title": {"type": "string", "minLength": 1},
+    "description": {"$ref": "#/$defs/text"},
     "schemaVersion": {"type": "integer", "minimum": 39},
     "version": {"type": "integer", "minimum": 1},
     "editable": {"const": false},
-    "panels": {
-      "type": "array",
-      "minItems": 10,
-      "items": {
-        "type": "object",
-        "required": ["id", "type", "title", "gridPos"],
-        "properties": {
-          "id": {"type": "integer", "minimum": 1},
-          "title": {"type": "string", "minLength": 1},
-          "type": {"enum": ["text", "table", "timeseries", "logs"]},
-          "gridPos": {
-            "type": "object",
-            "required": ["x", "y", "w", "h"],
-            "properties": {
-              "x": {"type": "integer", "minimum": 0, "maximum": 23},
-              "y": {"type": "integer", "minimum": 0},
-              "w": {"type": "integer", "minimum": 1, "maximum": 24},
-              "h": {"type": "integer", "minimum": 1}
-            }
-          },
-          "targets": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "required": ["refId"],
-              "properties": {
-                "refId": {"type": "string", "minLength": 1},
-                "expr": {"type": "string", "minLength": 1},
-                "rawSql": {"type": "string", "minLength": 1}
-              },
-              "oneOf": [{"required": ["expr"]}, {"required": ["rawSql"]}]
-            }
-          },
-          "datasource": {
-            "type": "object",
-            "required": ["type", "uid"],
-            "properties": {
-              "type": {"enum": ["prometheus", "loki", "grafana-postgresql-datasource"]},
-              "uid": {"enum": ["${metrics}", "${logs}", "${litellm}"]}
-            }
-          }
-        },
-        "if": {"properties": {"type": {"const": "text"}}},
-        "then": {"required": ["options"]},
-        "else": {"required": ["targets", "datasource"]}
-      }
-    },
+    "tags": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "links": {"type": "array", "items": {"type": "object", "required": ["type", "title"]}},
+    "panels": {"type": "array", "items": {"$ref": "#/$defs/panel"}},
     "templating": {"type": "object", "required": ["list"]},
     "time": {"type": "object", "required": ["from", "to"]}
+  },
+  "$defs": {
+    "text": {"type": "string", "pattern": "\\S"},
+    "panel": {
+      "$comment": "Types are the Grafana 11.5.2 core panels that are GA, not deprecated and not hidden; text is banned in favour of descriptions and runbook links.",
+      "type": "object",
+      "required": ["id", "type", "title", "gridPos"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 1},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"$ref": "#/$defs/text"},
+        "type": {
+          "enum": [
+            "row", "alertlist", "annolist", "barchart", "bargauge", "candlestick", "canvas", "dashlist", "flamegraph",
+            "gauge", "geomap", "heatmap", "histogram", "logs", "nodeGraph", "piechart", "stat", "state-timeline",
+            "status-history", "table", "timeseries", "traces", "xychart"
+          ]
+        },
+        "gridPos": {
+          "type": "object",
+          "required": ["x", "y", "w", "h"],
+          "properties": {
+            "x": {"type": "integer", "minimum": 0, "maximum": 23},
+            "y": {"type": "integer", "minimum": 0},
+            "w": {"type": "integer", "minimum": 1, "maximum": 24},
+            "h": {"type": "integer", "minimum": 1}
+          }
+        },
+        "collapsed": {"type": "boolean"},
+        "panels": {"type": "array", "items": {"$ref": "#/$defs/panel"}},
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["refId"],
+            "properties": {
+              "refId": {"type": "string", "minLength": 1},
+              "expr": {"type": "string", "minLength": 1},
+              "rawSql": {"type": "string", "minLength": 1}
+            },
+            "oneOf": [{"required": ["expr"]}, {"required": ["rawSql"]}]
+          }
+        },
+        "datasource": {
+          "type": "object",
+          "required": ["type", "uid"],
+          "properties": {
+            "type": {"enum": ["prometheus", "loki", "grafana-postgresql-datasource"]},
+            "uid": {"enum": ["${metrics}", "${logs}", "${litellm}"]}
+          }
+        }
+      },
+      "if": {"properties": {"type": {"const": "row"}}},
+      "then": {
+        "$comment": "A row spans the grid; only a collapsed row carries its panels, which cannot be rows.",
+        "required": ["collapsed", "panels"],
+        "not": {"anyOf": [{"required": ["targets"]}, {"required": ["datasource"]}]},
+        "properties": {
+          "gridPos": {"properties": {"x": {"const": 0}, "w": {"const": 24}, "h": {"const": 1}}},
+          "panels": {"items": {"properties": {"type": {"not": {"const": "row"}}}}}
+        },
+        "if": {"properties": {"collapsed": {"const": false}}},
+        "then": {"properties": {"panels": {"maxItems": 0}}}
+      },
+      "else": {
+        "required": ["description"],
+        "not": {"required": ["panels"]},
+        "if": {"properties": {"type": {"enum": ["alertlist", "annolist", "dashlist"]}}},
+        "then": {"not": {"required": ["targets"]}},
+        "else": {"required": ["targets", "datasource"]}
+      }
+    }
   }
 }
