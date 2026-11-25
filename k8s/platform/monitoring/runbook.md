@@ -462,15 +462,32 @@ ports stay internal; there is no public admin route. Target checks are under
 
 ### Platform Storage
 
-Three views of the same disk: the **node filesystem** (node-exporter,
-authoritative for free space), **Kubernetes volumes** (kube-state-metrics
-claims plus kubelet volume stats) and **application self-metrics** (Prometheus
-TSDB, PostgreSQL). Every PVC is an `openebs-hostpath` directory on the node
-filesystem, so requested sizes are not enforced and kubelet stats may be
-missing or filesystem-wide: if several PVCs show identical numbers, trust the
-node filesystem and application panels. Days until full uses a 24h linear
-trend and the 3-day projection the alert's 6h trend; absent means not filling,
-and short write bursts (image pulls, restores, compaction) exaggerate both.
+Read it top to bottom: headline numbers, then the **node disk**
+(node-exporter, authoritative for free space), **persistent volumes**
+(kube-state-metrics claims plus kubelet volume stats), **disk performance**,
+**application self-metrics** (Prometheus TSDB, PostgreSQL) and, collapsed, the
+OpenEBS provisioner logs.
+
+- Every PVC is an `openebs-hostpath` directory on the node filesystem, so all
+  volumes share one pool of free space and requested sizes are not enforced.
+  The per-volume bars show kubelet used bytes against the **requested** size,
+  not against the reported capacity (which can be the whole filesystem); over
+  100% means the volume outgrew its request, not that it is full.
+- kubelet stats for hostpath volumes may be missing or filesystem-wide. In the
+  Volume inventory, an empty Used cell is unknown, and a kubelet capacity equal
+  to the node disk size, or the same used bytes on every claim, means the
+  per-volume panels (and Total and Largest PVC) are not per volume: trust Disk
+  used and the application panels instead.
+- Days until full uses the 24h linear decline of free space; **Not filling**
+  means free space did not shrink over 24h. The 3-day projection uses the
+  alert's 6h trend. Short write bursts (image pulls, restores, compaction)
+  exaggerate both.
+- Throughput and IOPS draw reads above zero and writes below it. 100% busy is
+  not saturation on NVMe; read it with queue depth and latency.
+- Prometheus at 100% of its size cap is expected once the cap is reached: it
+  then deletes the oldest blocks (retention block deletions, size) and keeps
+  less than 7 days.
+
 Loki, MinIO, MongoDB and Redis expose no storage metrics; only their claims are
 shown. Incident steps are under [Storage](#storage).
 
