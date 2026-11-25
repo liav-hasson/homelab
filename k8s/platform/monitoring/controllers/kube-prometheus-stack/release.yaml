@@ -71,6 +71,14 @@ spec:
             app.kubernetes.io/component: monitoring
     grafana:
       defaultDashboardsEnabled: false
+      # Dashboard ConfigMaps (monitoring/configs/kustomization.yaml) name their Grafana
+      # folder in a grafana_folder annotation; the sidecar writes them into that
+      # subdirectory and Grafana creates one folder per subdirectory.
+      sidecar:
+        dashboards:
+          folderAnnotation: grafana_folder
+          provider:
+            foldersFromFilesStructure: true
       # Read by the LiteLLM datasource (grafana-litellm-datasource.yaml) as $__env{GRAFANA_LITELLM_DB_PASSWORD}.
       # Optional: a missing Secret fails only that datasource, never Grafana's startup.
       envValueFrom:

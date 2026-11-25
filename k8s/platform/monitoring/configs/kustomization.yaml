@@ -8,17 +8,38 @@ resources:
   - edge-podmonitors.yaml
   - alerts.yaml
   - alertmanager-config.yaml
+# One ConfigMap per Grafana folder: the dashboard sidecar writes each into the
+# subdirectory named by grafana_folder, and Grafana turns subdirectories into
+# folders (grafana.sidecar.dashboards in kube-prometheus-stack/release.yaml).
 configMapGenerator:
-  - name: homelab-grafana-dashboards
+  - name: homelab-grafana-dashboards-ankilabs
     files:
-      - dashboards/homelab-overview.json
-      - dashboards/platform-delivery-edge.json
-      - dashboards/platform-storage.json
       - dashboards/ankilabs-service-health.json
       - dashboards/ankilabs-search-postgres.json
       - dashboards/ankilabs-ai.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        kustomize.toolkit.fluxcd.io/substitute: disabled
+      annotations:
+        grafana_folder: AnkiLabs
+  - name: homelab-grafana-dashboards-quizlabs
+    files:
       - dashboards/quizlabs-overview.json
     options:
       labels:
         grafana_dashboard: "1"
         kustomize.toolkit.fluxcd.io/substitute: disabled
+      annotations:
+        grafana_folder: QuizLabs
+  - name: homelab-grafana-dashboards-platform
+    files:
+      - dashboards/homelab-overview.json
+      - dashboards/platform-delivery-edge.json
+      - dashboards/platform-storage.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        kustomize.toolkit.fluxcd.io/substitute: disabled
+      annotations:
+        grafana_folder: Platform

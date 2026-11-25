@@ -297,8 +297,8 @@ git diff --check
 
 The suite includes local JSON-contract/schema/unique-UID/layout checks
 (including panels nested in collapsed rows), panel descriptions, dashboard
-tags and runbook links against this file's headings, exact provisioning
-references, namespace/privacy/routing guards, `helm lint` and
+tags and runbook links against this file's headings, exact per-folder
+provisioning and its sidecar settings, namespace/privacy/routing guards, `helm lint` and
 `helm template` for the PostgreSQL, LLM Proxy, Envoy and Cloudflare charts, monitoring-only `kustomize build`,
 `promtool check rules` for alerts **and all dashboard PromQL**, eighteen real
 Prometheus evaluator cases, and actual Promtail stdin/dry-run replay tests.
@@ -329,6 +329,19 @@ python3 -c 'from pathlib import Path; import yaml; print(yaml.safe_dump(yaml.saf
     --version 6.17.1 --namespace monitoring --values -
 ```
 
+After changing Grafana values, render kube-prometheus-stack the same way and
+check the dashboard sidecar and provider (expect `FOLDER_ANNOTATION` set to
+`grafana_folder`, `foldersFromFilesStructure: true` and
+`allowUiUpdates: false`). The encrypted `grafana-helm-values` Secret is not
+included:
+
+```sh
+python3 -c 'from pathlib import Path; import yaml; print(yaml.safe_dump(yaml.safe_load(Path("k8s/platform/monitoring/controllers/kube-prometheus-stack/release.yaml").read_text())["spec"]["values"]))' |
+  helm template kube-prometheus-stack oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack \
+    --version 69.8.2 --namespace monitoring --values - |
+  grep -E -A1 'FOLDER_ANNOTATION|foldersFromFilesStructure|allowUiUpdates'
+```
+
 Inspect changed-file editor diagnostics as well; no editor Problems API is
 available to the command-line suite. No workflow, commit, image push or live
 deployment is part of these commands.
@@ -337,11 +350,12 @@ deployment is part of these commands.
 
 After an explicitly authorized rollout:
 
-1. Grafana must contain exactly the seven provisioned dashboards: Homelab
-   Overview; Platform - Delivery & Edge; Platform - Storage; AnkiLabs - Service
-   Health; AnkiLabs - Search & PostgreSQL; AnkiLabs - AI; QuizLabs - Overview. Check that the old two dashboard
-   ConfigMaps and all their dashboards were removed by Flux prune/Grafana
-   sidecar deletion. Do not keep old dashboards as a second source of truth.
+1. Grafana must contain exactly the seven provisioned dashboards, in the
+   folders listed under [Dashboards](#dashboards) and none in General. Check
+   that Flux pruned every older dashboard ConfigMap, leaving only
+   `homelab-grafana-dashboards-ankilabs`, `-quizlabs` and `-platform`, and that
+   the Grafana sidecar removed their dashboards. Do not keep old dashboards as
+   a second source of truth.
 2. Select the Prometheus and Loki data sources. Confirm each expected target is
    present and reachable, `pg_up=1`, and every enabled collector reports success.
    Missing series remain **unknown**. An idle histogram can legitimately have no
@@ -368,12 +382,27 @@ After an explicitly authorized rollout:
 
 ## Dashboards
 
-Seven dashboards are provisioned from `configs/dashboards/*.json`. Each
-dashboard's **Runbook** link opens its section below, and its **Monitoring**
-menu lists the others, keeping the time range and variables. Every panel
-explains itself in its description (the info icon next to its title). Missing
-data is unknown, never zero or healthy: check scrape health before reading any
-chart.
+Seven dashboards are provisioned from `configs/dashboards/*.json`, one
+ConfigMap per Grafana folder:
+
+| Folder | Dashboards |
+| --- | --- |
+| AnkiLabs | AnkiLabs - Service Health, AnkiLabs - Search & PostgreSQL, AnkiLabs - AI |
+| QuizLabs | QuizLabs - Overview |
+| Platform | Homelab Overview, Platform - Delivery & Edge, Platform - Storage |
+
+Each dashboard's **Runbook** link opens its section below, and its
+**Monitoring** menu lists the others, keeping the time range and variables.
+Every panel explains itself in its description (the info icon next to its
+title). Missing data is unknown, never zero or healthy: check scrape health
+before reading any chart.
+
+The kube-prometheus-stack Grafana sidecar writes each ConfigMap into the
+subdirectory named by its `grafana_folder` annotation, and the dashboard
+provider (`foldersFromFilesStructure`) makes every subdirectory a folder.
+Dashboards are addressed by UID (`/d/<uid>`), so moving one to another folder
+keeps its URL, alert links and bookmarks. During the move Grafana can delete
+and re-create a dashboard, which drops its stars and version history.
 
 ### Dashboard conventions
 
@@ -403,9 +432,11 @@ redesigned. The schema and `tests/test_static.py` enforce the ones marked
   empty, and durations are in seconds *(tested)*.
 - **Panel types**: Grafana 11.5 core panels that are generally available, plus
   rows. Beta (`trend`, `datagrid`) and `text` panels fail the schema.
-- **Tags** *(tested)*: `homelab-monitoring` (feeds the Monitoring menu), the
-  app (`ankilabs`, `quizlabs`, `platform` or `homelab`) and, where obvious, the
-  layer (`ai`, `storage`, `database`, `edge`, `overview`, `services`).
+- **Folders and tags** *(tested)*: add a dashboard to its folder's ConfigMap in
+  `configs/kustomization.yaml`. Tag it `homelab-monitoring` (feeds the
+  Monitoring menu), its app (`ankilabs`, `quizlabs`, `platform` or `homelab`)
+  and, where obvious, its layer (`ai`, `storage`, `database`, `edge`,
+  `overview`, `services`).
 
 ### Homelab Overview
 

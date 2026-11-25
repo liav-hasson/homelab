@@ -21,6 +21,13 @@ EXPECTED = {
     "ankilabs-ai": "AnkiLabs - AI",
     "quizlabs-overview": "QuizLabs - Overview",
 }
+# Grafana folder of each dashboard, set by its ConfigMap's folder annotation.
+FOLDERS = {
+    "AnkiLabs": {"ankilabs-service-health", "ankilabs-search-postgres", "ankilabs-ai"},
+    "QuizLabs": {"quizlabs-overview"},
+    "Platform": {"homelab-overview", "platform-delivery-edge", "platform-storage"},
+}
+FOLDER_ANNOTATION = "grafana_folder"
 NAVIGATION_TAG = "homelab-monitoring"
 APP_TAGS = {"ankilabs", "quizlabs", "platform", "homelab"}
 RUNBOOK = MONITORING / "runbook.md"
@@ -195,20 +202,37 @@ class MonitoringContractTests(unittest.TestCase):
                 self.assertIs(runbook["targetBlank"], True)
                 self.assertEqual(runbook["icon"], "doc")
 
-    def test_provisioning_is_exact_and_references_existing_resources(self) -> None:
-        """Require one coherent source of provisioned dashboards."""
+    def test_provisioning_maps_each_dashboard_to_its_folder(self) -> None:
+        """One dashboard ConfigMap per Grafana folder, placed by the sidecar."""
         config = yaml.safe_load(
             (CONFIGS / "kustomization.yaml").read_text(encoding="utf-8")
         )
-        generators = config["configMapGenerator"]
-        self.assertEqual(len(generators), 1)
-        self.assertEqual(generators[0]["options"]["labels"]["grafana_dashboard"], "1")
+        folders = {}
+        for generator in config["configMapGenerator"]:
+            options = generator["options"]
+            self.assertEqual(options["labels"]["grafana_dashboard"], "1")
+            folder = options["annotations"][FOLDER_ANNOTATION]
+            self.assertNotIn(folder, folders)
+            folders[folder] = set(generator["files"])
         self.assertEqual(
-            set(generators[0]["files"]),
-            {f"dashboards/{uid}.json" for uid in EXPECTED},
+            folders,
+            {
+                folder: {f"dashboards/{uid}.json" for uid in uids}
+                for folder, uids in FOLDERS.items()
+            },
         )
+        self.assertEqual(set().union(*FOLDERS.values()), set(EXPECTED))
         for resource in config["resources"]:
             self.assertTrue((CONFIGS / resource).is_file(), resource)
+        sidecar = yaml.safe_load(
+            (MONITORING / "controllers/kube-prometheus-stack/release.yaml").read_text(
+                encoding="utf-8"
+            )
+        )["spec"]["values"]["grafana"]["sidecar"]["dashboards"]
+        self.assertEqual(sidecar["folderAnnotation"], FOLDER_ANNOTATION)
+        self.assertIs(sidecar["provider"]["foldersFromFilesStructure"], True)
+        self.assertIs(sidecar["provider"].get("allowUiUpdates", False), False)
+        self.assertNotIn("defaultFolderName", sidecar)
 
     def test_application_selectors_are_namespace_isolated(self) -> None:
         """Only route-bound native edge metrics may use another scrape namespace."""
