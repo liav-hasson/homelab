@@ -1,10 +1,11 @@
 {
   "uid": "homelab-overview",
   "title": "Homelab Overview",
-  "description": "Start here: node capacity, workload availability, scrape coverage and active alerts for the whole homelab. No data means unknown, never healthy.",
+  "description": "Start here: node capacity, application health, active alerts, workload availability and scrape coverage for the whole homelab. No data means unknown, never healthy.",
   "schemaVersion": 39,
   "version": 1,
   "editable": false,
+  "graphTooltip": 1,
   "tags": ["homelab-monitoring", "homelab", "overview"],
   "timezone": "browser",
   "refresh": "30s",
@@ -16,87 +17,200 @@
   "templating": {"list": [{"name": "metrics", "label": "Prometheus", "type": "datasource", "query": "prometheus"}]},
   "panels": [
     {
-      "id": 2, "type": "timeseries", "title": "Node CPU busy",
-      "description": "CPU time not spent idle, per node. NodeHighCPU fires above 90% for 5 minutes; use Pod CPU consumption by namespace to find the cause.",
-      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 7},
+      "id": 1, "type": "row", "title": "At a glance", "collapsed": false,
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+      "panels": []
+    },
+    {
+      "id": 2, "type": "gauge", "title": "Node CPU busy",
+      "description": "CPU time not spent idle, per node. NodeHighCPU fires above 90% for 5 minutes; Pod CPU by namespace below shows the cause.",
+      "gridPos": {"x": 0, "y": 1, "w": 4, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]}, "max": 100}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto", "minVizWidth": 75, "minVizHeight": 75},
       "targets": [{"refId": "A", "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])))", "legendFormat": "{{instance}}"}]
     },
     {
-      "id": 3, "type": "timeseries", "title": "Node memory available",
-      "description": "Memory the node can still give to workloads without swapping. NodeHighMemory fires below 10% available for 5 minutes; compare container working sets with their limits on the application dashboards.",
-      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 7},
+      "id": 3, "type": "gauge", "title": "Node memory used",
+      "description": "Memory in use (not available to workloads), per node. NodeHighMemory fires above 90% for 5 minutes; compare container working sets with their limits on the application dashboards.",
+      "gridPos": {"x": 4, "y": 1, "w": 4, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "node_memory_MemAvailable_bytes", "legendFormat": "{{instance}}"}]
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]}, "max": 100}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto", "minVizWidth": 75, "minVizHeight": 75},
+      "targets": [{"refId": "A", "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)", "legendFormat": "{{instance}}"}]
     },
     {
-      "id": 4, "type": "timeseries", "title": "Node filesystem space used",
-      "description": "Used share of each real node filesystem (tmpfs, overlay, squashfs and /run excluded). Every hostpath volume shares this space; NodeFilesystemLowSpace fires above 85% used, see Platform - Storage.",
-      "gridPos": {"x": 0, "y": 7, "w": 12, "h": 7},
+      "id": 4, "type": "bargauge", "title": "Node filesystems used",
+      "description": "Used share of each real node filesystem (tmpfs, overlay, squashfs and /run excluded). Every hostpath volume shares this space; NodeFilesystemLowSpace fires above 85%. Click for Platform - Storage.",
+      "gridPos": {"x": 8, "y": 1, "w": 6, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 85}]}, "links": [{"title": "Open Platform - Storage", "url": "/d/platform-storage?${__url_time_range}"}]}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "horizontal", "displayMode": "lcd", "valueMode": "color", "namePlacement": "auto", "showUnfilled": true, "sizing": "auto", "minVizWidth": 8, "minVizHeight": 16, "maxVizHeight": 300, "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom", "calcs": []}},
       "targets": [{"refId": "A", "expr": "100 * (1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint!~\"/run.*\"})", "legendFormat": "{{instance}} {{mountpoint}}"}]
     },
     {
-      "id": 5, "type": "timeseries", "title": "Persistent volume space used",
-      "description": "Kubelet-reported used share per PVC. A missing series is unknown, not an empty volume; openebs-hostpath volumes may report the whole node filesystem (see Platform - Storage).",
-      "gridPos": {"x": 12, "y": 7, "w": 12, "h": 7},
+      "id": 5, "type": "stat", "title": "Scrape targets",
+      "description": "Prometheus targets reachable (up) and failed (down). A target that disappeared is in neither count; check the coverage table at the bottom before trusting other charts.",
+      "gridPos": {"x": 14, "y": 1, "w": 3, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "percent", "min": 0}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "100 * max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) / max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes)", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "mappings": []}, "overrides": [{"matcher": {"id": "byName", "options": "down"}, "properties": [{"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}]}]},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value_and_name", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [{"refId": "A", "expr": "sum(up)", "legendFormat": "up"}, {"refId": "B", "expr": "count(up == 0) or count(up) * 0", "legendFormat": "down"}]
     },
     {
-      "id": 6, "type": "table", "title": "Scrape coverage: 1 reachable, 0 failed, absent unknown",
-      "description": "Every Prometheus scrape target: 1 reachable, 0 failed. A target missing here is unknown, not healthy; check this table before trusting any other chart.",
-      "gridPos": {"x": 0, "y": 14, "w": 24, "h": 8},
+      "id": 6, "type": "stat", "title": "Firing alerts",
+      "description": "Alerts firing now, excluding the always-on Watchdog and InfoInhibitor. Zero needs Watchdog to be firing (proof the rules run); no data means alert evaluation itself is unknown.",
+      "gridPos": {"x": 17, "y": 1, "w": 3, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "up", "instant": true, "format": "table"}]
+      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "mappings": []}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [{"refId": "A", "expr": "count(ALERTS{alertstate=\"firing\",alertname!~\"Watchdog|InfoInhibitor\"}) or count(ALERTS{alertstate=\"firing\",alertname=\"Watchdog\"}) * 0", "legendFormat": "firing"}]
     },
     {
-      "id": 7, "type": "table", "title": "Available / desired deployment replicas",
-      "description": "Available over desired replicas per Deployment, from Kubernetes readiness rather than a user journey. Below 1 means pods are not ready; check restarts and the owning application's dashboard.",
-      "gridPos": {"x": 0, "y": 22, "w": 12, "h": 8},
+      "id": 7, "type": "stat", "title": "Unready workloads",
+      "description": "Deployments and StatefulSets with fewer ready replicas than desired, from Kubernetes readiness. Find them in Workload availability below.",
+      "gridPos": {"x": 20, "y": 1, "w": 4, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "kube_deployment_status_replicas_available / on (namespace, deployment) kube_deployment_spec_replicas", "instant": true, "format": "table"}]
+      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "mappings": []}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [{"refId": "A", "expr": "count((kube_deployment_status_replicas_available / on (namespace, deployment) kube_deployment_spec_replicas < 1) or (kube_statefulset_status_replicas_ready / on (namespace, statefulset) kube_statefulset_replicas < 1)) or count(kube_deployment_spec_replicas) * 0", "legendFormat": "below desired"}]
     },
     {
-      "id": 8, "type": "table", "title": "Ready / desired StatefulSet replicas",
-      "description": "Ready over desired replicas per StatefulSet, from Kubernetes readiness. Below 1 means a pod is not ready; check its restarts and logs.",
-      "gridPos": {"x": 12, "y": 22, "w": 12, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "kube_statefulset_status_replicas_ready / on (namespace, statefulset) kube_statefulset_replicas", "instant": true, "format": "table"}]
+      "id": 8, "type": "row", "title": "Applications", "collapsed": false,
+      "gridPos": {"x": 0, "y": 7, "w": 24, "h": 1},
+      "panels": []
     },
     {
-      "id": 9, "type": "timeseries", "title": "Observed container restarts / 15 minutes",
-      "description": "Container restarts per pod over the previous 15 minutes. PodFrequentRestarts fires at 3 or more; the application dashboards show whether they were OOM kills.",
-      "gridPos": {"x": 0, "y": 30, "w": 12, "h": 7},
+      "id": 9, "type": "stat", "title": "AnkiLabs replicas ready",
+      "description": "Ready replicas over desired across every AnkiLabs Deployment and StatefulSet. Click to open AnkiLabs - Service Health.",
+      "gridPos": {"x": 0, "y": 8, "w": 6, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
-      "targets": [{"refId": "A", "expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[15m]))", "legendFormat": "{{namespace}} {{pod}}"}]
+      "fieldConfig": {"defaults": {"unit": "percent", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 50}, {"color": "green", "value": 100}]}, "mappings": [], "decimals": 0, "links": [{"title": "Open AnkiLabs - Service Health", "url": "/d/ankilabs-service-health?${__url_time_range}"}]}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [{"refId": "A", "expr": "100 * sum(kube_deployment_status_replicas_available{namespace=\"ankilabs\"} or kube_statefulset_status_replicas_ready{namespace=\"ankilabs\"}) / sum(kube_deployment_spec_replicas{namespace=\"ankilabs\"} or kube_statefulset_replicas{namespace=\"ankilabs\"})", "legendFormat": "ankilabs"}]
     },
     {
-      "id": 10, "type": "table", "title": "Active alerts (empty is not proof of complete coverage)",
-      "description": "Pending and firing Prometheus alerts. Empty means no rule is firing, not that every component is covered; check scrape coverage too.",
-      "gridPos": {"x": 12, "y": 30, "w": 12, "h": 7},
+      "id": 10, "type": "stat", "title": "QuizLabs replicas ready",
+      "description": "Ready replicas over desired across every QuizLabs Deployment and StatefulSet. Click to open QuizLabs - Overview.",
+      "gridPos": {"x": 6, "y": 8, "w": 6, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "ALERTS{alertstate=~\"pending|firing\"}", "instant": true, "format": "table"}]
+      "fieldConfig": {"defaults": {"unit": "percent", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 50}, {"color": "green", "value": 100}]}, "mappings": [], "decimals": 0, "links": [{"title": "Open QuizLabs - Overview", "url": "/d/quizlabs-overview?${__url_time_range}"}]}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [{"refId": "A", "expr": "100 * sum(kube_deployment_status_replicas_available{namespace=\"quizlabs\"} or kube_statefulset_status_replicas_ready{namespace=\"quizlabs\"}) / sum(kube_deployment_spec_replicas{namespace=\"quizlabs\"} or kube_statefulset_replicas{namespace=\"quizlabs\"})", "legendFormat": "quizlabs"}]
     },
     {
-      "id": 11, "type": "timeseries", "title": "Pod CPU consumption by namespace",
-      "description": "CPU cores used by all containers, summed per namespace. Use it to find the namespace behind high node CPU.",
-      "gridPos": {"x": 0, "y": 37, "w": 12, "h": 7},
+      "id": 11, "type": "stat", "title": "Flux objects ready",
+      "description": "Share of Flux objects whose Ready condition is True. Below 100% Git is not fully delivered; click to open Platform - Delivery & Edge.",
+      "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "cores", "min": 0}, "overrides": []},
+      "fieldConfig": {"defaults": {"unit": "percent", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 50}, {"color": "green", "value": 100}]}, "mappings": [], "decimals": 0, "links": [{"title": "Open Platform - Delivery & Edge", "url": "/d/platform-delivery-edge?${__url_time_range}"}]}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [{"refId": "A", "expr": "100 * (count(gotk_resource_info{ready=\"True\"}) or count(gotk_resource_info) * 0) / count(gotk_resource_info)", "legendFormat": "flux"}]
+    },
+    {
+      "id": 12, "type": "stat", "title": "Tunnel connections (lowest replica)",
+      "description": "Edge connections held by the weakest cloudflared replica (normally 4). Below 4 means less redundancy, 0 means that replica carries no traffic; click for Platform - Delivery & Edge.",
+      "gridPos": {"x": 18, "y": 8, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 1}, {"color": "green", "value": 4}]}, "mappings": [], "links": [{"title": "Open Platform - Delivery & Edge", "url": "/d/platform-delivery-edge?${__url_time_range}"}]}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [{"refId": "A", "expr": "min(cloudflared_tunnel_ha_connections{namespace=\"cloudflare\"})", "legendFormat": "cloudflared"}]
+    },
+    {
+      "id": 13, "type": "row", "title": "Alerts and workloads", "collapsed": false,
+      "gridPos": {"x": 0, "y": 12, "w": 24, "h": 1},
+      "panels": []
+    },
+    {
+      "id": 14, "type": "alertlist", "title": "Active alerts",
+      "description": "Pending and firing alert rules (Watchdog and InfoInhibitor hidden). Empty means no rule is firing, not that every component is covered; check scrape targets too.",
+      "gridPos": {"x": 0, "y": 13, "w": 12, "h": 9},
+      "options": {"viewMode": "list", "groupMode": "default", "groupBy": [], "maxItems": 20, "sortOrder": 3, "dashboardAlerts": false, "alertName": "", "alertInstanceLabelFilter": "{alertname!~\"Watchdog|InfoInhibitor\"}", "showInstances": true, "showInactiveAlerts": false, "stateFilter": {"firing": true, "pending": true, "noData": false, "normal": false, "error": true}}
+    },
+    {
+      "id": 15, "type": "table", "title": "Workload availability",
+      "description": "Ready over desired replicas per Deployment and StatefulSet, worst first. Below 100% pods are not ready; check restarts and the owning application's dashboard.",
+      "gridPos": {"x": 12, "y": 13, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false, "filterable": true}}, "overrides": [{"matcher": {"id": "byName", "options": "Ready / desired"}, "properties": [{"id": "unit", "value": "percentunit"}, {"id": "decimals", "value": 0}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, {"id": "color", "value": {"mode": "thresholds"}}, {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}}]}]},
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": false, "reducer": ["sum"], "countRows": false, "fields": ""}, "sortBy": [{"displayName": "Ready / desired", "desc": false}]},
+      "transformations": [{"id": "organize", "options": {"excludeByName": {"Time": true, "deployment": true, "statefulset": true}, "indexByName": {"namespace": 0, "kind": 1, "workload": 2, "Value": 3}, "renameByName": {"Value": "Ready / desired"}}}],
+      "targets": [{"refId": "A", "expr": "label_replace(label_replace(max by (namespace, deployment) (kube_deployment_status_replicas_available) / on (namespace, deployment) max by (namespace, deployment) (kube_deployment_spec_replicas), \"workload\", \"$1\", \"deployment\", \"(.+)\"), \"kind\", \"Deployment\", \"deployment\", \".+\") or label_replace(label_replace(max by (namespace, statefulset) (kube_statefulset_status_replicas_ready) / on (namespace, statefulset) max by (namespace, statefulset) (kube_statefulset_replicas), \"workload\", \"$1\", \"statefulset\", \"(.+)\"), \"kind\", \"StatefulSet\", \"statefulset\", \".+\")", "instant": true, "range": false, "format": "table"}]
+    },
+    {
+      "id": 16, "type": "row", "title": "Trends", "collapsed": false,
+      "gridPos": {"x": 0, "y": 22, "w": 24, "h": 1},
+      "panels": []
+    },
+    {
+      "id": 17, "type": "timeseries", "title": "Node CPU busy",
+      "description": "CPU busy per node over time; the dashed line is the 90% NodeHighCPU threshold.",
+      "gridPos": {"x": 0, "y": 23, "w": 6, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "dashed"}}, "color": {"mode": "palette-classic"}, "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 90}]}}, "overrides": []},
+      "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"refId": "A", "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])))", "legendFormat": "{{instance}}"}]
+    },
+    {
+      "id": 18, "type": "timeseries", "title": "Node memory available",
+      "description": "Memory the node can still give to workloads without swapping. A steady fall points at a growing container; NodeHighMemory fires below 10% available.",
+      "gridPos": {"x": 6, "y": 23, "w": 6, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "none", "group": "A"}}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
+      "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"refId": "A", "expr": "node_memory_MemAvailable_bytes", "legendFormat": "{{instance}}"}]
+    },
+    {
+      "id": 19, "type": "timeseries", "title": "Pod CPU by namespace",
+      "description": "CPU cores used by all containers, stacked per namespace (the stack is the pods' total). Use it to find the namespace behind high node CPU.",
+      "gridPos": {"x": 12, "y": 23, "w": 6, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "cores", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
+      "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [{"refId": "A", "expr": "sum by (namespace) (rate(container_cpu_usage_seconds_total{container!=\"\",container!=\"POD\"}[$__rate_interval]))", "legendFormat": "{{namespace}}"}]
     },
     {
-      "id": 12, "type": "table", "title": "Reported node pressure conditions",
-      "description": "Node conditions the kubelet currently reports as true: memory, disk or PID pressure. Any row means pods may be evicted; free the resource first.",
-      "gridPos": {"x": 12, "y": 37, "w": 12, "h": 7},
+      "id": 20, "type": "timeseries", "title": "Container restarts",
+      "description": "Container restarts per pod in each bar (15 minutes, longer on wide ranges). PodFrequentRestarts fires at 3 in 15 minutes; the application dashboards show OOM kills.",
+      "gridPos": {"x": 18, "y": 23, "w": 6, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "targets": [{"refId": "A", "expr": "kube_node_status_condition{condition=~\"MemoryPressure|DiskPressure|PIDPressure\",status=\"true\"}", "instant": true, "format": "table"}]
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}, "barAlignment": -1}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
+      "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "interval": "15m",
+      "targets": [{"refId": "A", "expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[$__rate_interval]))", "legendFormat": "{{namespace}} {{pod}}"}]
+    },
+    {
+      "id": 21, "type": "row", "title": "Capacity and coverage", "collapsed": false,
+      "gridPos": {"x": 0, "y": 31, "w": 24, "h": 1},
+      "panels": []
+    },
+    {
+      "id": 22, "type": "bargauge", "title": "Persistent volumes used",
+      "description": "Kubelet-reported used share per PVC. Missing means unknown, not empty; openebs-hostpath volumes may report the whole node filesystem (see Platform - Storage).",
+      "gridPos": {"x": 0, "y": 32, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color", "namePlacement": "auto", "showUnfilled": true, "sizing": "auto", "minVizWidth": 8, "minVizHeight": 16, "maxVizHeight": 300, "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom", "calcs": []}},
+      "targets": [{"refId": "A", "expr": "100 * max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) / max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes)", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+    },
+    {
+      "id": 23, "type": "state-timeline", "title": "Node pressure",
+      "description": "Memory, disk and PID pressure the kubelet reports per node. Red means pods may be evicted; free that resource first.",
+      "gridPos": {"x": 12, "y": 32, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "blue"}, "mappings": [{"type": "value", "options": {"0": {"text": "OK", "color": "green", "index": 0}, "1": {"text": "Pressure", "color": "red", "index": 1}}}], "custom": {"lineWidth": 0, "fillOpacity": 75}}, "overrides": []},
+      "options": {"showValue": "auto", "rowHeight": 0.85, "mergeValues": true, "alignValue": "left", "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [{"refId": "A", "expr": "kube_node_status_condition{condition=~\"MemoryPressure|DiskPressure|PIDPressure\",status=\"true\"}", "legendFormat": "{{node}} {{condition}}"}]
+    },
+    {
+      "id": 24, "type": "table", "title": "Scrape coverage",
+      "description": "Every Prometheus scrape target, failed first. A target missing here is unknown, not healthy; check this before trusting any other chart.",
+      "gridPos": {"x": 0, "y": 41, "w": 24, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false, "filterable": true}}, "overrides": [{"matcher": {"id": "byName", "options": "State"}, "properties": [{"id": "mappings", "value": [{"type": "value", "options": {"0": {"text": "Down", "color": "red", "index": 0}, "1": {"text": "Up", "color": "green", "index": 1}}}]}, {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}}]}]},
+      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": false, "reducer": ["sum"], "countRows": false, "fields": ""}, "sortBy": [{"displayName": "State", "desc": false}]},
+      "transformations": [{"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "container": true, "endpoint": true}, "indexByName": {"job": 0, "namespace": 1, "pod": 2, "instance": 3, "service": 4, "Value": 5}, "renameByName": {"Value": "State"}}}],
+      "targets": [{"refId": "A", "expr": "up", "instant": true, "range": false, "format": "table"}]
     }
   ]
 }

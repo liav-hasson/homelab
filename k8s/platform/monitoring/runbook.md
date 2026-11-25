@@ -440,10 +440,15 @@ redesigned. The schema and `tests/test_static.py` enforce the ones marked
 
 ### Homelab Overview
 
-Start here: node CPU, memory and filesystems, persistent volumes, scrape
-coverage, Deployment and StatefulSet availability, restarts, active alerts and
-node pressure. Availability is Kubernetes readiness, not a synthetic user
-journey. Then go to Platform - Delivery & Edge for Flux, Envoy and cloudflared;
+Start here. The top rows are the at-a-glance view: node CPU, memory and
+filesystem gauges, scrape targets up/down, firing alerts, unready workloads,
+and one tile per area (AnkiLabs and QuizLabs replicas ready, Flux objects
+ready, weakest tunnel replica) that opens its dashboard when clicked. Below are
+the active alert list, workload availability, trends, volume usage, node
+pressure and scrape coverage. Availability is Kubernetes readiness, not a
+synthetic user journey. Firing alerts leave out the always-on Watchdog and
+InfoInhibitor and show 0 only while Watchdog fires, so an empty tile means rule
+evaluation itself is unknown. Then go to Platform - Delivery & Edge for Flux, Envoy and cloudflared;
 Platform - Storage for disk space, volumes and I/O; AnkiLabs - Service Health
 for request failures; AnkiLabs - Search & PostgreSQL for lookup stages and
 pools; AnkiLabs - AI for AI calls, Usage Codes and spend; QuizLabs - Overview
@@ -452,8 +457,12 @@ for the legacy stack. Node and pod alerts link here; their steps are under
 
 ### Platform Delivery and Edge
 
-Flux readiness comes from kube-state-metrics custom-resource metrics;
-reconciliation mean duration is in seconds, not uptime. Envoy counters are
+Flux readiness comes from kube-state-metrics custom-resource metrics: the
+timeline shows each object's Ready condition over time (unknown when it is
+neither True nor False) and the inventory table its applied revision.
+Reconciliation mean duration is in seconds, not uptime. Count bars cover one
+bar interval (15 minutes, longer on wide ranges); shares cover the selected
+time range. Envoy counters are
 real proxy activity per route cluster. Cloudflared counters cover the whole
 tunnel and cannot be split per application, so application dashboards show only
 route-bound Envoy data. No log regex is used as a failure counter. Native scrape
@@ -478,18 +487,28 @@ shown. Incident steps are under [Storage](#storage).
 
 All data is restricted to the `ankilabs` namespace. A failure is an observed
 5xx or an explicit upstream `timeout`/`unavailable`, never a keyword count.
-Latency is a mean next to its sample count rather than a sparse p95; zero
-observations give no mean. A request killed before completing leaves started
-breadcrumbs but no latency sample. Request IDs are parsed only at query time.
-Incident steps are under [Requests](#requests) and [Resources](#resources).
+Each service has requests, 5xx share and p95 at the top, then request and
+failure bars, a latency heatmap and a p95 line. A p95 needs at least 5 requests
+in its 15-minute window and stays empty otherwise; buckets step 2.5, 5, 10, 30,
+60 and 120 s, so slow percentiles are coarse. The mean by route beside it
+includes failures; zero observations give no mean. A 5xx share is empty
+without traffic. A request killed before completing leaves started breadcrumbs
+but no latency sample. Raw failure counters since process start are in a
+collapsed row. Request IDs are parsed only at query time. Incident steps are under [Requests](#requests) and [Resources](#resources).
 
 ### AnkiLabs Search and PostgreSQL
 
-All data is restricted to `ankilabs`. Compare each stage's mean with its sample
-and error counts; stages overlap, so never add their times into a request
-total. Started events locate the last stage when a process dies before
+All data is restricted to `ankilabs`. The top row is lookup requests, 5xx
+share, p95, pool waiters and exporter health. Stage heatmaps show one stage at
+a time: pick it with the **Sentence stage** and **Dictionary stage** variables;
+the row heatmap uses **Search phase**. Compare each stage's p95 and mean with
+its observations and error outcomes; stages overlap, so never add their times
+into a request total. Started events locate the last stage when a process dies before
 completing. Pool states (size, available, waiting, max) are separate, not
-additive. Row histograms are per-phase observations, not SQL execution plans.
+additive; connections in use is size minus available, over max. Connections
+used counts every database's backends against `max_connections`, and the cache
+hit ratio covers 15 minutes and is empty when the database was idle. Row
+histograms are per-phase observations, not SQL execution plans.
 Request IDs, fingerprints and backend PIDs are query-time fields, never index
 labels. The PostgreSQL panels need the
 [monitoring login](#postgresql-monitoring-login); a reachable exporter does not
@@ -524,7 +543,12 @@ Incident steps and the LiteLLM database access are under [AI](#ai).
 quiz-backend, quiz-multiplayer (Socket.IO), MongoDB and Redis, scoped to
 `quizlabs`. Envoy panels select only `httproute/quizlabs/quizlabs/` clusters
 (rule 0 backend, rule 1 Socket.IO, rule 2 frontend): proxy requests and
-connections, not players, rooms, games, messages or WebSocket sessions. Shared
+connections, not players, rooms, games, messages or WebSocket sessions. Their
+5xx share uses Envoy's response classes (`envoy_cluster_upstream_rq_xx`) and
+latency is Envoy's upstream time to the backend
+(`envoy_cluster_upstream_rq_time`, milliseconds), not browser latency.
+Socket.IO is left out of the p95: long-polling holds requests open by design.
+Shared
 cloudflared data stays on Platform - Delivery & Edge. MongoDB and Redis have no
 exporters, so readiness, resources, claims and logs are evidence, not command
 latency or replication health. Legacy logs stay raw; no regex counts pretend
