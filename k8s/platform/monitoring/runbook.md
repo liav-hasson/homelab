@@ -307,7 +307,9 @@ privileges and one run of its script over a synthetic volume tree (checked
 with `promtool check metrics`; it needs `sh` and `du`), and actual Promtail
 stdin/dry-run replay tests.
 The checked-in dashboard schema is a focused provisioning contract, not the
-entire Grafana API schema.
+entire Grafana API schema. Vendored dashboards (`configs/dashboards/vendor/`)
+are exempt from the schema and style rules; `tests/test_vendored_dashboards.py`
+still checks their UIDs, folder, recorded commit and PromQL syntax.
 
 Dependencies are Python with `tests/requirements.txt`, Helm, Kustomize,
 Prometheus' `promtool`, the Promtail **3.5.1** binary corresponding to pinned
@@ -369,7 +371,8 @@ deployment is part of these commands.
 
 After an explicitly authorized rollout:
 
-1. Grafana must contain exactly the seven provisioned dashboards, in the
+1. Grafana must contain exactly the seven provisioned dashboards and the two
+   vendored Flux dashboards, in the
    folders listed under [Dashboards](#dashboards) and none in General. Check
    that Flux pruned every older dashboard ConfigMap, leaving only
    `homelab-grafana-dashboards-ankilabs`, `-quizlabs` and `-platform`, and that
@@ -451,9 +454,11 @@ ankilabs/api-gateway-1 (api-gateway) · lasted 1h 2m 0s
 `route` label: `AnkiLabs API (/api)`, `AnkiLabs web (/)`, `QuizLabs API (/api)`,
 `QuizLabs multiplayer (/socket.io)` and `QuizLabs web (/)`. An unmapped rule
 falls back to `<namespace>/<route> rule <index>`. AnkiLabs API failures link
-AnkiLabs - Service Health, other routes Platform - Delivery & Edge. When a rule
+AnkiLabs - Service Health, other routes Platform - Edge, which names routes the
+same way. When a rule
 is added to or reordered in `k8s/apps/*/httproute.yaml`, update the mapping in
-the alert; `tests/test_alert_notifications.py` fails until they match.
+the alert and the dashboard; `tests/test_alert_notifications.py` and
+`tests/test_edge_dashboard.py` fail until they match.
 
 ### Add an alert
 
@@ -520,14 +525,15 @@ message follows within 5 minutes.
 
 ## Dashboards
 
-Seven dashboards are provisioned from `configs/dashboards/*.json`, one
+Seven dashboards are provisioned from `configs/dashboards/*.json` and two
+unmodified upstream Flux dashboards from `configs/dashboards/vendor/`, one
 ConfigMap per Grafana folder:
 
 | Folder | Dashboards |
 | --- | --- |
 | AnkiLabs | AnkiLabs - Service Health, AnkiLabs - Search & PostgreSQL, AnkiLabs - AI |
 | QuizLabs | QuizLabs - Overview |
-| Platform | Homelab Overview, Platform - Delivery & Edge, Platform - Storage |
+| Platform | Homelab Overview, Platform - Edge, Platform - Storage, Flux Cluster Stats, Flux Control Plane |
 
 Each dashboard's **Runbook** link opens its section below, and its
 **Monitoring** menu lists the others, keeping the time range and variables.
@@ -546,7 +552,8 @@ and re-create a dashboard, which drops its stars and version history.
 
 Rules for new and redesigned panels; existing dashboards adopt them as they are
 redesigned. The schema and `tests/test_static.py` enforce the ones marked
-*(tested)*.
+*(tested)*. They do not apply to the vendored Flux dashboards, which stay as
+upstream ships them (see [Flux dashboards](#flux-dashboards)).
 
 - **Headline numbers**: stat with a sparkline.
 - **Share of a capacity** (memory of its limit, disk used): gauge or bar gauge
@@ -586,7 +593,8 @@ the active alert list, workload availability, trends, volume usage, node
 pressure and scrape coverage. Availability is Kubernetes readiness, not a
 synthetic user journey. Firing alerts leave out the always-on Watchdog and
 InfoInhibitor and show 0 only while Watchdog fires, so an empty tile means rule
-evaluation itself is unknown. Then go to Platform - Delivery & Edge for Flux, Envoy and cloudflared;
+evaluation itself is unknown. Then go to Platform - Edge for Envoy and
+cloudflared; Flux Cluster Stats and Flux Control Plane for Flux;
 Platform - Storage for disk space, volumes and I/O; AnkiLabs - Service Health
 for request failures; AnkiLabs - Search & PostgreSQL for lookup stages and
 pools; AnkiLabs - AI for AI calls, Usage Codes and spend; QuizLabs - Overview
@@ -595,17 +603,77 @@ for the legacy stack. Node and pod alerts link here; their steps are under
 
 ### Platform Delivery and Edge
 
-Flux readiness comes from kube-state-metrics custom-resource metrics: the
-timeline shows each object's Ready condition over time (unknown when it is
-neither True nor False) and the inventory table its applied revision.
-Reconciliation mean duration is in seconds, not uptime. Count bars cover one
-bar interval (15 minutes, longer on wide ranges); shares cover the selected
-time range. Envoy counters are
-real proxy activity per route cluster. Cloudflared counters cover the whole
-tunnel and cannot be split per application, so application dashboards show only
-route-bound Envoy data. No log regex is used as a failure counter. Native scrape
-ports stay internal; there is no public admin route. Target checks are under
+The **Platform - Edge** dashboard (UID `platform-delivery-edge`, formerly
+Platform - Delivery & Edge; the UID and this heading stay so alert and runbook
+links keep working). Flux delivery moved to the [Flux dashboards](#flux-dashboards).
+
+- Envoy panels read only the application routes,
+  `envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"` *(tested)*. Grafana
+  is served through the same gateway (`httproute/monitoring/grafana/rule/0`)
+  and its own dashboard queries used to dominate every Envoy panel; it and
+  Envoy's internal clusters are left out.
+- Routes are named by HTTPRoute rule. `label_replace` in each query sets a
+  `route` label, so legends, pie slices and tooltips agree, and the access-log
+  panel uses the same names. A rule without a name shows as
+  `<namespace>/<route> rule <index>` (the same form as the alert annotations);
+  `tests/test_edge_dashboard.py` fails until every rule in
+  `k8s/apps/{ankilabs,quizlabs}/httproute.yaml` has one, ending in its path
+  prefix *(tested)*:
+
+  | Envoy cluster | Route |
+  | --- | --- |
+  | `httproute/ankilabs/ankilabs/rule/0` | AnkiLabs API (/api) |
+  | `httproute/ankilabs/ankilabs/rule/1` | AnkiLabs web (/) |
+  | `httproute/quizlabs/quizlabs/rule/0` | QuizLabs API (/api) |
+  | `httproute/quizlabs/quizlabs/rule/1` | QuizLabs multiplayer (/socket.io) |
+  | `httproute/quizlabs/quizlabs/rule/2` | QuizLabs web (/) |
+
+- Envoy sees route rules, not endpoints. Per-endpoint data (for example
+  `/v1/review`) is in the API Gateway metrics on AnkiLabs - Service Health and
+  AnkiLabs - AI.
+- Count bars cover one bar interval (15 minutes, longer on wide ranges); shares
+  cover the selected time range. Timeouts are requests Envoy gave up on after
+  the route timeout (95 s for AnkiLabs API, Envoy's 15 s default elsewhere);
+  connect failures are connections it could not open.
+- The latency heatmaps show Envoy's upstream time
+  (`envoy_cluster_upstream_rq_time`, milliseconds): Envoy to backend, not
+  browser time. QuizLabs multiplayer has none, because Socket.IO long-polling
+  and WebSockets hold requests open by design.
+- Cloudflared counters cover the whole tunnel and cannot be split per
+  application, so application dashboards show only route-bound Envoy data.
+- The Envoy access-log panel shows only application-route records that
+  returned 5xx, carry an Envoy response flag (`UF`, `UT`, `DC`, ...) or were
+  slow (thresholds below), as
+  `route status method duration [flags]`. Grafana's route, records without an
+  application route (such as health checks) and fast successful requests are
+  left out; query `{namespace="envoy-gateway-system",app="envoy"}` in Explore
+  for everything. Envoy's own runtime records (severity `UNKNOWN`) have their
+  own panel. Slow is 30 s or more on AnkiLabs API, where AI calls normally take
+  10-20 s (well below its 95 s route timeout; the AI Card Actions slow log
+  uses 45 s), and 2 s or more on the other routes. QuizLabs multiplayer shows
+  only on errors, because Socket.IO holds requests open by design.
+
+No log regex is used as a failure counter. Native scrape ports stay internal;
+there is no public admin route. Target checks are under
 [Telemetry](#telemetry).
+
+### Flux dashboards
+
+**Flux Cluster Stats** (`flux-cluster`) and **Flux Control Plane**
+(`flux-control-plane`) are copied unmodified from
+[fluxcd/flux2-monitoring-example](https://github.com/fluxcd/flux2-monitoring-example)
+at commit `7ab65dc8b90f7a6751d88f18bbb4e1bee33bf334` into
+`configs/dashboards/vendor/`. Cluster Stats shows readiness, suspension and
+reconciliation duration per Flux object (kube-state-metrics
+`gotk_resource_info` and the controllers' `gotk_reconcile_duration_seconds`);
+Control Plane shows the controllers' reconciliations, work queues, Kubernetes
+API requests, CPU and memory (Flux PodMonitor and cAdvisor). The Homelab
+Overview Flux tile opens Flux Cluster Stats.
+
+They keep the upstream layout: their own `DS_PROMETHEUS` variable, no runbook
+link or Monitoring menu, and percentiles without sample guards. To update
+them, follow `configs/dashboards/vendor/README.md` (replace both files from a
+new upstream commit and record the commit) and run the monitoring tests.
 
 ### Platform Storage
 
@@ -721,7 +789,7 @@ latency is Envoy's upstream time to the backend
 (`envoy_cluster_upstream_rq_time`, milliseconds), not browser latency.
 Socket.IO is left out of the p95: long-polling holds requests open by design.
 Shared
-cloudflared data stays on Platform - Delivery & Edge. MongoDB and Redis have no
+cloudflared data stays on Platform - Edge. MongoDB and Redis have no
 exporters, so readiness, resources, claims and logs are evidence, not command
 latency or replication health. Legacy logs stay raw; no regex counts pretend
 to be failures. Incident steps are under [QuizLabs](#quizlabs).

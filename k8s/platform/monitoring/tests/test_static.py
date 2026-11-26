@@ -15,7 +15,7 @@ K8S = MONITORING.parents[1]
 CONFIGS = MONITORING / "configs"
 EXPECTED = {
     "homelab-overview": "Homelab Overview",
-    "platform-delivery-edge": "Platform - Delivery & Edge",
+    "platform-delivery-edge": "Platform - Edge",
     "platform-storage": "Platform - Storage",
     "ankilabs-service-health": "AnkiLabs - Service Health",
     "ankilabs-search-postgres": "AnkiLabs - Search & PostgreSQL",
@@ -214,7 +214,12 @@ class MonitoringContractTests(unittest.TestCase):
             self.assertEqual(options["labels"]["grafana_dashboard"], "1")
             folder = options["annotations"][FOLDER_ANNOTATION]
             self.assertNotIn(folder, folders)
-            folders[folder] = set(generator["files"])
+            # Vendored dashboards are checked in test_vendored_dashboards.py.
+            folders[folder] = {
+                path
+                for path in generator["files"]
+                if not path.startswith("dashboards/vendor/")
+            }
         self.assertEqual(
             folders,
             {

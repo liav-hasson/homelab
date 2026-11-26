@@ -1,7 +1,7 @@
 {
   "uid": "platform-delivery-edge",
-  "title": "Platform - Delivery & Edge",
-  "description": "Flux delivery state and native Envoy and cloudflared edge telemetry. Tunnel metrics are shared by every application; no log line is counted as a failure.",
+  "title": "Platform - Edge",
+  "description": "Edge telemetry for the application routes: native Envoy metrics per AnkiLabs and QuizLabs route (Grafana's own route left out) and the shared cloudflared tunnel. Flux delivery is on the vendored Flux Cluster Stats and Flux Control Plane dashboards. No log line is counted as a failure.",
   "schemaVersion": 39,
   "version": 1,
   "editable": false,
@@ -22,61 +22,52 @@
       "panels": []
     },
     {
-      "id": 2, "type": "stat", "title": "Flux objects not ready",
-      "description": "Flux objects whose Ready condition is not True. Zero is shown only while Flux objects are observed.",
-      "gridPos": {"x": 0, "y": 1, "w": 4, "h": 5},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "mappings": []}, "overrides": []},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
-      "targets": [{"refId": "A", "expr": "count(gotk_resource_info{ready!=\"True\"}) or count(gotk_resource_info) * 0", "legendFormat": "not ready"}]
-    },
-    {
-      "id": 3, "type": "stat", "title": "Edge scrape targets",
+      "id": 2, "type": "stat", "title": "Edge scrape targets",
       "description": "Envoy and cloudflared metrics targets reachable and failed. EdgeScrapeFailed also alerts when a job has no target at all.",
-      "gridPos": {"x": 4, "y": 1, "w": 4, "h": 5},
+      "gridPos": {"x": 0, "y": 1, "w": 4, "h": 5},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "mappings": []}, "overrides": [{"matcher": {"id": "byName", "options": "down"}, "properties": [{"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}]}]},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value_and_name", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
       "targets": [{"refId": "A", "expr": "sum(up{job=~\"monitoring/(envoy-proxy|cloudflared)\"})", "legendFormat": "up"}, {"refId": "B", "expr": "count(up{job=~\"monitoring/(envoy-proxy|cloudflared)\"} == 0) or count(up{job=~\"monitoring/(envoy-proxy|cloudflared)\"}) * 0", "legendFormat": "down"}]
     },
     {
-      "id": 4, "type": "stat", "title": "Tunnel connections",
+      "id": 3, "type": "stat", "title": "Tunnel connections",
       "description": "Edge connections held by the weakest cloudflared replica (normally 4).",
-      "gridPos": {"x": 8, "y": 1, "w": 4, "h": 5},
+      "gridPos": {"x": 4, "y": 1, "w": 5, "h": 5},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 1}, {"color": "green", "value": 4}]}, "mappings": []}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
       "targets": [{"refId": "A", "expr": "min(cloudflared_tunnel_ha_connections{namespace=\"cloudflare\"})", "legendFormat": "cloudflared"}]
     },
     {
-      "id": 5, "type": "stat", "title": "Route requests / s",
-      "description": "Requests per second Envoy sends to HTTPRoute backends (all applications).",
-      "gridPos": {"x": 12, "y": 1, "w": 4, "h": 5},
+      "id": 4, "type": "stat", "title": "Route requests / s",
+      "description": "Requests per second Envoy sends to application route backends. AnkiLabs and QuizLabs routes only; Grafana's own route is left out.",
+      "gridPos": {"x": 9, "y": 1, "w": 5, "h": 5},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "reqps", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "mappings": [], "decimals": 2}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
-      "targets": [{"refId": "A", "expr": "sum(rate(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/.*\"}[$__rate_interval]))", "legendFormat": "requests"}]
+      "targets": [{"refId": "A", "expr": "sum(rate(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/(ankilabs|quizlabs)/.*\"}[$__rate_interval]))", "legendFormat": "requests"}]
     },
     {
-      "id": 6, "type": "stat", "title": "Envoy failures (15m)",
-      "description": "Upstream connect failures and request timeouts across all clusters in the last 15 minutes.",
-      "gridPos": {"x": 16, "y": 1, "w": 4, "h": 5},
+      "id": 5, "type": "stat", "title": "Route failures (15m)",
+      "description": "Upstream connect failures and request timeouts on application routes in the last 15 minutes. AnkiLabs and QuizLabs routes only; Grafana's own route is left out.",
+      "gridPos": {"x": 14, "y": 1, "w": 5, "h": 5},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "mappings": [], "decimals": 0}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value_and_name", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
-      "targets": [{"refId": "A", "expr": "sum(increase(envoy_cluster_upstream_cx_connect_fail{namespace=\"envoy-gateway-system\"}[15m]))", "legendFormat": "connect"}, {"refId": "B", "expr": "sum(increase(envoy_cluster_upstream_rq_timeout{namespace=\"envoy-gateway-system\"}[15m]))", "legendFormat": "timeout"}]
+      "targets": [{"refId": "A", "expr": "sum(increase(envoy_cluster_upstream_cx_connect_fail{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/(ankilabs|quizlabs)/.*\"}[15m]))", "legendFormat": "connect"}, {"refId": "B", "expr": "sum(increase(envoy_cluster_upstream_rq_timeout{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/(ankilabs|quizlabs)/.*\"}[15m]))", "legendFormat": "timeout"}]
     },
     {
-      "id": 7, "type": "stat", "title": "Origin errors (15m)",
+      "id": 6, "type": "stat", "title": "Origin errors (15m)",
       "description": "Requests cloudflared could not proxy to the origin in the last 15 minutes (shared tunnel).",
-      "gridPos": {"x": 20, "y": 1, "w": 4, "h": 5},
+      "gridPos": {"x": 19, "y": 1, "w": 5, "h": 5},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "mappings": [], "decimals": 0}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "wideLayout": true, "showPercentChange": false},
       "targets": [{"refId": "A", "expr": "sum(increase(cloudflared_tunnel_request_errors{namespace=\"cloudflare\"}[15m]))", "legendFormat": "errors"}]
     },
     {
-      "id": 8, "type": "state-timeline", "title": "Edge scrape health",
+      "id": 7, "type": "state-timeline", "title": "Edge scrape health",
       "description": "Each Envoy and cloudflared metrics target over time. A gap is unknown, not healthy.",
       "gridPos": {"x": 0, "y": 6, "w": 24, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
@@ -85,91 +76,103 @@
       "targets": [{"refId": "A", "expr": "up{job=~\"monitoring/(envoy-proxy|cloudflared)\"}", "legendFormat": "{{job}} {{pod}}"}]
     },
     {
-      "id": 9, "type": "row", "title": "Flux", "collapsed": false,
+      "id": 8, "type": "row", "title": "Envoy application routes", "collapsed": false,
       "gridPos": {"x": 0, "y": 10, "w": 24, "h": 1},
       "panels": []
     },
     {
-      "id": 10, "type": "state-timeline", "title": "Flux object readiness",
-      "description": "Ready condition of every Flux object over time: green ready, red not ready, orange unknown. A red bar means Git is not delivered for that object; read why in the Flux logs at the bottom.",
-      "gridPos": {"x": 0, "y": 11, "w": 24, "h": 10},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "blue"}, "mappings": [{"type": "value", "options": {"-1": {"text": "Unknown", "color": "orange", "index": 0}, "0": {"text": "Not ready", "color": "red", "index": 1}, "1": {"text": "Ready", "color": "green", "index": 2}}}], "custom": {"lineWidth": 0, "fillOpacity": 75}}, "overrides": []},
-      "options": {"showValue": "never", "rowHeight": 0.85, "mergeValues": true, "alignValue": "left", "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single", "sort": "none"}},
-      "targets": [{"refId": "A", "expr": "min by (customresource_kind, exported_namespace, name) (gotk_resource_info{ready=\"True\"} * 1 or gotk_resource_info{ready=\"False\"} * 0 or gotk_resource_info{ready!~\"True|False\"} * -1)", "legendFormat": "{{customresource_kind}} {{exported_namespace}}/{{name}}"}]
-    },
-    {
-      "id": 11, "type": "table", "title": "Flux inventory and delivered revisions",
-      "description": "Current readiness, suspension and applied revision of every Flux object, not ready first.",
-      "gridPos": {"x": 0, "y": 21, "w": 24, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false, "filterable": true}}, "overrides": [{"matcher": {"id": "byName", "options": "Ready"}, "properties": [{"id": "mappings", "value": [{"type": "value", "options": {"True": {"text": "Ready", "color": "green", "index": 0}, "False": {"text": "Not ready", "color": "red", "index": 1}, "Unknown": {"text": "Unknown", "color": "orange", "index": 2}}}]}, {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}}]}, {"matcher": {"id": "byName", "options": "Suspended"}, "properties": [{"id": "mappings", "value": [{"type": "value", "options": {"true": {"text": "Suspended", "color": "orange", "index": 0}, "false": {"text": "No", "index": 1}}}]}, {"id": "custom.cellOptions", "value": {"type": "color-text"}}]}]},
-      "options": {"showHeader": true, "cellHeight": "sm", "footer": {"show": false, "reducer": ["sum"], "countRows": false, "fields": ""}, "sortBy": [{"displayName": "Ready", "desc": false}]},
-      "transformations": [{"id": "organize", "options": {"excludeByName": {"Time": true, "__name__": true, "Value": true, "container": true, "endpoint": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true, "customresource_group": true, "customresource_version": true}, "indexByName": {"customresource_kind": 0, "exported_namespace": 1, "name": 2, "ready": 3, "suspended": 4, "revision": 5}, "renameByName": {"customresource_kind": "Kind", "exported_namespace": "Namespace", "name": "Name", "ready": "Ready", "suspended": "Suspended", "revision": "Revision"}}}],
-      "targets": [{"refId": "A", "expr": "gotk_resource_info", "instant": true, "range": false, "format": "table"}]
-    },
-    {
-      "id": 12, "type": "timeseries", "title": "Flux reconciliations",
-      "description": "Reconciliations per Flux object kind in each bar (15 minutes, longer on wide ranges). A kind that stops reconciling is stuck; a burst usually follows a Git push or a retry loop.",
-      "gridPos": {"x": 0, "y": 29, "w": 12, "h": 7},
+      "id": 9, "type": "timeseries", "title": "Upstream requests by route",
+      "description": "Requests Envoy sent to each application route's backend in each bar (15 minutes, longer on wide ranges), stacked to the application total. A route dropping to zero while others continue points at that route or its backend. AnkiLabs and QuizLabs routes only; Grafana's own route is left out.",
+      "gridPos": {"x": 0, "y": 11, "w": 16, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}, "barAlignment": -1}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
       "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "interval": "15m",
-      "targets": [{"refId": "A", "expr": "sum by (kind, namespace) (increase(gotk_reconcile_duration_seconds_count{namespace=\"flux-system\"}[$__rate_interval]))", "legendFormat": "{{kind}}"}]
+      "targets": [{"refId": "A", "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/(ankilabs|quizlabs)/.*\"}[$__rate_interval])), \"route\", \"$1/$2 rule $3\", \"envoy_cluster_name\", \"httproute/([^/]+)/([^/]+)/rule/([0-9]+)\"), \"route\", \"AnkiLabs API (/api)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/0\"), \"route\", \"AnkiLabs web (/)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/1\"), \"route\", \"QuizLabs API (/api)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/0\"), \"route\", \"QuizLabs multiplayer (/socket.io)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/1\"), \"route\", \"QuizLabs web (/)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/2\")", "legendFormat": "{{route}}"}]
     },
     {
-      "id": 13, "type": "timeseries", "title": "Flux reconciliation mean duration",
-      "description": "Average time one reconciliation took per kind over 15 minutes, in seconds (not uptime); empty when nothing reconciled. A sustained rise points at slow sources or Helm upgrades.",
-      "gridPos": {"x": 12, "y": 29, "w": 12, "h": 7},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "s", "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "none", "group": "A"}}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
-      "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
-      "targets": [{"refId": "A", "expr": "sum by (kind) (increase(gotk_reconcile_duration_seconds_sum{namespace=\"flux-system\"}[15m])) / sum by (kind) (increase(gotk_reconcile_duration_seconds_count{namespace=\"flux-system\"}[15m]))", "legendFormat": "{{kind}}"}]
-    },
-    {
-      "id": 14, "type": "row", "title": "Envoy", "collapsed": false,
-      "gridPos": {"x": 0, "y": 36, "w": 24, "h": 1},
-      "panels": []
-    },
-    {
-      "id": 15, "type": "timeseries", "title": "Envoy upstream requests by route cluster",
-      "description": "Requests Envoy sent upstream per cluster in each bar (15 minutes, longer on wide ranges), stacked to the proxy total. A route dropping to zero while others continue points at that route or its backend.",
-      "gridPos": {"x": 0, "y": 37, "w": 10, "h": 8},
-      "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}, "barAlignment": -1}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
-      "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
-      "interval": "15m",
-      "targets": [{"refId": "A", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\"}[$__rate_interval]))", "legendFormat": "{{envoy_cluster_name}}"}]
-    },
-    {
-      "id": 16, "type": "piechart", "title": "Route share of requests",
-      "description": "Each HTTPRoute cluster's share of upstream requests over the selected time range.",
-      "gridPos": {"x": 10, "y": 37, "w": 6, "h": 8},
+      "id": 10, "type": "piechart", "title": "Route share of requests",
+      "description": "Each application route's share of upstream requests over the selected time range. AnkiLabs and QuizLabs routes only; Grafana's own route is left out.",
+      "gridPos": {"x": 16, "y": 11, "w": 8, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "color": {"mode": "palette-classic"}, "custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "pieType": "donut", "displayLabels": ["percent"], "legend": {"showLegend": true, "displayMode": "table", "placement": "right", "values": ["value", "percent"], "calcs": []}, "tooltip": {"mode": "single", "sort": "none"}},
-      "targets": [{"refId": "A", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/.*\"}[$__range]))", "legendFormat": "{{envoy_cluster_name}}", "instant": true, "range": false}]
+      "targets": [{"refId": "A", "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_total{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/(ankilabs|quizlabs)/.*\"}[$__range])), \"route\", \"$1/$2 rule $3\", \"envoy_cluster_name\", \"httproute/([^/]+)/([^/]+)/rule/([0-9]+)\"), \"route\", \"AnkiLabs API (/api)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/0\"), \"route\", \"AnkiLabs web (/)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/1\"), \"route\", \"QuizLabs API (/api)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/0\"), \"route\", \"QuizLabs multiplayer (/socket.io)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/1\"), \"route\", \"QuizLabs web (/)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/2\")", "legendFormat": "{{route}}", "instant": true, "range": false}]
     },
     {
-      "id": 17, "type": "timeseries", "title": "Envoy upstream connect failures and timeouts",
-      "description": "Failed upstream connections and request timeouts per cluster in each bar. Any bar means Envoy could not reach or wait for a backend; EdgeUpstreamFailure alerts on application routes.",
-      "gridPos": {"x": 16, "y": 37, "w": 8, "h": 8},
+      "id": 11, "type": "timeseries", "title": "Upstream timeouts by route",
+      "description": "Requests Envoy gave up on because the backend did not answer within the route timeout, per route in each bar (15 minutes, longer on wide ranges). Any bar is user-visible; EdgeUpstreamFailure alerts on it. AnkiLabs and QuizLabs routes only; Grafana's own route is left out.",
+      "gridPos": {"x": 0, "y": 19, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}, "barAlignment": -1}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
       "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "interval": "15m",
-      "targets": [{"refId": "A", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_cx_connect_fail{namespace=\"envoy-gateway-system\"}[$__rate_interval]))", "legendFormat": "connect fail {{envoy_cluster_name}}"}, {"refId": "B", "expr": "sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_timeout{namespace=\"envoy-gateway-system\"}[$__rate_interval]))", "legendFormat": "timeout {{envoy_cluster_name}}"}]
+      "targets": [{"refId": "A", "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_rq_timeout{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/(ankilabs|quizlabs)/.*\"}[$__rate_interval])), \"route\", \"$1/$2 rule $3\", \"envoy_cluster_name\", \"httproute/([^/]+)/([^/]+)/rule/([0-9]+)\"), \"route\", \"AnkiLabs API (/api)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/0\"), \"route\", \"AnkiLabs web (/)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/1\"), \"route\", \"QuizLabs API (/api)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/0\"), \"route\", \"QuizLabs multiplayer (/socket.io)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/1\"), \"route\", \"QuizLabs web (/)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/2\")", "legendFormat": "{{route}}"}]
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "Upstream connect failures by route",
+      "description": "Connections Envoy could not open to a route's backend in each bar (15 minutes, longer on wide ranges). Any bar means no ready endpoint or a refused connection; EdgeUpstreamFailure alerts on it. AnkiLabs and QuizLabs routes only; Grafana's own route is left out.",
+      "gridPos": {"x": 12, "y": 19, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}, "barAlignment": -1}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
+      "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "interval": "15m",
+      "targets": [{"refId": "A", "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(sum by (envoy_cluster_name) (increase(envoy_cluster_upstream_cx_connect_fail{namespace=\"envoy-gateway-system\",envoy_cluster_name=~\"httproute/(ankilabs|quizlabs)/.*\"}[$__rate_interval])), \"route\", \"$1/$2 rule $3\", \"envoy_cluster_name\", \"httproute/([^/]+)/([^/]+)/rule/([0-9]+)\"), \"route\", \"AnkiLabs API (/api)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/0\"), \"route\", \"AnkiLabs web (/)\", \"envoy_cluster_name\", \"httproute/ankilabs/ankilabs/rule/1\"), \"route\", \"QuizLabs API (/api)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/0\"), \"route\", \"QuizLabs multiplayer (/socket.io)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/1\"), \"route\", \"QuizLabs web (/)\", \"envoy_cluster_name\", \"httproute/quizlabs/quizlabs/rule/2\")", "legendFormat": "{{route}}"}]
+    },
+    {
+      "id": 13, "type": "row", "title": "Upstream latency by route", "collapsed": false,
+      "gridPos": {"x": 0, "y": 26, "w": 24, "h": 1},
+      "panels": []
+    },
+    {
+      "id": 14, "type": "heatmap", "title": "AnkiLabs API (/api) upstream latency",
+      "description": "AnkiLabs API (/api) requests per Envoy upstream-time bucket and 5-minute column, in milliseconds: Envoy to backend response, not browser time. Per-endpoint latency (for example /v1/review) is in the API Gateway metrics on AnkiLabs - Service Health and AnkiLabs - AI.",
+      "gridPos": {"x": 0, "y": 27, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "5m",
+      "fieldConfig": {"defaults": {"custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}, "scaleDistribution": {"type": "linear"}}}, "overrides": []},
+      "options": {"calculate": false, "cellGap": 1, "cellValues": {"unit": "short"}, "color": {"mode": "scheme", "scheme": "Oranges", "fill": "dark-orange", "scale": "exponential", "exponent": 0.5, "steps": 64, "reverse": false}, "exemplars": {"color": "rgba(255,0,255,0.7)"}, "filterValues": {"le": 1e-09}, "legend": {"show": true}, "rowsFrame": {"layout": "auto"}, "showValue": "never", "tooltip": {"mode": "single", "yHistogram": false, "showColorScale": false}, "yAxis": {"axisPlacement": "left", "reverse": false, "unit": "ms"}, "selectionMode": "x"},
+      "targets": [{"refId": "A", "expr": "sum by (le) (increase(envoy_cluster_upstream_rq_time_bucket{namespace=\"envoy-gateway-system\",envoy_cluster_name=\"httproute/ankilabs/ankilabs/rule/0\"}[$__rate_interval]))", "legendFormat": "{{le}}", "format": "heatmap"}]
+    },
+    {
+      "id": 15, "type": "heatmap", "title": "AnkiLabs web (/) upstream latency",
+      "description": "AnkiLabs web (/) requests per Envoy upstream-time bucket and 5-minute column, in milliseconds: Envoy to backend response, not browser time. Per-endpoint latency (for example /v1/review) is in the API Gateway metrics on AnkiLabs - Service Health and AnkiLabs - AI.",
+      "gridPos": {"x": 12, "y": 27, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "5m",
+      "fieldConfig": {"defaults": {"custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}, "scaleDistribution": {"type": "linear"}}}, "overrides": []},
+      "options": {"calculate": false, "cellGap": 1, "cellValues": {"unit": "short"}, "color": {"mode": "scheme", "scheme": "Oranges", "fill": "dark-orange", "scale": "exponential", "exponent": 0.5, "steps": 64, "reverse": false}, "exemplars": {"color": "rgba(255,0,255,0.7)"}, "filterValues": {"le": 1e-09}, "legend": {"show": true}, "rowsFrame": {"layout": "auto"}, "showValue": "never", "tooltip": {"mode": "single", "yHistogram": false, "showColorScale": false}, "yAxis": {"axisPlacement": "left", "reverse": false, "unit": "ms"}, "selectionMode": "x"},
+      "targets": [{"refId": "A", "expr": "sum by (le) (increase(envoy_cluster_upstream_rq_time_bucket{namespace=\"envoy-gateway-system\",envoy_cluster_name=\"httproute/ankilabs/ankilabs/rule/1\"}[$__rate_interval]))", "legendFormat": "{{le}}", "format": "heatmap"}]
+    },
+    {
+      "id": 16, "type": "heatmap", "title": "QuizLabs API (/api) upstream latency",
+      "description": "QuizLabs API (/api) requests per Envoy upstream-time bucket and 5-minute column, in milliseconds: Envoy to backend response, not browser time. QuizLabs has no per-endpoint metrics; this is the finest split available.",
+      "gridPos": {"x": 0, "y": 34, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "5m",
+      "fieldConfig": {"defaults": {"custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}, "scaleDistribution": {"type": "linear"}}}, "overrides": []},
+      "options": {"calculate": false, "cellGap": 1, "cellValues": {"unit": "short"}, "color": {"mode": "scheme", "scheme": "Oranges", "fill": "dark-orange", "scale": "exponential", "exponent": 0.5, "steps": 64, "reverse": false}, "exemplars": {"color": "rgba(255,0,255,0.7)"}, "filterValues": {"le": 1e-09}, "legend": {"show": true}, "rowsFrame": {"layout": "auto"}, "showValue": "never", "tooltip": {"mode": "single", "yHistogram": false, "showColorScale": false}, "yAxis": {"axisPlacement": "left", "reverse": false, "unit": "ms"}, "selectionMode": "x"},
+      "targets": [{"refId": "A", "expr": "sum by (le) (increase(envoy_cluster_upstream_rq_time_bucket{namespace=\"envoy-gateway-system\",envoy_cluster_name=\"httproute/quizlabs/quizlabs/rule/0\"}[$__rate_interval]))", "legendFormat": "{{le}}", "format": "heatmap"}]
+    },
+    {
+      "id": 17, "type": "heatmap", "title": "QuizLabs web (/) upstream latency",
+      "description": "QuizLabs web (/) requests per Envoy upstream-time bucket and 5-minute column, in milliseconds: Envoy to backend response, not browser time. QuizLabs has no per-endpoint metrics; this is the finest split available.",
+      "gridPos": {"x": 12, "y": 34, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "interval": "5m",
+      "fieldConfig": {"defaults": {"custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}, "scaleDistribution": {"type": "linear"}}}, "overrides": []},
+      "options": {"calculate": false, "cellGap": 1, "cellValues": {"unit": "short"}, "color": {"mode": "scheme", "scheme": "Oranges", "fill": "dark-orange", "scale": "exponential", "exponent": 0.5, "steps": 64, "reverse": false}, "exemplars": {"color": "rgba(255,0,255,0.7)"}, "filterValues": {"le": 1e-09}, "legend": {"show": true}, "rowsFrame": {"layout": "auto"}, "showValue": "never", "tooltip": {"mode": "single", "yHistogram": false, "showColorScale": false}, "yAxis": {"axisPlacement": "left", "reverse": false, "unit": "ms"}, "selectionMode": "x"},
+      "targets": [{"refId": "A", "expr": "sum by (le) (increase(envoy_cluster_upstream_rq_time_bucket{namespace=\"envoy-gateway-system\",envoy_cluster_name=\"httproute/quizlabs/quizlabs/rule/2\"}[$__rate_interval]))", "legendFormat": "{{le}}", "format": "heatmap"}]
     },
     {
       "id": 18, "type": "row", "title": "Cloudflared", "collapsed": false,
-      "gridPos": {"x": 0, "y": 45, "w": 24, "h": 1},
+      "gridPos": {"x": 0, "y": 41, "w": 24, "h": 1},
       "panels": []
     },
     {
       "id": 19, "type": "state-timeline", "title": "Cloudflared edge connections per replica",
       "description": "Tunnel connections each cloudflared replica holds to Cloudflare's edge: green 4, orange fewer (less redundancy), red 0 (the replica carries no traffic).",
-      "gridPos": {"x": 0, "y": 46, "w": 12, "h": 6},
+      "gridPos": {"x": 0, "y": 42, "w": 12, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "blue"}, "mappings": [{"type": "range", "options": {"result": {"color": "green", "index": 0}, "from": 4}}, {"type": "range", "options": {"result": {"color": "orange", "index": 1}, "from": 1, "to": 3.9999}}, {"type": "range", "options": {"result": {"color": "red", "index": 2}, "to": 0.9999}}], "custom": {"lineWidth": 0, "fillOpacity": 75}}, "overrides": []},
       "options": {"showValue": "always", "rowHeight": 0.85, "mergeValues": true, "alignValue": "left", "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single", "sort": "none"}},
@@ -178,7 +181,7 @@
     {
       "id": 20, "type": "timeseries", "title": "Cloudflared origin proxy errors (shared)",
       "description": "Requests cloudflared could not proxy to the origin, per pod and bar. Shared by every application; check Envoy and the cloudflared logs at the bottom.",
-      "gridPos": {"x": 12, "y": 46, "w": 12, "h": 6},
+      "gridPos": {"x": 12, "y": 42, "w": 12, "h": 6},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}, "barAlignment": -1}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
       "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -188,7 +191,7 @@
     {
       "id": 21, "type": "timeseries", "title": "Cloudflared responses by status (shared)",
       "description": "HTTP responses cloudflared returned per status code in each bar, stacked to the tunnel total. Shared by every application behind the tunnel, so it cannot be split per application.",
-      "gridPos": {"x": 0, "y": 52, "w": 16, "h": 7},
+      "gridPos": {"x": 0, "y": 48, "w": 16, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}, "barAlignment": -1}, "color": {"mode": "palette-classic"}, "min": 0}, "overrides": []},
       "options": {"legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -198,7 +201,7 @@
     {
       "id": 22, "type": "piechart", "title": "Cloudflared status code share (shared)",
       "description": "Share of each HTTP status cloudflared returned over the selected time range.",
-      "gridPos": {"x": 16, "y": 52, "w": 8, "h": 7},
+      "gridPos": {"x": 16, "y": 48, "w": 8, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "color": {"mode": "palette-classic"}, "custom": {"hideFrom": {"legend": false, "tooltip": false, "viz": false}}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "pieType": "donut", "displayLabels": ["percent"], "legend": {"showLegend": true, "displayMode": "table", "placement": "right", "values": ["value", "percent"], "calcs": []}, "tooltip": {"mode": "single", "sort": "none"}},
@@ -206,31 +209,31 @@
     },
     {
       "id": 23, "type": "row", "title": "Logs", "collapsed": true,
-      "gridPos": {"x": 0, "y": 59, "w": 24, "h": 1},
+      "gridPos": {"x": 0, "y": 55, "w": 24, "h": 1},
       "panels": [
         {
-          "id": 24, "type": "logs", "title": "Flux controller logs",
-          "description": "Raw Flux controller logs. Use them to read why a reconciliation failed; lines are not counted as failures.",
-          "gridPos": {"x": 0, "y": 60, "w": 24, "h": 9},
+          "id": 24, "type": "logs", "title": "Envoy application route errors and slow requests",
+          "description": "Access records of application routes that returned 5xx, carry an Envoy response flag (no upstream, reset, timeout) or were slow: 30 s or more on AnkiLabs API (AI calls normally take 10-20 s), 2 s or more on the other routes (QuizLabs multiplayer is long-lived by design and shows only on errors). Grafana's route, records without an application route (such as health checks) and fast successful requests are left out. Records carry route names, never paths or queries.",
+          "gridPos": {"x": 0, "y": 56, "w": 24, "h": 9},
           "datasource": {"type": "loki", "uid": "${logs}"},
           "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
-          "targets": [{"refId": "A", "expr": "{namespace=\"flux-system\"}"}]
+          "targets": [{"refId": "A", "expr": "{namespace=\"envoy-gateway-system\",app=\"envoy\"} | json | event=\"edge.request.completed\" | upstream_cluster=~\"httproute/(ankilabs|quizlabs)/.+\" | http_status >= 500 or response_flags != \"-\" or (duration_ms >= 30000 and upstream_cluster = \"httproute/ankilabs/ankilabs/rule/0\") or (duration_ms >= 2000 and upstream_cluster !~ \"httproute/(ankilabs/ankilabs/rule/0|quizlabs/quizlabs/rule/1)\") | line_format `{{ if eq .upstream_cluster \"httproute/ankilabs/ankilabs/rule/0\" }}AnkiLabs API (/api){{ else if eq .upstream_cluster \"httproute/ankilabs/ankilabs/rule/1\" }}AnkiLabs web (/){{ else if eq .upstream_cluster \"httproute/quizlabs/quizlabs/rule/0\" }}QuizLabs API (/api){{ else if eq .upstream_cluster \"httproute/quizlabs/quizlabs/rule/1\" }}QuizLabs multiplayer (/socket.io){{ else if eq .upstream_cluster \"httproute/quizlabs/quizlabs/rule/2\" }}QuizLabs web (/){{ else }}{{ regexReplaceAll \"httproute/([^/]+)/([^/]+)/rule/([0-9]+)\" .upstream_cluster \"$1/$2 rule $3\" }}{{ end }} {{ .http_status }} {{ .method }} {{ .duration_ms }} ms{{ if ne .response_flags \"-\" }} flags={{ .response_flags }}{{ end }}`"}]
         },
         {
-          "id": 25, "type": "logs", "title": "Cloudflared logs",
+          "id": 25, "type": "logs", "title": "Envoy runtime logs",
+          "description": "Envoy's own records (configuration, listener and upstream warnings), not access records; they stay raw with severity UNKNOWN and are not failure counts.",
+          "gridPos": {"x": 0, "y": 65, "w": 24, "h": 6},
+          "datasource": {"type": "loki", "uid": "${logs}"},
+          "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
+          "targets": [{"refId": "A", "expr": "{namespace=\"envoy-gateway-system\",app=\"envoy\",severity=\"UNKNOWN\"}"}]
+        },
+        {
+          "id": 26, "type": "logs", "title": "Cloudflared logs",
           "description": "Raw cloudflared logs: tunnel connection changes and origin errors. Shared by every application; not a failure count.",
-          "gridPos": {"x": 0, "y": 69, "w": 24, "h": 8},
+          "gridPos": {"x": 0, "y": 71, "w": 24, "h": 8},
           "datasource": {"type": "loki", "uid": "${logs}"},
           "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
           "targets": [{"refId": "A", "expr": "{namespace=\"cloudflare\"}"}]
-        },
-        {
-          "id": 26, "type": "logs", "title": "Envoy access and runtime logs (shared edge)",
-          "description": "Access records use route names, not original request paths/queries. Runtime records remain raw/UNKNOWN; these are not request-failure counts.",
-          "gridPos": {"x": 0, "y": 77, "w": 24, "h": 9},
-          "datasource": {"type": "loki", "uid": "${logs}"},
-          "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
-          "targets": [{"refId": "A", "expr": "{namespace=\"envoy-gateway-system\",app=\"envoy\"}"}]
         }
       ]
     }

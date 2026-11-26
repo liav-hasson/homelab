@@ -186,7 +186,7 @@ class RenderTests(unittest.TestCase):
         )
 
     def test_monitoring_kustomize_build(self) -> None:
-        """Resolve seven dashboards into one ConfigMap per Grafana folder, without secrets."""
+        """Resolve nine dashboards (two vendored), one ConfigMap per folder, no secrets."""
         output = run_tool("kustomize", ["build", str(MONITORING / "configs")])
         resources = load_kustomize_documents(output)
         dashboards = {
@@ -208,6 +208,8 @@ class RenderTests(unittest.TestCase):
                     "homelab-overview.json",
                     "platform-delivery-edge.json",
                     "platform-storage.json",
+                    "flux-cluster.json",
+                    "flux-control-plane.json",
                 },
             },
         )

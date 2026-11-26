@@ -83,7 +83,7 @@
     },
     {
       "id": 9, "type": "state-timeline", "title": "Flux delivery readiness",
-      "description": "Ready condition of the Flux objects that deliver QuizLabs. Red means the cluster is not running what Git says; revisions are on Platform - Delivery & Edge.",
+      "description": "Ready condition of the Flux objects that deliver QuizLabs. Red means the cluster is not running what Git says; revisions are on Flux Cluster Stats.",
       "gridPos": {"x": 12, "y": 7, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "color": {"mode": "fixed", "fixedColor": "blue"}, "mappings": [{"type": "value", "options": {"-1": {"text": "Unknown", "color": "orange", "index": 0}, "0": {"text": "Not ready", "color": "red", "index": 1}, "1": {"text": "Ready", "color": "green", "index": 2}}}], "custom": {"lineWidth": 0, "fillOpacity": 75}}, "overrides": []},
