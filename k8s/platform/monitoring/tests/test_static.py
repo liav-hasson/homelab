@@ -15,7 +15,7 @@ K8S = MONITORING.parents[1]
 CONFIGS = MONITORING / "configs"
 EXPECTED = {
     "homelab-overview": "Homelab Overview",
-    "platform-delivery-edge": "Platform - Delivery & Edge",
+    "platform-delivery-edge": "Platform - Edge",
     "platform-storage": "Platform - Storage",
     "ankilabs-service-health": "AnkiLabs - Service Health",
     "ankilabs-search-postgres": "AnkiLabs - Search & PostgreSQL",
