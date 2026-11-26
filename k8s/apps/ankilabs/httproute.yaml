@@ -14,6 +14,14 @@ spec:
         - path:
             type: PathPrefix
             value: /api
+      # AI calls take tens of seconds; Envoy's default 15s route timeout answered them with 504 while the backend was
+      # still working. Each hop must give up before the one in front of it, so the user sees the inner, typed error:
+      #   Cloudflare origin 100s > this route 95s > API Gateway AI_TIMEOUT_SECONDS 90s
+      #   > AI Card Actions LLM_PROXY_TIMEOUT_SECONDS (ai-card-actions/release.yaml).
+      # Enforced by k8s/platform/monitoring/tests/test_timeouts.py. backendRequest stays unset: without retries
+      # Envoy Gateway uses it as the route timeout in place of `request`, so it would only duplicate it.
+      timeouts:
+        request: 95s
       backendRefs:
         - name: api-gateway
           port: 80
