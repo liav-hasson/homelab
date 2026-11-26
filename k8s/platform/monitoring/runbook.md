@@ -642,14 +642,16 @@ links keep working). Flux delivery moved to the [Flux dashboards](#flux-dashboar
 - Cloudflared counters cover the whole tunnel and cannot be split per
   application, so application dashboards show only route-bound Envoy data.
 - The Envoy access-log panel shows only application-route records that
-  returned 5xx, carry an Envoy response flag (`UF`, `UT`, `DC`, ...) or took
-  2 s or more (QuizLabs multiplayer only on errors; AI calls through AnkiLabs
-  API usually take longer, so they appear too), as
+  returned 5xx, carry an Envoy response flag (`UF`, `UT`, `DC`, ...) or were
+  slow (thresholds below), as
   `route status method duration [flags]`. Grafana's route, records without an
   application route (such as health checks) and fast successful requests are
   left out; query `{namespace="envoy-gateway-system",app="envoy"}` in Explore
   for everything. Envoy's own runtime records (severity `UNKNOWN`) have their
-  own panel.
+  own panel. Slow is 30 s or more on AnkiLabs API, where AI calls normally take
+  10-20 s (well below its 95 s route timeout; the AI Card Actions slow log
+  uses 45 s), and 2 s or more on the other routes. QuizLabs multiplayer shows
+  only on errors, because Socket.IO holds requests open by design.
 
 No log regex is used as a failure counter. Native scrape ports stay internal;
 there is no public admin route. Target checks are under

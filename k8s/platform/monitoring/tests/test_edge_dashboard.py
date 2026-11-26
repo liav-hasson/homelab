@@ -24,6 +24,13 @@ LINE_FORMAT = re.compile(
 # Shared with the alert annotations (homelab#28): an unnamed rule reads "ns/route rule N".
 FALLBACK = ('"httproute/([^/]+)/([^/]+)/rule/([0-9]+)"', '"$1/$2 rule $3"')
 ACCESS_FILTER = '| upstream_cluster=~"httproute/(ankilabs|quizlabs)/.+" |'
+SLOW = re.compile(r'duration_ms >= (\d+) and upstream_cluster (=|!~) "([^"]+)"')
+AI_ROUTE = "httproute/ankilabs/ankilabs/rule/0"
+SOCKET_IO_ROUTE = "httproute/quizlabs/quizlabs/rule/1"
+SLOW_MS = 2000
+AI_SLOW_MS = 30000
+# Normal AI calls take 10-20 s; the threshold stays well inside the route timeout.
+AI_TIMEOUT_HEADROOM = 2
 
 
 def rule_names() -> dict[tuple[str, str, str], str]:
@@ -105,6 +112,34 @@ class EdgeDashboardTests(unittest.TestCase):
                 if "label_replace" in expr:
                     self.assertIn("{{route}}", json.dumps(panel["targets"]))
         self.assertGreaterEqual(mapped, 5)
+
+    def test_access_log_slow_threshold_fits_each_route(self) -> None:
+        """AI calls on AnkiLabs API are slow by nature; Socket.IO shows only errors."""
+        access = next(
+            expr
+            for _, expr in targets(self.dashboard)
+            if "edge.request.completed" in expr
+        )
+        thresholds = {
+            operator: (int(milliseconds), selector)
+            for milliseconds, operator, selector in SLOW.findall(access)
+        }
+        self.assertEqual(thresholds["="], (AI_SLOW_MS, AI_ROUTE))
+        default, excluded = thresholds["!~"]
+        self.assertEqual(default, SLOW_MS)
+        for cluster in (AI_ROUTE, SOCKET_IO_ROUTE):
+            self.assertRegex(cluster, rf"^(?:{excluded})$")
+        for namespace, name, index in set(rule_names()):
+            cluster = f"httproute/{namespace}/{name}/rule/{index}"
+            if cluster not in (AI_ROUTE, SOCKET_IO_ROUTE):
+                self.assertNotRegex(cluster, rf"^(?:{excluded})$")
+        route = yaml.safe_load(
+            (K8S / "apps/ankilabs/httproute.yaml").read_text(encoding="utf-8")
+        )
+        timeout = route["spec"]["rules"][0]["timeouts"]["request"]
+        self.assertLessEqual(
+            AI_SLOW_MS * AI_TIMEOUT_HEADROOM, int(timeout.removesuffix("s")) * 1000
+        )
 
     def test_flux_left_for_the_vendored_dashboards(self) -> None:
         """Flux delivery is on Flux Cluster Stats and Flux Control Plane now."""
