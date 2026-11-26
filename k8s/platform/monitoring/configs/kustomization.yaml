@@ -37,6 +37,10 @@ configMapGenerator:
       - dashboards/homelab-overview.json
       - dashboards/platform-delivery-edge.json
       - dashboards/platform-storage.json
+      # Upstream fluxcd/flux2-monitoring-example@7ab65dc8b90f7a6751d88f18bbb4e1bee33bf334,
+      # unmodified; source and update steps in dashboards/vendor/README.md.
+      - dashboards/vendor/flux-cluster.json
+      - dashboards/vendor/flux-control-plane.json
     options:
       labels:
         grafana_dashboard: "1"

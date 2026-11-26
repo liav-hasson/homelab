@@ -214,7 +214,12 @@ class MonitoringContractTests(unittest.TestCase):
             self.assertEqual(options["labels"]["grafana_dashboard"], "1")
             folder = options["annotations"][FOLDER_ANNOTATION]
             self.assertNotIn(folder, folders)
-            folders[folder] = set(generator["files"])
+            # Vendored dashboards are checked in test_vendored_dashboards.py.
+            folders[folder] = {
+                path
+                for path in generator["files"]
+                if not path.startswith("dashboards/vendor/")
+            }
         self.assertEqual(
             folders,
             {
