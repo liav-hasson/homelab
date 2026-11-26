@@ -1,5 +1,6 @@
-"""Per-volume usage of openebs-hostpath claims: the node-exporter sidecar."""
+"""Per-volume usage of openebs-hostpath claims: the node-exporter sidecar and its queries."""
 
+import json
 import os
 import re
 import signal
@@ -10,10 +11,12 @@ import unittest
 from pathlib import Path
 
 import yaml
+from dashboard_panels import iter_panels
 from test_rules import run_promtool
 
 MONITORING = Path(__file__).resolve().parents[1]
 RELEASE = MONITORING / "controllers/kube-prometheus-stack/release.yaml"
+DASHBOARDS = MONITORING / "configs/dashboards"
 VOLUME_ROOT = "/var/openebs/local"
 USED = "openebs_hostpath_volume_used_bytes"
 SAMPLE = re.compile(r'^(\w+)(?:\{persistentvolume="([^"]+)"\})? (\d+)$')
@@ -34,6 +37,18 @@ def kubernetes_expand(text: str, env: dict[str, str]) -> str:
         return env.get(match.group(1), match.group(0))
 
     return re.sub(r"\$\$|\$\((\w+)\)", replace, text)
+
+
+def prometheus_exprs() -> list[tuple[str, str]]:
+    """Every Prometheus dashboard query with its dashboard UID."""
+    exprs = []
+    for path in sorted(DASHBOARDS.glob("*.json")):
+        dashboard = json.loads(path.read_text(encoding="utf-8"))
+        for panel in iter_panels(dashboard):
+            if panel.get("datasource", {}).get("type") != "prometheus":
+                continue
+            exprs.extend((dashboard["uid"], t["expr"]) for t in panel["targets"])
+    return exprs
 
 
 class VolumeUsageSidecarTests(unittest.TestCase):
@@ -163,6 +178,39 @@ class VolumeUsageSidecarTests(unittest.TestCase):
         for line in errors.splitlines():
             self.assertTrue(line.startswith("du: "), line)
         return result.read_text(encoding="utf-8")
+
+
+class VolumeUsageQueryTests(unittest.TestCase):
+    """Dashboards read the sidecar's per-volume usage, joined to claims."""
+
+    def test_dashboards_do_not_read_kubelet_volume_stats(self) -> None:
+        """kubelet volume stats are meaningless on openebs-hostpath.
+
+        Its volumes are directories on the node filesystem, so kubelet reports that
+        whole filesystem as every claim's used bytes and capacity.
+        """
+        for uid, expr in prometheus_exprs():
+            with self.subTest(dashboard=uid):
+                self.assertNotIn("kubelet_volume_stats_", expr)
+
+    def test_application_volume_queries_join_their_own_claims(self) -> None:
+        """The node-level metric reaches an app dashboard only through its claims."""
+        found = set()
+        for uid, expr in prometheus_exprs():
+            if USED not in expr or not uid.startswith(("ankilabs-", "quizlabs-")):
+                continue
+            found.add(uid)
+            namespace = uid.split("-")[0]
+            with self.subTest(dashboard=uid, expr=expr):
+                self.assertNotIn(USED + "{", expr)
+                self.assertIn(
+                    "* on (persistentvolume) group_left (namespace, persistentvolumeclaim)",
+                    expr,
+                )
+                self.assertIn(
+                    f'kube_persistentvolumeclaim_info{{namespace="{namespace}"', expr
+                )
+        self.assertEqual(found, {"ankilabs-search-postgres", "quizlabs-overview"})
 
 
 if __name__ == "__main__":

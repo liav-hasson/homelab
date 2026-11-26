@@ -1,7 +1,7 @@
 {
   "uid": "platform-storage",
   "title": "Platform - Storage",
-  "description": "Node disk space and I/O, Kubernetes volume claims and application self-reported storage. openebs-hostpath volumes share the node filesystem, which is authoritative for free space.",
+  "description": "Node disk space and I/O, per-volume usage of the openebs-hostpath claims and application self-reported storage. All volumes share the node filesystem, which is authoritative for free space.",
   "schemaVersion": 39,
   "version": 1,
   "editable": false,
@@ -53,24 +53,24 @@
     },
     {
       "id": 5, "type": "stat", "title": "Total PVC used",
-      "description": "Sum of kubelet-reported used bytes over all claims. Only meaningful when kubelet reports each volume separately: if the Volume inventory shows the same used bytes for every claim, this counts the node filesystem once per claim.",
+      "description": "Disk space allocated to all openebs-hostpath volume directories on the node, measured with du every 5 minutes. Includes directories without a claim, so it can exceed the sum of the inventory; compare with Disk used for the rest of the node.",
       "gridPos": {"x": 14, "y": 0, "w": 5, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "decimals": 1, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
       "targets": [
-        {"refId": "A", "expr": "sum (max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes))", "legendFormat": "total"}
+        {"refId": "A", "expr": "sum (max by (persistentvolume) (openebs_hostpath_volume_used_bytes))", "legendFormat": "total"}
       ]
     },
     {
       "id": 6, "type": "stat", "title": "Largest PVC",
-      "description": "The claim using the most space at the end of the range, with its history. Same caveat as Total PVC used: identical numbers across claims mean filesystem-wide reporting.",
+      "description": "The claim using the most disk space at the end of the range, with its history (du every 5 minutes). Check its growth below before deleting data.",
       "gridPos": {"x": 19, "y": 0, "w": 5, "h": 4},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "decimals": 1, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "value_and_name", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
       "targets": [
-        {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) and on (namespace, persistentvolumeclaim) topk(1, max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes @ end()))", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}
+        {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))) and on (namespace, persistentvolumeclaim) topk(1, max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes @ end()) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info @ end(), \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))))", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}
       ]
     },
     {
@@ -129,63 +129,108 @@
       "panels": []
     },
     {
+      "id": 32, "type": "stat", "title": "Volume scan age",
+      "description": "Time since the node-exporter volume-usage sidecar last measured the volumes; it scans every 5 minutes. Orange after 10 and red after 20 minutes (OpenEBSVolumeScanStale): every volume number here is then stale. Empty means no scan result is scraped at all.",
+      "gridPos": {"x": 0, "y": 13, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 600}, {"color": "red", "value": 1200}]}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "none", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "time() - max(openebs_hostpath_volume_scan_timestamp_seconds)", "legendFormat": "age"}
+      ]
+    },
+    {
+      "id": 33, "type": "stat", "title": "Volume scan duration",
+      "description": "How long the last du pass over all volume directories took. It runs at the lowest CPU and I/O priority; a steady rise means more files to walk, not a problem by itself.",
+      "gridPos": {"x": 6, "y": 13, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "s", "decimals": 0, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "max(openebs_hostpath_volume_scan_duration_seconds)", "legendFormat": "duration"}
+      ]
+    },
+    {
+      "id": 34, "type": "stat", "title": "Volume scan errors",
+      "description": "Volume directories du could not fully read in the last scan (their size is undercounted or missing), and node-exporter failures to read the scan file. Above 0, read the sidecar log (runbook Storage section).",
+      "gridPos": {"x": 12, "y": 13, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "none", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "max(openebs_hostpath_volume_scan_errors)", "legendFormat": "unreadable volumes"},
+        {"refId": "B", "expr": "max(node_textfile_scrape_error)", "legendFormat": "scan file errors"}
+      ]
+    },
+    {
+      "id": 35, "type": "stat", "title": "Volumes measured",
+      "description": "Volume directories the last scan measured, beside the bound openebs-hostpath claims. Fewer measured means the sidecar cannot see some volumes; more means directories without a claim (released volumes), which still use disk.",
+      "gridPos": {"x": 18, "y": 13, "w": 6, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "${metrics}"},
+      "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "none", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false},
+      "targets": [
+        {"refId": "A", "expr": "count(max by (persistentvolume) (openebs_hostpath_volume_used_bytes))", "legendFormat": "measured"},
+        {"refId": "B", "expr": "count(max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_info{storageclass=\"openebs-hostpath\",volumename!=\"\"}))", "legendFormat": "bound claims"}
+      ]
+    },
+    {
       "id": 13, "type": "bargauge", "title": "Volume used of its requested size",
-      "description": "kubelet used bytes divided by the PVC's requested size, one bar per claim. openebs-hostpath does not enforce the size, so a full bar (over 100%) means the volume outgrew its request, not that it is full. If every claim shows the same used bytes in the inventory, kubelet is reporting the whole node filesystem and these bars are not per volume.",
-      "gridPos": {"x": 0, "y": 13, "w": 10, "h": 8},
+      "description": "Disk space each claim's volume uses (du every 5 minutes) divided by its requested size. openebs-hostpath does not enforce the size, so a full bar (over 100%) means the volume outgrew its request, not that it is full; PersistentVolumeNearRequestedSize fires above 90%.",
+      "gridPos": {"x": 0, "y": 17, "w": 10, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percentunit", "decimals": 0, "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.9}]}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "horizontal", "displayMode": "lcd", "valueMode": "color", "namePlacement": "auto", "showUnfilled": true, "sizing": "auto", "minVizWidth": 8, "minVizHeight": 16, "maxVizHeight": 300},
       "targets": [
-        {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) / on (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes)", "instant": true, "format": "time_series", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}
+        {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))) / on (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes)", "instant": true, "format": "time_series", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}
       ]
     },
     {
       "id": 14, "type": "table", "title": "Volume inventory",
-      "description": "Every claim with its storage class, requested size, kubelet used bytes and kubelet-reported capacity. An empty Used cell means kubelet reports no stats for that claim (unknown, not empty); a kubelet capacity equal to the node disk size means filesystem-wide reporting.",
-      "gridPos": {"x": 10, "y": 13, "w": 14, "h": 8},
+      "description": "Every claim with its storage class, used bytes (du every 5 minutes) and requested size. An empty Used cell means no scan measured that volume (unknown, not empty): an unbound claim, or a volume the sidecar cannot see.",
+      "gridPos": {"x": 10, "y": 17, "w": 14, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
-      "transformations": [{"id": "merge", "options": {}}, {"id": "organize", "options": {"excludeByName": {"Time": true}, "indexByName": {"namespace": 0, "persistentvolumeclaim": 1, "storageclass": 2, "Value #B": 3, "Value #A": 4, "Value #C": 5, "Value #D": 6}, "renameByName": {"namespace": "Namespace", "persistentvolumeclaim": "Claim", "storageclass": "Storage class", "Value #A": "Requested", "Value #B": "Used", "Value #C": "Used of request", "Value #D": "Kubelet capacity"}}}],
-      "fieldConfig": {"defaults": {"unit": "bytes", "decimals": 1}, "overrides": [{"matcher": {"id": "byName", "options": "Namespace"}, "properties": [{"id": "custom.width", "value": 100}]}, {"matcher": {"id": "byName", "options": "Storage class"}, "properties": [{"id": "custom.width", "value": 130}]}, {"matcher": {"id": "byName", "options": "Used"}, "properties": [{"id": "custom.width", "value": 90}]}, {"matcher": {"id": "byName", "options": "Requested"}, "properties": [{"id": "custom.width", "value": 90}]}, {"matcher": {"id": "byName", "options": "Kubelet capacity"}, "properties": [{"id": "custom.width", "value": 130}]}, {"matcher": {"id": "byName", "options": "Used of request"}, "properties": [{"id": "unit", "value": "percentunit"}, {"id": "decimals", "value": 0}, {"id": "min", "value": 0}, {"id": "max", "value": 1}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.9}]}}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "lcd", "valueDisplayMode": "text"}}, {"id": "custom.width", "value": 140}]}]},
+      "transformations": [{"id": "merge", "options": {}}, {"id": "organize", "options": {"excludeByName": {"Time": true}, "indexByName": {"namespace": 0, "persistentvolumeclaim": 1, "storageclass": 2, "Value #B": 3, "Value #A": 4, "Value #C": 5}, "renameByName": {"namespace": "Namespace", "persistentvolumeclaim": "Claim", "storageclass": "Storage class", "Value #A": "Requested", "Value #B": "Used", "Value #C": "Used of request"}}}],
+      "fieldConfig": {"defaults": {"unit": "bytes", "decimals": 1}, "overrides": [{"matcher": {"id": "byName", "options": "Namespace"}, "properties": [{"id": "custom.width", "value": 100}]}, {"matcher": {"id": "byName", "options": "Storage class"}, "properties": [{"id": "custom.width", "value": 130}]}, {"matcher": {"id": "byName", "options": "Used"}, "properties": [{"id": "custom.width", "value": 90}]}, {"matcher": {"id": "byName", "options": "Requested"}, "properties": [{"id": "custom.width", "value": 90}]}, {"matcher": {"id": "byName", "options": "Used of request"}, "properties": [{"id": "unit", "value": "percentunit"}, {"id": "decimals", "value": 0}, {"id": "min", "value": 0}, {"id": "max", "value": 1}, {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.9}]}}, {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "lcd", "valueDisplayMode": "text"}}, {"id": "custom.width", "value": 140}]}]},
       "options": {"showHeader": true, "cellHeight": "sm", "sortBy": [{"displayName": "Used of request", "desc": true}]},
       "targets": [
         {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes) * on (namespace, persistentvolumeclaim) group_left (storageclass) max by (namespace, persistentvolumeclaim, storageclass) (kube_persistentvolumeclaim_info)", "instant": true, "format": "table"},
-        {"refId": "B", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) * on (namespace, persistentvolumeclaim) group_left (storageclass) max by (namespace, persistentvolumeclaim, storageclass) (kube_persistentvolumeclaim_info)", "instant": true, "format": "table"},
-        {"refId": "C", "expr": "(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) / on (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes)) * on (namespace, persistentvolumeclaim) group_left (storageclass) max by (namespace, persistentvolumeclaim, storageclass) (kube_persistentvolumeclaim_info)", "instant": true, "format": "table"},
-        {"refId": "D", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes) * on (namespace, persistentvolumeclaim) group_left (storageclass) max by (namespace, persistentvolumeclaim, storageclass) (kube_persistentvolumeclaim_info)", "instant": true, "format": "table"}
+        {"refId": "B", "expr": "max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))) * on (namespace, persistentvolumeclaim) group_left (storageclass) max by (namespace, persistentvolumeclaim, storageclass) (kube_persistentvolumeclaim_info)", "instant": true, "format": "table"},
+        {"refId": "C", "expr": "(max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))) / on (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes)) * on (namespace, persistentvolumeclaim) group_left (storageclass) max by (namespace, persistentvolumeclaim, storageclass) (kube_persistentvolumeclaim_info)", "instant": true, "format": "table"}
       ]
     },
     {
       "id": 15, "type": "timeseries", "title": "Volume used over time",
-      "description": "kubelet used bytes per claim. Lines that move together and share one value are the node filesystem, not separate volumes; trust Disk used and the application panels then.",
-      "gridPos": {"x": 0, "y": 21, "w": 14, "h": 8},
+      "description": "Disk space each claim's volume uses, measured with du every 5 minutes, so lines move in 5-minute steps. A steady climb is the consumer to look at when Disk used rises.",
+      "gridPos": {"x": 0, "y": 25, "w": 14, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "min": 0, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "spanNulls": false}}, "overrides": []},
       "options": {"legend": {"displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull", "max"]}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [
-        {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes)", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}
+        {"refId": "A", "expr": "max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\")))", "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}"}
       ]
     },
     {
       "id": 16, "type": "barchart", "title": "Growth in the last 24 hours",
-      "description": "Change of kubelet used bytes per claim over the last 24 hours, largest first; orange grew, green freed space. Needs 24h of retained history; find the growing consumer here before deleting data.",
-      "gridPos": {"x": 14, "y": 21, "w": 10, "h": 8},
+      "description": "Change of each claim's used disk space (du every 5 minutes) over the last 24 hours, largest first; orange grew, green freed space. Needs 24h of retained history; find the growing consumer here before deleting data.",
+      "gridPos": {"x": 14, "y": 25, "w": 10, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "transformations": [{"id": "organize", "options": {"excludeByName": {"Time": true, "namespace": true, "persistentvolumeclaim": true}, "renameByName": {"Value": "Growth"}}}],
       "fieldConfig": {"defaults": {"unit": "bytes", "decimals": 1, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}]}, "custom": {"fillOpacity": 80, "lineWidth": 1, "gradientMode": "none", "axisPlacement": "auto"}}, "overrides": []},
       "options": {"orientation": "horizontal", "xField": "volume", "showValue": "auto", "stacking": "none", "barWidth": 0.8, "groupWidth": 0.7, "xTickLabelRotation": 0, "xTickLabelSpacing": 0, "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false, "calcs": []}, "tooltip": {"mode": "single", "sort": "none"}},
       "targets": [
-        {"refId": "A", "expr": "sort_desc(label_join(max by (namespace, persistentvolumeclaim) (delta(kubelet_volume_stats_used_bytes[24h])), \"volume\", \"/\", \"namespace\", \"persistentvolumeclaim\"))", "instant": true, "format": "table"}
+        {"refId": "A", "expr": "sort_desc(label_join(max by (namespace, persistentvolumeclaim) (delta((max by (persistentvolume) (openebs_hostpath_volume_used_bytes))[24h:5m]) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))), \"volume\", \"/\", \"namespace\", \"persistentvolumeclaim\"))", "instant": true, "format": "table"}
       ]
     },
     {
       "id": 17, "type": "row", "title": "Disk performance", "collapsed": false,
-      "gridPos": {"x": 0, "y": 29, "w": 24, "h": 1},
+      "gridPos": {"x": 0, "y": 33, "w": 24, "h": 1},
       "panels": []
     },
     {
       "id": 18, "type": "timeseries", "title": "Throughput: reads up, writes down",
       "description": "Bytes read (above zero) and written (below zero) per second per block device; loop and RAM devices excluded. Read it with latency to tell heavy but healthy from struggling.",
-      "gridPos": {"x": 0, "y": 30, "w": 12, "h": 8},
+      "gridPos": {"x": 0, "y": 34, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "binBps", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20, "showPoints": "never", "spanNulls": false}}, "overrides": [{"matcher": {"id": "byFrameRefID", "options": "B"}, "properties": [{"id": "custom.transform", "value": "negative-Y"}]}]},
       "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -197,7 +242,7 @@
     {
       "id": 19, "type": "timeseries", "title": "IOPS: reads up, writes down",
       "description": "Completed reads (above zero) and writes (below zero) per second per block device. With throughput, it shows whether the load is many small or few large I/Os.",
-      "gridPos": {"x": 12, "y": 30, "w": 12, "h": 8},
+      "gridPos": {"x": 12, "y": 34, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "iops", "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 20, "showPoints": "never", "spanNulls": false}}, "overrides": [{"matcher": {"id": "byFrameRefID", "options": "B"}, "properties": [{"id": "custom.transform", "value": "negative-Y"}]}]},
       "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -209,7 +254,7 @@
     {
       "id": 20, "type": "gauge", "title": "Disk busy now",
       "description": "Share of time each device had at least one I/O in flight, at the end of the range. NVMe serves many requests in parallel, so 100% busy is not necessarily saturated; check queue depth and latency.",
-      "gridPos": {"x": 0, "y": 38, "w": 4, "h": 7},
+      "gridPos": {"x": 0, "y": 42, "w": 4, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percentunit", "decimals": 0, "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.9}]}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto", "minVizWidth": 75, "minVizHeight": 75},
@@ -220,7 +265,7 @@
     {
       "id": 21, "type": "timeseries", "title": "Disk busy over time",
       "description": "Busy share per device over the range; long plateaus near 100% together with rising latency mean the disk is the bottleneck.",
-      "gridPos": {"x": 4, "y": 38, "w": 7, "h": 7},
+      "gridPos": {"x": 4, "y": 42, "w": 7, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "spanNulls": false}}, "overrides": []},
       "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -231,7 +276,7 @@
     {
       "id": 22, "type": "timeseries", "title": "Latency per completed I/O",
       "description": "Average time per completed read and write. Gaps mean nothing completed, not zero latency; rising latency with queue depth means the disk is saturated.",
-      "gridPos": {"x": 11, "y": 38, "w": 7, "h": 7},
+      "gridPos": {"x": 11, "y": 42, "w": 7, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "s", "min": 0, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "spanNulls": false}}, "overrides": []},
       "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -243,7 +288,7 @@
     {
       "id": 23, "type": "timeseries", "title": "I/O queue depth",
       "description": "Average number of I/O requests in flight. Sustained values well above 1 with rising latency mean the disk cannot keep up.",
-      "gridPos": {"x": 18, "y": 38, "w": 6, "h": 7},
+      "gridPos": {"x": 18, "y": 42, "w": 6, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "min": 0, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "spanNulls": false}}, "overrides": []},
       "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -253,13 +298,13 @@
     },
     {
       "id": 24, "type": "row", "title": "Application storage (self-reported)", "collapsed": false,
-      "gridPos": {"x": 0, "y": 45, "w": 24, "h": 1},
+      "gridPos": {"x": 0, "y": 49, "w": 24, "h": 1},
       "panels": []
     },
     {
       "id": 25, "type": "gauge", "title": "TSDB of its size cap",
       "description": "Blocks, WAL and head chunks, which retentionSize (8GB) counts, as a share of that cap. Near 100% is expected once the cap is reached: Prometheus then deletes the oldest blocks, so history gets shorter than 7 days.",
-      "gridPos": {"x": 0, "y": 46, "w": 4, "h": 7},
+      "gridPos": {"x": 0, "y": 50, "w": 4, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percentunit", "decimals": 0, "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.9}]}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto", "minVizWidth": 75, "minVizHeight": 75},
@@ -270,7 +315,7 @@
     {
       "id": 26, "type": "timeseries", "title": "Prometheus TSDB on disk vs size cap",
       "description": "Blocks, WAL and memory-mapped head chunks stacked to the TSDB size on disk, under the dashed size cap (retentionSize). The stack approximates the Prometheus volume usage.",
-      "gridPos": {"x": 4, "y": 46, "w": 12, "h": 7},
+      "gridPos": {"x": 4, "y": 50, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "min": 0, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 40, "showPoints": "never", "spanNulls": false, "stacking": {"mode": "normal", "group": "A"}}}, "overrides": [{"matcher": {"id": "byFrameRefID", "options": "D"}, "properties": [{"id": "custom.stacking", "value": {"mode": "none", "group": "A"}}, {"id": "custom.fillOpacity", "value": 0}, {"id": "custom.lineStyle", "value": {"fill": "dash", "dash": [10, 10]}}, {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]}]},
       "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -284,7 +329,7 @@
     {
       "id": 27, "type": "stat", "title": "Prometheus head series",
       "description": "Active series in memory now, with the trend. Sustained growth drives both memory and block size; look for a new high-cardinality label.",
-      "gridPos": {"x": 16, "y": 46, "w": 8, "h": 7},
+      "gridPos": {"x": 16, "y": 50, "w": 8, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "short", "decimals": 0, "color": {"mode": "fixed", "fixedColor": "blue"}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "graphMode": "area", "colorMode": "value", "justifyMode": "auto", "textMode": "auto", "orientation": "auto", "wideLayout": true, "showPercentChange": false, "text": {"valueSize": 40}},
@@ -295,7 +340,7 @@
     {
       "id": 28, "type": "timeseries", "title": "AnkiLabs PostgreSQL database size",
       "description": "pg_database_size per database from the ankilabs postgres-exporter. Excludes WAL; compare with Disk used for the total impact.",
-      "gridPos": {"x": 0, "y": 53, "w": 12, "h": 7},
+      "gridPos": {"x": 0, "y": 57, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "min": 0, "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "spanNulls": false}}, "overrides": []},
       "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": []}, "tooltip": {"mode": "multi", "sort": "desc"}},
@@ -306,7 +351,7 @@
     {
       "id": 29, "type": "timeseries", "title": "Prometheus retention block deletions",
       "description": "Blocks deleted per bar because the size cap or the 7-day age limit was reached. Size deletions mean the 8GB cap, not the 7d retention, is limiting history.",
-      "gridPos": {"x": 12, "y": 53, "w": 12, "h": 7},
+      "gridPos": {"x": 12, "y": 57, "w": 12, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "interval": "2m",
       "maxDataPoints": 48,
@@ -319,12 +364,12 @@
     },
     {
       "id": 31, "type": "row", "title": "Logs", "collapsed": true,
-      "gridPos": {"x": 0, "y": 60, "w": 24, "h": 1},
+      "gridPos": {"x": 0, "y": 64, "w": 24, "h": 1},
       "panels": [
         {
           "id": 30, "type": "logs", "title": "OpenEBS hostpath provisioner logs",
           "description": "Volume create/delete activity and provisioning failures. A pending PVC with no matching record here points at scheduling or storage-class selection instead.",
-          "gridPos": {"x": 0, "y": 61, "w": 24, "h": 8},
+          "gridPos": {"x": 0, "y": 65, "w": 24, "h": 8},
           "datasource": {"type": "loki", "uid": "${logs}"},
           "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
           "targets": [
