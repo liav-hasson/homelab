@@ -15,14 +15,16 @@ from dashboard_panels import iter_panels
 MONITORING = Path(__file__).resolve().parents[1]
 
 
-def run_promtool(arguments: list[str]) -> None:
+def run_promtool(arguments: list[str], stdin: str = "") -> None:
     """Fail explicitly when Prometheus tooling is missing or rejects an input."""
     binary = shutil.which(os.environ.get("PROMTOOL_BIN", "promtool"))
     if binary is None:
         raise RuntimeError(
             "promtool is missing; install Prometheus (brew install prometheus)."
         )
-    subprocess.run([binary, *arguments], check=True, timeout=60)
+    subprocess.run(
+        [binary, *arguments], input=stdin or None, text=True, check=True, timeout=60
+    )
 
 
 def dashboard_queries() -> list[dict]:
