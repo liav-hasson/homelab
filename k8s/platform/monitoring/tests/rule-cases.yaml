@@ -189,6 +189,69 @@ tests:
       - eval_time: 90m
         alertname: NodeFilesystemFillingUp
         exp_alerts: []
+  - name: volume-above-ninety-percent-of-its-request-alerts-per-claim
+    interval: 1m
+    input_series:
+      # Two node-exporter pods overlap during a rollout; the join must not fail on them.
+      - series: 'openebs_hostpath_volume_used_bytes{instance="node:9100",job="node-exporter",namespace="monitoring",pod="node-exporter-old",persistentvolume="pvc-postgres"}'
+        values: "95+0x40"
+      - series: 'openebs_hostpath_volume_used_bytes{instance="node:9100",job="node-exporter",namespace="monitoring",pod="node-exporter-new",persistentvolume="pvc-postgres"}'
+        values: "95+0x40"
+      - series: 'openebs_hostpath_volume_used_bytes{instance="node:9100",job="node-exporter",namespace="monitoring",pod="node-exporter-new",persistentvolume="pvc-redis"}'
+        values: "50+0x40"
+      - series: 'kube_persistentvolumeclaim_info{job="kube-state-metrics",namespace="ankilabs",persistentvolumeclaim="data-postgres-0",storageclass="openebs-hostpath",volumename="pvc-postgres",volumemode="Filesystem"}'
+        values: "1+0x40"
+      - series: 'kube_persistentvolumeclaim_info{job="kube-state-metrics",namespace="quizlabs",persistentvolumeclaim="redis-data",storageclass="openebs-hostpath",volumename="pvc-redis",volumemode="Filesystem"}'
+        values: "1+0x40"
+      - series: 'kube_persistentvolumeclaim_resource_requests_storage_bytes{job="kube-state-metrics",namespace="ankilabs",persistentvolumeclaim="data-postgres-0"}'
+        values: "100+0x40"
+      - series: 'kube_persistentvolumeclaim_resource_requests_storage_bytes{job="kube-state-metrics",namespace="quizlabs",persistentvolumeclaim="redis-data"}'
+        values: "100+0x40"
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: PersistentVolumeNearRequestedSize
+        exp_alerts: []
+      - eval_time: 35m
+        alertname: PersistentVolumeNearRequestedSize
+        exp_alerts:
+          - exp_labels:
+              namespace: ankilabs
+              persistentvolumeclaim: data-postgres-0
+              scope: nodes
+              severity: warning
+  - name: frozen-volume-scan-is-stale
+    interval: 1m
+    input_series:
+      - series: 'openebs_hostpath_volume_scan_timestamp_seconds{instance="node:9100",job="node-exporter",namespace="monitoring",pod="node-exporter-new"}'
+        values: "0+0x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: OpenEBSVolumeScanStale
+        exp_alerts:
+          - exp_labels:
+              scope: nodes
+              severity: warning
+  - name: fresh-volume-scan-is-not-stale
+    interval: 1m
+    input_series:
+      - series: 'openebs_hostpath_volume_scan_timestamp_seconds{instance="node:9100",job="node-exporter",namespace="monitoring",pod="node-exporter-new"}'
+        values: "0+60x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: OpenEBSVolumeScanStale
+        exp_alerts: []
+  - name: missing-volume-scan-is-not-green
+    interval: 1m
+    input_series:
+      - series: 'up{instance="node:9100",job="node-exporter",namespace="monitoring"}'
+        values: "1+0x10"
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: OpenEBSVolumeScanStale
+        exp_alerts:
+          - exp_labels:
+              scope: nodes
+              severity: warning
   - name: ai-error-ratio-above-twenty-percent-alerts-per-action
     interval: 1m
     input_series:
