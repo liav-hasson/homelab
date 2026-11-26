@@ -27,6 +27,18 @@ def run_promtool(arguments: list[str], stdin: str = "") -> None:
     )
 
 
+def label_annotations(annotations: dict, labels: dict) -> dict:
+    """Fill plain label references; cases spell out $value and conditional annotations."""
+    return {
+        name: re.sub(
+            r"\{\{ \$labels\.(\w+) \}\}",
+            lambda match: labels.get(match.group(1), ""),
+            value,
+        )
+        for name, value in annotations.items()
+    }
+
+
 def dashboard_queries() -> list[dict]:
     """Convert dashboard PromQL into temporary recording rules for syntax checking."""
     queries = []
@@ -70,12 +82,10 @@ class PrometheusRuleTests(unittest.TestCase):
                 for expected in assertion["exp_alerts"]:
                     labels = expected["exp_labels"]
                     expected["exp_annotations"] = {
-                        name: re.sub(
-                            r"\{\{ \$labels\.(\w+) \}\}",
-                            lambda match, labels=labels: labels.get(match.group(1), ""),
-                            value,
-                        )
-                        for name, value in annotations[assertion["alertname"]].items()
+                        **label_annotations(
+                            annotations[assertion["alertname"]], labels
+                        ),
+                        **expected.get("exp_annotations", {}),
                     }
         with tempfile.TemporaryDirectory() as directory:
             rule_path = Path(directory) / "rules.yaml"

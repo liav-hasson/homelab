@@ -17,8 +17,9 @@ spec:
             scope: nodes
             severity: warning
           annotations:
-            summary: High node CPU detected.
-            description: CPU usage on {{ $labels.instance }} has been above 90% for 5 minutes. Inspect competing workloads before resizing.
+            name: Node CPU high
+            subject: '{{ $labels.instance }} · {{ printf "%.0f" $value }}% CPU'
+            description: CPU usage has been above 90% for 5 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
         - alert: NodeHighMemory
@@ -28,8 +29,9 @@ spec:
             scope: nodes
             severity: warning
           annotations:
-            summary: High node memory detected.
-            description: Memory usage on {{ $labels.instance }} has been above 90% for 5 minutes. Check working sets and OOM events.
+            name: Node memory high
+            subject: '{{ $labels.instance }} · {{ printf "%.0f" $value }}% memory'
+            description: Memory usage has been above 90% for 5 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
         - alert: NodeFilesystemLowSpace
@@ -39,8 +41,9 @@ spec:
             scope: nodes
             severity: warning
           annotations:
-            summary: Node filesystem free space is below 15%.
-            description: '{{ $labels.mountpoint }} on {{ $labels.instance }} has had less than 15% space available for 10 minutes. Every openebs-hostpath volume shares this filesystem; find the growing volume before deleting data.'
+            name: Node disk low
+            subject: '{{ $labels.mountpoint }} on {{ $labels.instance }} · {{ printf "%.0f" $value }}% free'
+            description: The filesystem has had less than 15% free space for 10 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/platform-storage
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
         - alert: NodeFilesystemFillingUp
@@ -50,8 +53,9 @@ spec:
             scope: nodes
             severity: warning
           annotations:
-            summary: Node filesystem is predicted to fill within 3 days.
-            description: '{{ $labels.mountpoint }} on {{ $labels.instance }} will run out of space within 3 days if the 6-hour write trend continues. Short bursts such as restores or image pulls can trigger this; confirm the trend before acting.'
+            name: Node disk filling up
+            subject: '{{ $labels.mountpoint }} on {{ $labels.instance }}'
+            description: The 6-hour write trend fills the filesystem within 3 days.
             dashboard_url: https://grafana.ankilabs.org/d/platform-storage
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
     # Per-volume usage comes from the node-exporter volume-usage sidecar (du every 5 minutes),
@@ -73,8 +77,9 @@ spec:
             scope: nodes
             severity: warning
           annotations:
-            summary: A persistent volume uses more than 90% of its requested size.
-            description: '{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has used more than 90% of its requested size for 30 minutes. openebs-hostpath does not enforce the size, so it keeps writing into the shared node disk; find what grew, then remove data through the application, lower its retention or plan a larger claim.'
+            name: Volume near requested size
+            subject: '{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} · {{ $value | humanizePercentage }} used'
+            description: The claim has used more than 90% of its requested size for 30 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/platform-storage
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
         - alert: OpenEBSVolumeScanStale
@@ -84,8 +89,9 @@ spec:
             scope: nodes
             severity: warning
           annotations:
-            summary: Per-volume disk usage has not been measured for over 20 minutes.
-            description: The node-exporter volume-usage sidecar writes a scan every 5 minutes; none is fresh or none is scraped, so every per-volume usage panel and PersistentVolumeNearRequestedSize are stale. Check the sidecar log and node-exporter's textfile collector.
+            name: Volume usage scan stale
+            subject: node-exporter volume-usage sidecar
+            description: No per-volume usage scan newer than 20 minutes is scraped.
             dashboard_url: https://grafana.ankilabs.org/d/platform-storage
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
     - name: homelab.pods
@@ -97,8 +103,9 @@ spec:
             scope: pods
             severity: critical
           annotations:
-            summary: Pod container CrashLoopBackOff detected.
-            description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} has been crash-looping for 5 minutes.'
+            name: Pod crash-looping
+            subject: '{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})'
+            description: The container has been in CrashLoopBackOff for 5 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
         - alert: PodFrequentRestarts
@@ -108,8 +115,9 @@ spec:
             scope: pods
             severity: warning
           annotations:
-            summary: Pod container repeated restarts detected.
-            description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} restarted at least 3 times in 15 minutes.'
+            name: Pod restarting
+            subject: '{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})'
+            description: The container restarted at least 3 times in 15 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
     - name: homelab.applications
@@ -132,8 +140,9 @@ spec:
             scope: applications
             severity: warning
           annotations:
-            summary: AnkiLabs observed a server-side request failure.
-            description: '{{ $labels.job }} {{ $labels.service }} route {{ $labels.route }} has an increased or newly observed nonzero {{ $labels.status }} counter. New scrape coverage can expose older failures; correlate request_id and timestamps in namespace-scoped logs.'
+            name: AnkiLabs request failure
+            subject: '{{ $labels.service }} {{ $labels.route }} · {{ $labels.status }}'
+            description: A 5xx request counter increased or first appeared in the last 10 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests
         - alert: AnkiLabsUpstreamFailure
@@ -151,8 +160,9 @@ spec:
             scope: applications
             severity: warning
           annotations:
-            summary: Gateway observed a lookup upstream failure.
-            description: '{{ $labels.service }} has an increased or newly observed nonzero {{ $labels.status }} counter. New scrape coverage can expose older failures; compare timestamps and request_id in gateway and lookup logs before retrying.'
+            name: AnkiLabs lookup upstream failure
+            subject: '{{ $labels.service }} · {{ $labels.status }}'
+            description: A gateway-to-lookup failure counter increased or first appeared in the last 10 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests
         - alert: AnkiLabsScrapeFailed
@@ -162,8 +172,9 @@ spec:
             scope: applications
             severity: warning
           annotations:
-            summary: AnkiLabs metrics target is not scrapeable.
-            description: '{{ $labels.pod }} has failed scrapes for 3 minutes. Check the target error, named port, network policy and exporter credentials; missing telemetry is not health.'
+            name: AnkiLabs metrics scrape failing
+            subject: '{{ $labels.pod }}'
+            description: The metrics target has failed scrapes for 3 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry
         - alert: AnkiLabsExpectedTargetMissing
@@ -178,8 +189,9 @@ spec:
             scope: applications
             severity: warning
           annotations:
-            summary: An expected AnkiLabs metrics target is missing.
-            description: No discovered target exists for this selector. Inspect PodMonitor selection and desired replicas, including a missing postgres-monitoring Secret.
+            name: AnkiLabs metrics target missing
+            subject: '{{ or $labels.service $labels.job }}'
+            description: No metrics target is discovered for this service for 5 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry
         - alert: AnkiLabsAIErrorRatioHigh
@@ -221,8 +233,9 @@ spec:
             scope: applications
             severity: warning
           annotations:
-            summary: AnkiLabs AI calls are failing for one action.
-            description: 'More than 20% of {{ $labels.action }} LLM calls failed over 15 minutes (at least 3 calls). Usage Code errors and ai_refused (the model declined) are excluded; ai_output_invalid (unusable answer) counts. Check errors by code, especially ai_timeout, and LiteLLM-side duration before changing timeouts.'
+            name: AnkiLabs AI calls failing
+            subject: '{{ $labels.action }} · {{ $value | humanizePercentage }} failed'
+            description: More than 20% of the action's LLM calls failed over 15 minutes (at least 3 calls).
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-ai
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#ai
         - alert: ApplicationDeploymentUnavailable
@@ -235,8 +248,9 @@ spec:
             scope: applications
             severity: warning
           annotations:
-            summary: An application deployment has no available replicas.
-            description: '{{ $labels.namespace }}/{{ $labels.deployment }} has desired replicas but none available for 5 minutes. Inspect rollout conditions and logs in that namespace.'
+            name: Deployment unavailable
+            subject: '{{ $labels.namespace }}/{{ $labels.deployment }}'
+            description: The deployment has desired replicas but none available for 5 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
         - alert: ApplicationOOMKilled
@@ -248,8 +262,9 @@ spec:
             scope: applications
             severity: warning
           annotations:
-            summary: An application container restarted after an OOM kill.
-            description: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} was OOM killed with a recent restart. Compare memory to its configured limit; do not change limits before investigating.'
+            name: Container OOM killed
+            subject: '{{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})'
+            description: The container was OOM killed and restarted in the last 15 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/homelab-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#resources
         - alert: LookupPoolWaiting
@@ -260,8 +275,9 @@ spec:
             scope: database
             severity: warning
           annotations:
-            summary: Lookup requests are waiting for database connections.
-            description: '{{ $labels.pod }} has pool waiters continuously for 3 minutes. Compare pool size/available/max, pool_acquire samples and PostgreSQL activity before adjusting capacity.'
+            name: Lookup DB pool waiting
+            subject: '{{ $labels.pod }} · {{ $value }} waiting'
+            description: Lookup requests have waited for a database connection for 3 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-search-postgres
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#database
     - name: homelab.database
@@ -273,8 +289,9 @@ spec:
             scope: database
             severity: critical
           annotations:
-            summary: The monitoring login cannot reach PostgreSQL.
-            description: Exporter cannot establish a database connection. Distinguish database outage from credential or network-policy failure using exporter logs; do not use superuser credentials.
+            name: PostgreSQL unreachable
+            subject: '{{ $labels.namespace }} PostgreSQL'
+            description: The exporter's monitoring login cannot connect to PostgreSQL.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-search-postgres
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#database
         - alert: PostgreSQLCollectorFailure
@@ -284,8 +301,9 @@ spec:
             scope: database
             severity: warning
           annotations:
-            summary: A PostgreSQL collector failed.
-            description: '{{ $labels.collector }} failed. Check exporter logs, PostgreSQL version and read-only monitoring grants. A healthy HTTP scrape does not imply complete database telemetry.'
+            name: PostgreSQL collector failing
+            subject: '{{ $labels.collector }}'
+            description: A postgres_exporter collector has failed for 3 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/ankilabs-search-postgres
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#database
         - alert: QuizLabsMongoUnavailable
@@ -295,40 +313,63 @@ spec:
             scope: database
             severity: warning
           annotations:
-            summary: QuizLabs MongoDB has no ready replica.
-            description: Check MongoDB pod readiness, restarts, storage and quizlabs-only logs. This measures Kubernetes readiness, not successful database queries.
+            name: QuizLabs MongoDB unavailable
+            subject: '{{ $labels.statefulset }}'
+            description: The MongoDB StatefulSet has had no ready replica for 5 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/quizlabs-overview
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#quizlabs
     - name: homelab.platform
       rules:
         - alert: EdgeUpstreamFailure
+          # The route label names each HTTPRoute rule (k8s/apps/*/httproute.yaml, by rule
+          # index); unmapped rules fall back to "<namespace>/<route> rule <index>".
           expr: |
-            sum by (namespace, envoy_cluster_name) (
-              increase(envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"}[10m])
-            ) > 0
-            or
-            sum by (namespace, envoy_cluster_name) (
-              increase(envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"}[10m])
-            ) > 0
-            or
-            sum by (namespace, envoy_cluster_name) (
-              envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} > 0
-              unless
-              envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} offset 10m
-            )
-            or
-            sum by (namespace, envoy_cluster_name) (
-              envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} > 0
-              unless
-              envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} offset 10m
+            label_replace(
+              label_replace(
+                label_replace(
+                  label_replace(
+                    label_replace(
+                      label_replace(
+                        sum by (namespace, envoy_cluster_name) (
+                          increase(envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"}[10m])
+                        ) > 0
+                        or
+                        sum by (namespace, envoy_cluster_name) (
+                          increase(envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"}[10m])
+                        ) > 0
+                        or
+                        sum by (namespace, envoy_cluster_name) (
+                          envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} > 0
+                          unless
+                          envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} offset 10m
+                        )
+                        or
+                        sum by (namespace, envoy_cluster_name) (
+                          envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} > 0
+                          unless
+                          envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name=~"httproute/(ankilabs|quizlabs)/.*"} offset 10m
+                        ),
+                        "route", "$1/$2 rule $3", "envoy_cluster_name", "httproute/([^/]+)/([^/]+)/rule/([0-9]+)"
+                      ),
+                      "route", "AnkiLabs API (/api)", "envoy_cluster_name", "httproute/ankilabs/ankilabs/rule/0"
+                    ),
+                    "route", "AnkiLabs web (/)", "envoy_cluster_name", "httproute/ankilabs/ankilabs/rule/1"
+                  ),
+                  "route", "QuizLabs API (/api)", "envoy_cluster_name", "httproute/quizlabs/quizlabs/rule/0"
+                ),
+                "route", "QuizLabs multiplayer (/socket.io)", "envoy_cluster_name", "httproute/quizlabs/quizlabs/rule/1"
+              ),
+              "route", "QuizLabs web (/)", "envoy_cluster_name", "httproute/quizlabs/quizlabs/rule/2"
             )
           labels:
             scope: platform
             severity: warning
           annotations:
-            summary: Envoy observed an application upstream connection failure or timeout.
-            description: '{{ $labels.envoy_cluster_name }} has an increased or newly observed nonzero upstream failure counter. New scrape coverage can expose older failures, and retries may mask user impact; inspect timestamps, the matching application namespace and endpoint readiness.'
-            dashboard_url: https://grafana.ankilabs.org/d/platform-delivery-edge
+            name: Edge upstream failure
+            subject: '{{ $labels.route }}'
+            description: Envoy saw an upstream connection failure or timeout for the route in the last 10 minutes.
+            # API failures are best read on the application dashboard; other routes on Edge.
+            dashboard_url: '{{ if eq $labels.envoy_cluster_name "httproute/ankilabs/ankilabs/rule/0" }}https://grafana.ankilabs.org/d/ankilabs-service-health{{ else }}https://grafana.ankilabs.org/d/platform-delivery-edge{{ end }}'
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests
         - alert: EdgeScrapeFailed
           expr: up{job=~"monitoring/(envoy-proxy|cloudflared)"} == 0 or absent(up{job="monitoring/envoy-proxy"}) or absent(up{job="monitoring/cloudflared"})
@@ -337,7 +378,8 @@ spec:
             scope: platform
             severity: warning
           annotations:
-            summary: Native edge telemetry is missing or failing.
-            description: Check Envoy metrics on its internal metrics port and cloudflared on port 2000. Do not expose admin endpoints through the tunnel.
+            name: Edge telemetry missing
+            subject: '{{ $labels.job }}'
+            description: Envoy or cloudflared metrics are missing or failing to scrape for 5 minutes.
             dashboard_url: https://grafana.ankilabs.org/d/platform-delivery-edge
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#telemetry

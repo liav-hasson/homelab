@@ -1,4 +1,5 @@
-# test_rules.py fills exp_annotations from the checked-in rule annotations.
+# test_rules.py fills exp_annotations from the checked-in rule annotations; a case
+# lists only the annotations that use $value or a conditional.
 evaluation_interval: 1m
 tests:
   - name: a-single-low-traffic-server-failure-is-visible
@@ -74,6 +75,8 @@ tests:
               state: waiting
               scope: database
               severity: warning
+            exp_annotations:
+              subject: sentence-lookup-fixture · 1 waiting
   - name: missing-dictionary-target-is-not-green
     interval: 1m
     input_series:
@@ -94,6 +97,8 @@ tests:
               service: dictionary-lookup
               scope: applications
               severity: warning
+            exp_annotations:
+              subject: dictionary-lookup
   - name: reachable-exporter-with-failed-collector-is-not-green
     interval: 1m
     input_series:
@@ -131,8 +136,40 @@ tests:
           - exp_labels:
               namespace: envoy-gateway-system
               envoy_cluster_name: httproute/quizlabs/quizlabs/rule/1
+              route: QuizLabs multiplayer (/socket.io)
               scope: platform
               severity: warning
+            exp_annotations:
+              dashboard_url: https://grafana.ankilabs.org/d/platform-delivery-edge
+  - name: edge-failures-name-their-route-and-skip-other-namespaces
+    interval: 1m
+    input_series:
+      - series: 'envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name="httproute/ankilabs/ankilabs/rule/0"}'
+        values: "0 0 1 1 1 1"
+      - series: 'envoy_cluster_upstream_cx_connect_fail{namespace="envoy-gateway-system",envoy_cluster_name="httproute/quizlabs/admin/rule/3"}'
+        values: "0 0 1 1 1 1"
+      - series: 'envoy_cluster_upstream_rq_timeout{namespace="envoy-gateway-system",envoy_cluster_name="httproute/monitoring/grafana/rule/0"}'
+        values: "0 0 1 1 1 1"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: EdgeUpstreamFailure
+        exp_alerts:
+          - exp_labels:
+              namespace: envoy-gateway-system
+              envoy_cluster_name: httproute/ankilabs/ankilabs/rule/0
+              route: AnkiLabs API (/api)
+              scope: platform
+              severity: warning
+            exp_annotations:
+              dashboard_url: https://grafana.ankilabs.org/d/ankilabs-service-health
+          - exp_labels:
+              namespace: envoy-gateway-system
+              envoy_cluster_name: httproute/quizlabs/admin/rule/3
+              route: quizlabs/admin rule 3
+              scope: platform
+              severity: warning
+            exp_annotations:
+              dashboard_url: https://grafana.ankilabs.org/d/platform-delivery-edge
   - name: node-filesystem-below-fifteen-percent-free-alerts
     interval: 1m
     input_series:
@@ -152,6 +189,8 @@ tests:
               mountpoint: /
               scope: nodes
               severity: warning
+            exp_annotations:
+              subject: / on node:9100 · 10% free
   - name: full-tmpfs-is-not-node-disk-pressure
     interval: 1m
     input_series:
@@ -219,6 +258,8 @@ tests:
               persistentvolumeclaim: data-postgres-0
               scope: nodes
               severity: warning
+            exp_annotations:
+              subject: ankilabs/data-postgres-0 · 95% used
   - name: frozen-volume-scan-is-stale
     interval: 1m
     input_series:
@@ -272,6 +313,8 @@ tests:
               action: notes
               scope: applications
               severity: warning
+            exp_annotations:
+              subject: notes · 33.33% failed
   - name: ai-first-errors-before-first-scrape-are-counted
     interval: 1m
     input_series:
@@ -290,6 +333,8 @@ tests:
               action: review
               scope: applications
               severity: warning
+            exp_annotations:
+              subject: review · 33.33% failed
   - name: ai-errors-below-minimum-traffic-do-not-alert
     interval: 1m
     input_series:
