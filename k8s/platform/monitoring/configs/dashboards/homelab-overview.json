@@ -186,12 +186,12 @@
     },
     {
       "id": 22, "type": "bargauge", "title": "Persistent volumes used",
-      "description": "Kubelet-reported used share per PVC. Missing means unknown, not empty; openebs-hostpath volumes may report the whole node filesystem (see Platform - Storage).",
+      "description": "Disk space each claim's volume uses (du every 5 minutes) as a share of its requested size. openebs-hostpath does not enforce the size, so over 100% means the volume outgrew its request; Platform - Storage has the shared node disk. Missing means unknown, not empty.",
       "gridPos": {"x": 0, "y": 32, "w": 12, "h": 9},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "horizontal", "displayMode": "gradient", "valueMode": "color", "namePlacement": "auto", "showUnfilled": true, "sizing": "auto", "minVizWidth": 8, "minVizHeight": 16, "maxVizHeight": 300, "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom", "calcs": []}},
-      "targets": [{"refId": "A", "expr": "100 * max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes) / max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes)", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
+      "targets": [{"refId": "A", "expr": "100 * max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))) / on (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes)", "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}"}]
     },
     {
       "id": 23, "type": "state-timeline", "title": "Node pressure",

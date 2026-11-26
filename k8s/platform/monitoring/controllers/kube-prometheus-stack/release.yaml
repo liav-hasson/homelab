@@ -2,6 +2,9 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
+  labels:
+    # The volume-usage sidecar script uses shell ${...} expansions.
+    kustomize.toolkit.fluxcd.io/substitute: disabled
 spec:
   interval: 1h
   chartRef:
@@ -87,3 +90,109 @@ spec:
             name: grafana-litellm-database
             key: password
             optional: true
+    # openebs-hostpath volumes are plain directories, so kubelet volume stats
+    # report the whole node filesystem for every claim. The volume-usage sidecar
+    # measures each volume directory with du every 5 minutes and writes the sizes
+    # to node-exporter's textfile collector; dashboards join them to their claims
+    # through kube-state-metrics (runbook.md#storage).
+    prometheus-node-exporter:
+      extraArgs:
+        # The first two are the kube-prometheus-stack defaults, which this list replaces.
+        - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)
+        - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+        - --collector.textfile.directory=/run/textfile
+      # In-memory emptyDir shared with node-exporter, which the chart always mounts read-only.
+      sidecarVolumeMount:
+        - name: textfile
+          mountPath: /run/textfile
+          readOnly: false
+      # Mounted into the sidecars only, not into node-exporter.
+      sidecarHostVolumeMounts:
+        - name: openebs-local
+          hostPath: /var/openebs/local
+          mountPath: /var/openebs/local
+          readOnly: true
+      sidecars:
+        - name: volume-usage
+          image: docker.io/library/busybox:1.38.0@sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4
+          command: [ "sh", "-c" ]
+          args:
+            - |
+              # Allocated size (du -k) of each volume directory, as kubelet reports
+              # it for real filesystems. A du error still emits the partial size
+              # it read and counts in openebs_hostpath_volume_scan_errors.
+              # No double dollar sign: Kubernetes turns it into one in args.
+              trap 'exit 0' TERM INT
+              output="$TEXTFILE_DIR/openebs-hostpath.prom"
+              partial="$TEXTFILE_DIR/.openebs-hostpath.prom.partial"
+
+              low_priority() {
+                if command -v ionice >/dev/null; then
+                  ionice -c 3 nice -n 19 "$@"
+                else
+                  nice -n 19 "$@"
+                fi
+              }
+
+              scan() {
+                started=$(date +%s)
+                errors=0
+                echo "# HELP openebs_hostpath_volume_used_bytes Disk space allocated to an openebs-hostpath volume directory, from du."
+                echo "# TYPE openebs_hostpath_volume_used_bytes gauge"
+                for dir in "$VOLUME_ROOT"/pvc-*; do
+                  volume=${dir##*/}
+                  # Also skips the unexpanded pattern when there is no volume.
+                  case $volume in *[!a-z0-9-]*) continue ;; esac
+                  [ -d "$dir" ] || continue
+                  usage=$(low_priority du -skx "$dir") || errors=$((errors + 1))
+                  kib=${usage%%[!0-9]*}
+                  if [ -n "$kib" ]; then
+                    echo "openebs_hostpath_volume_used_bytes{persistentvolume=\"$volume\"} $((kib * 1024))"
+                  fi
+                done
+                finished=$(date +%s)
+                echo "# HELP openebs_hostpath_volume_scan_errors Volume directories du could not fully read in the last scan."
+                echo "# TYPE openebs_hostpath_volume_scan_errors gauge"
+                echo "openebs_hostpath_volume_scan_errors $errors"
+                echo "# HELP openebs_hostpath_volume_scan_duration_seconds Duration of the last volume scan."
+                echo "# TYPE openebs_hostpath_volume_scan_duration_seconds gauge"
+                echo "openebs_hostpath_volume_scan_duration_seconds $((finished - started))"
+                echo "# HELP openebs_hostpath_volume_scan_timestamp_seconds Unix time the last volume scan finished."
+                echo "# TYPE openebs_hostpath_volume_scan_timestamp_seconds gauge"
+                echo "openebs_hostpath_volume_scan_timestamp_seconds $finished"
+              }
+
+              while :; do
+                # Rename, so node-exporter never reads a half-written file.
+                if ! { scan >"$partial" && mv -f "$partial" "$output"; }; then
+                  echo "could not write $output" >&2
+                fi
+                sleep "$SCAN_INTERVAL_SECONDS" &
+                wait $!
+              done
+          env:
+            - name: VOLUME_ROOT
+              value: /var/openebs/local
+            - name: TEXTFILE_DIR
+              value: /run/textfile
+            - name: SCAN_INTERVAL_SECONDS
+              value: "300"
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+          # Root with only DAC_READ_SEARCH reads volumes owned by any user (such
+          # as PostgreSQL's 0700 data directory) but cannot write or chown.
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ "ALL" ]
+              add: [ "DAC_READ_SEARCH" ]
+            seccompProfile:
+              type: RuntimeDefault

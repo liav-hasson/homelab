@@ -361,13 +361,13 @@
     },
     {
       "id": 41, "type": "gauge", "title": "PostgreSQL volume used",
-      "description": "Kubelet-reported used bytes of data-postgres-0 against its capacity. On openebs-hostpath both may be the whole node filesystem; Platform - Storage has the authoritative view.",
+      "description": "Disk space data-postgres-0 uses (du every 5 minutes, includes WAL) against its requested size, the gauge maximum. openebs-hostpath does not enforce the size, so a full gauge means the database outgrew its claim; Platform - Storage has the shared node disk.",
       "gridPos": {"x": 16, "y": 76, "w": 8, "h": 7},
       "datasource": {"type": "prometheus", "uid": "${metrics}"},
       "fieldConfig": {"defaults": {"unit": "bytes", "min": 0, "color": {"mode": "thresholds"}, "thresholds": {"mode": "percentage", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 80}, {"color": "red", "value": 90}]}}, "overrides": []},
       "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto", "minVizWidth": 75, "minVizHeight": 75},
-      "transformations": [{"id": "configFromData", "options": {"configRefId": "B", "mappings": [{"fieldName": "capacity", "handlerKey": "max"}]}}],
-      "targets": [{"refId": "A", "expr": "max(kubelet_volume_stats_used_bytes{namespace=\"ankilabs\",persistentvolumeclaim=\"data-postgres-0\"})", "legendFormat": "used"}, {"refId": "B", "expr": "max(kubelet_volume_stats_capacity_bytes{namespace=\"ankilabs\",persistentvolumeclaim=\"data-postgres-0\"})", "legendFormat": "capacity"}]
+      "transformations": [{"id": "configFromData", "options": {"configRefId": "B", "mappings": [{"fieldName": "requested", "handlerKey": "max"}]}}],
+      "targets": [{"refId": "A", "expr": "max(max by (namespace, persistentvolumeclaim) (max by (persistentvolume) (openebs_hostpath_volume_used_bytes) * on (persistentvolume) group_left (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info{namespace=\"ankilabs\",persistentvolumeclaim=\"data-postgres-0\"}, \"persistentvolume\", \"$1\", \"volumename\", \"(.+)\"))))", "legendFormat": "used"}, {"refId": "B", "expr": "max(kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace=\"ankilabs\",persistentvolumeclaim=\"data-postgres-0\"})", "legendFormat": "requested"}]
     },
     {
       "id": 42, "type": "row", "title": "Logs", "collapsed": true,

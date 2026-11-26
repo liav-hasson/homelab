@@ -300,8 +300,11 @@ The suite includes local JSON-contract/schema/unique-UID/layout checks
 tags and runbook links against this file's headings, exact per-folder
 provisioning and its sidecar settings, namespace/privacy/routing guards, `helm lint` and
 `helm template` for the PostgreSQL, LLM Proxy, Envoy and Cloudflare charts, monitoring-only `kustomize build`,
-`promtool check rules` for alerts **and all dashboard PromQL**, eighteen real
-Prometheus evaluator cases, and actual Promtail stdin/dry-run replay tests.
+`promtool check rules` for alerts **and all dashboard PromQL**, twenty-two real
+Prometheus evaluator cases, the node-exporter volume-usage sidecar's pinned
+privileges and one run of its script over a synthetic volume tree (checked
+with `promtool check metrics`; it needs `sh` and `du`), and actual Promtail
+stdin/dry-run replay tests.
 The checked-in dashboard schema is a focused provisioning contract, not the
 entire Grafana API schema.
 
@@ -342,6 +345,17 @@ python3 -c 'from pathlib import Path; import yaml; print(yaml.safe_dump(yaml.saf
   grep -E -A1 'FOLDER_ANNOTATION|foldersFromFilesStructure|allowUiUpdates'
 ```
 
+After changing the node-exporter values, render it the same way and check the
+DaemonSet: node-exporter has `--collector.textfile.directory=/run/textfile`
+and mounts it read-only; the `volume-usage` container mounts it writable,
+mounts `/var/openebs/local` read-only and keeps its security context:
+
+```sh
+python3 -c 'from pathlib import Path; import yaml; print(yaml.safe_dump(yaml.safe_load(Path("k8s/platform/monitoring/controllers/kube-prometheus-stack/release.yaml").read_text())["spec"]["values"]))' |
+  helm template kube-prometheus-stack oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack \
+    --version 69.8.2 --namespace monitoring --values - --show-only charts/prometheus-node-exporter/templates/daemonset.yaml
+```
+
 Inspect changed-file editor diagnostics as well; no editor Problems API is
 available to the command-line suite. No workflow, commit, image push or live
 deployment is part of these commands.
@@ -379,6 +393,10 @@ After an explicitly authorized rollout:
    port `/stats/prometheus`, selected for the platform/homelab-gateway proxy.
    Cloudflared already binds `:2000`; it now declares that named port and permits
    monitoring ingress only. No public admin Service/HTTPRoute is added.
+7. After the node-exporter pods restart with the volume-usage sidecar, the
+   Platform - Storage scan tiles show an age under 6 minutes, 0 errors and as
+   many volumes measured as bound claims, and the Volume inventory shows each
+   claim's own used bytes, far below the node disk size.
 
 ## Dashboards
 
@@ -473,20 +491,21 @@ ports stay internal; there is no public admin route. Target checks are under
 
 Read it top to bottom: headline numbers, then the **node disk**
 (node-exporter, authoritative for free space), **persistent volumes**
-(kube-state-metrics claims plus kubelet volume stats), **disk performance**,
-**application self-metrics** (Prometheus TSDB, PostgreSQL) and, collapsed, the
-OpenEBS provisioner logs.
+(per-volume usage from the node-exporter volume-usage sidecar, joined to
+kube-state-metrics claims), **disk performance**, **application self-metrics**
+(Prometheus TSDB, PostgreSQL) and, collapsed, the OpenEBS provisioner logs.
 
 - Every PVC is an `openebs-hostpath` directory on the node filesystem, so all
   volumes share one pool of free space and requested sizes are not enforced.
-  The per-volume bars show kubelet used bytes against the **requested** size,
-  not against the reported capacity (which can be the whole filesystem); over
-  100% means the volume outgrew its request, not that it is full.
-- kubelet stats for hostpath volumes may be missing or filesystem-wide. In the
-  Volume inventory, an empty Used cell is unknown, and a kubelet capacity equal
-  to the node disk size, or the same used bytes on every claim, means the
-  per-volume panels (and Total and Largest PVC) are not per volume: trust Disk
-  used and the application panels instead.
+  Volume usage is the disk space allocated to each volume directory, measured
+  with `du` every 5 minutes, so it moves in 5-minute steps (see
+  [Storage](#storage)). The per-volume bars divide it by the **requested** size:
+  over 100% means the volume outgrew its request, not that it is full.
+- The four scan tiles under Persistent volumes say whether those numbers are
+  current: scan age (red after 20 minutes), scan duration, directories `du`
+  could not fully read plus scan-file read errors, and volumes measured against
+  bound claims. Total PVC used counts every volume directory, including those
+  without a claim.
 - Days until full uses the 24h linear decline of free space; **Not filling**
   means free space did not shrink over 24h. The 3-day projection uses the
   alert's 6h trend. Short write bursts (image pulls, restores, compaction)
@@ -497,8 +516,8 @@ OpenEBS provisioner logs.
   then deletes the oldest blocks (retention block deletions, size) and keeps
   less than 7 days.
 
-Loki, MinIO, MongoDB and Redis expose no storage metrics; only their claims are
-shown. Incident steps are under [Storage](#storage).
+Loki, MinIO, MongoDB and Redis expose no storage metrics; their volume usage
+comes only from the scan. Incident steps are under [Storage](#storage).
 
 ### AnkiLabs Service Health
 
@@ -771,17 +790,24 @@ Investigate cause before changing resources, retries or timeouts.
 Use Platform - Storage. Every PVC is an `openebs-hostpath` directory under
 `/var/openebs/local` on the node filesystem, so all volumes share one pool of free
 space and requested PVC sizes are not enforced. The node filesystem panels are
-authoritative for free space; kubelet volume stats for hostpath volumes may be
-absent or filesystem-wide, so identical numbers across PVCs are not per-volume
-usage. Prometheus keeps 7 days or 8GB of TSDB data on a 10Gi claim, whichever
-limit is reached first; Alertmanager keeps silences on a 1Gi claim.
+authoritative for free space. kubelet volume stats report that whole filesystem
+for every hostpath claim, so no dashboard or alert reads them. Prometheus keeps
+7 days or 8GB of TSDB data on a 10Gi claim, whichever limit is reached first;
+Alertmanager keeps silences on a 1Gi claim.
 
 `NodeFilesystemLowSpace` fires below 15% free for 10 minutes and
 `NodeFilesystemFillingUp` when the 6-hour trend reaches zero within 3 days for
-an hour. Both route to the node receiver. Find the growing consumer first:
+an hour. `PersistentVolumeNearRequestedSize` fires when a claim's volume has
+used more than 90% of its requested size for 30 minutes; the volume keeps
+growing into the shared disk, so treat it as an early warning for that disk.
+`OpenEBSVolumeScanStale` fires when no volume scan newer than 20 minutes is
+scraped for 5 minutes. All four route to the node receiver.
+
+Find the growing consumer first:
 
 ```promql
-sort_desc(max by (namespace, persistentvolumeclaim) (delta(kubelet_volume_stats_used_bytes[24h])))
+sort_desc(delta((max by (persistentvolume) (openebs_hostpath_volume_used_bytes))[24h:5m]))
+kube_persistentvolumeclaim_info{volumename="VOLUME"}
 prometheus_tsdb_storage_blocks_bytes{namespace="monitoring"}
 pg_database_size_bytes{namespace="ankilabs"}
 ```
@@ -791,9 +817,71 @@ kubectl get pvc -A
 sudo du -sh /var/openebs/local/* | sort -h
 ```
 
-Loki, MinIO, MongoDB and Redis expose no scraped storage metrics; measure their
-directories on the node. Do not delete volume directories by hand: remove data
-through the owning application, or lower its retention and let it compact.
+Loki, MinIO, MongoDB and Redis expose no scraped storage metrics of their own;
+their volume usage comes only from the [volume scan](#per-volume-usage). Do not
+delete volume directories by hand: remove data through the owning application,
+or lower its retention and let it compact.
+
+### Per-volume usage
+
+The `volume-usage` sidecar in each node-exporter pod (kube-prometheus-stack
+release values, `prometheus-node-exporter.sidecars`) runs `du -skx` on every
+`/var/openebs/local/pvc-*` directory every 5 minutes at the lowest CPU and I/O
+priority. It writes `openebs-hostpath.prom` atomically into an in-memory
+directory that node-exporter's textfile collector reads:
+
+| Metric | Meaning |
+| --- | --- |
+| `openebs_hostpath_volume_used_bytes{persistentvolume}` | Disk space allocated to the volume directory |
+| `openebs_hostpath_volume_scan_errors` | Directories `du` could not fully read in the last scan |
+| `openebs_hostpath_volume_scan_duration_seconds` | Duration of the last scan |
+| `openebs_hostpath_volume_scan_timestamp_seconds` | Unix time the last scan finished |
+
+Dashboards join the volume name to its claim through kube-state-metrics, whose
+`volumename` label names the bound volume:
+
+```promql
+max by (namespace, persistentvolumeclaim) (
+  max by (persistentvolume) (openebs_hostpath_volume_used_bytes)
+  * on (persistentvolume) group_left (namespace, persistentvolumeclaim)
+  max by (namespace, persistentvolumeclaim, persistentvolume) (
+    label_replace(kube_persistentvolumeclaim_info, "persistentvolume", "$1", "volumename", "(.+)")
+  )
+)
+```
+
+Application dashboards filter `kube_persistentvolumeclaim_info` by their own
+namespace, so they never show another application's volumes.
+
+Caveats:
+
+- Values are up to 5 minutes old, plus the scrape interval. Short bursts
+  between scans are not seen.
+- Sizes are allocated blocks, as `df` and kubelet count them for real
+  filesystems: sparse files count only written blocks, and each small file at
+  least one block. `du` counts a file hard-linked inside one volume once.
+- `du` walks every file of every volume, so each scan costs metadata I/O that
+  grows with the file count; the scan duration tile shows it. The idle I/O class
+  takes effect only with an I/O scheduler that supports it (BFQ), not with
+  `none`, the usual NVMe default.
+- A directory `du` could not fully read still reports what it read, so its
+  value can be too low while `openebs_hostpath_volume_scan_errors` is above 0.
+- The sidecar runs as root with only the `DAC_READ_SEARCH` capability (read
+  any file, no write or ownership changes), on a read-only mount of
+  `/var/openebs/local` and a read-only root filesystem. It shares the
+  node-exporter pod's host network and host PID namespaces.
+- Directories without a claim (released volumes) appear in Total PVC used and
+  Volumes measured, but not in the per-claim panels.
+
+If the scan tiles are stale, empty or report errors, read the sidecar log and
+the current file. The textfile collector reports its own read failures as
+`node_textfile_scrape_error`:
+
+```sh
+kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus-node-exporter
+kubectl -n monitoring logs <node-exporter pod> -c volume-usage
+kubectl -n monitoring exec <node-exporter pod> -c volume-usage -- cat /run/textfile/openebs-hostpath.prom
+```
 
 ## QuizLabs
 

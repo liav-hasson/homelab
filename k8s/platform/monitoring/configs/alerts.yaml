@@ -54,6 +54,40 @@ spec:
             description: '{{ $labels.mountpoint }} on {{ $labels.instance }} will run out of space within 3 days if the 6-hour write trend continues. Short bursts such as restores or image pulls can trigger this; confirm the trend before acting.'
             dashboard_url: https://grafana.ankilabs.org/d/platform-storage
             runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
+    # Per-volume usage comes from the node-exporter volume-usage sidecar (du every 5 minutes),
+    # joined to its claim through kube-state-metrics; kubelet volume stats are filesystem-wide
+    # on openebs-hostpath.
+    - name: homelab.storage
+      rules:
+        - alert: PersistentVolumeNearRequestedSize
+          expr: |
+            max by (namespace, persistentvolumeclaim) (
+              max by (persistentvolume) (openebs_hostpath_volume_used_bytes)
+              * on (persistentvolume) group_left (namespace, persistentvolumeclaim)
+              max by (namespace, persistentvolumeclaim, persistentvolume) (label_replace(kube_persistentvolumeclaim_info, "persistentvolume", "$1", "volumename", "(.+)"))
+            )
+            / on (namespace, persistentvolumeclaim) max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes)
+            > 0.9
+          for: 30m
+          labels:
+            scope: nodes
+            severity: warning
+          annotations:
+            summary: A persistent volume uses more than 90% of its requested size.
+            description: '{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has used more than 90% of its requested size for 30 minutes. openebs-hostpath does not enforce the size, so it keeps writing into the shared node disk; find what grew, then remove data through the application, lower its retention or plan a larger claim.'
+            dashboard_url: https://grafana.ankilabs.org/d/platform-storage
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
+        - alert: OpenEBSVolumeScanStale
+          expr: time() - max(openebs_hostpath_volume_scan_timestamp_seconds) > 1200 or absent(openebs_hostpath_volume_scan_timestamp_seconds)
+          for: 5m
+          labels:
+            scope: nodes
+            severity: warning
+          annotations:
+            summary: Per-volume disk usage has not been measured for over 20 minutes.
+            description: The node-exporter volume-usage sidecar writes a scan every 5 minutes; none is fresh or none is scraped, so every per-volume usage panel and PersistentVolumeNearRequestedSize are stale. Check the sidecar log and node-exporter's textfile collector.
+            dashboard_url: https://grafana.ankilabs.org/d/platform-storage
+            runbook_url: https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#storage
     - name: homelab.pods
       rules:
         - alert: PodCrashLoopBackOff
