@@ -300,8 +300,9 @@ The suite includes local JSON-contract/schema/unique-UID/layout checks
 tags and runbook links against this file's headings, exact per-folder
 provisioning and its sidecar settings, namespace/privacy/routing guards, `helm lint` and
 `helm template` for the PostgreSQL, LLM Proxy, Envoy and Cloudflare charts, monitoring-only `kustomize build`,
-`promtool check rules` for alerts **and all dashboard PromQL**, twenty-two real
-Prometheus evaluator cases, the node-exporter volume-usage sidecar's pinned
+`promtool check rules` for alerts **and all dashboard PromQL**, twenty-three real
+Prometheus evaluator cases, the Discord title/message templates rendered by
+Alertmanager's own `amtool` (see [Alerts](#alerts)), the node-exporter volume-usage sidecar's pinned
 privileges and one run of its script over a synthetic volume tree (checked
 with `promtool check metrics`; it needs `sh` and `du`), and actual Promtail
 stdin/dry-run replay tests.
@@ -309,9 +310,10 @@ The checked-in dashboard schema is a focused provisioning contract, not the
 entire Grafana API schema.
 
 Dependencies are Python with `tests/requirements.txt`, Helm, Kustomize,
-Prometheus' `promtool`, and the Promtail **3.5.1** binary corresponding to pinned
-chart **6.17.1**. Missing binaries fail explicitly, never silently skip. Supply
-`PROMTAIL_BIN`, `PROMTOOL_BIN`, `HELM_BIN` or `KUSTOMIZE_BIN` if needed. If a
+Prometheus' `promtool`, the Promtail **3.5.1** binary corresponding to pinned
+chart **6.17.1**, and `amtool` from Alertmanager **0.28.1**, the version
+kube-prometheus-stack 69.8.2 runs. Missing binaries fail explicitly, never silently skip. Supply
+`PROMTAIL_BIN`, `PROMTOOL_BIN`, `HELM_BIN`, `KUSTOMIZE_BIN` or `AMTOOL_BIN` if needed. If a
 missing-tool failure occurs, install only the missing tools before rerunning:
 
 ```sh
@@ -323,6 +325,9 @@ npm install --global markdownlint-cli2
 Obtain the appropriate Promtail 3.5.1 binary from the
 [official release](https://github.com/grafana/loki/releases/tag/v3.5.1) and set
 `PROMTAIL_BIN` to its absolute path. Do not silently substitute another agent.
+Likewise take `amtool` from the
+[Alertmanager 0.28.1 release](https://github.com/prometheus/alertmanager/releases/tag/v0.28.1)
+and set `AMTOOL_BIN`; template functions differ between Alertmanager versions.
 Also render the actual public Promtail chart to validate Helm's template-escape
 layer (the replay tests exercise the unwrapped collector pipeline):
 
@@ -384,7 +389,8 @@ After an explicitly authorized rollout:
    Inspect only synthetic traffic when checking that no query/parameter text,
    URLs, card content, prompts, Usage Codes or DSNs reach Loki.
 5. Confirm new application/database alerts reach the existing **POD Discord**
-   receiver, including their dashboard/runbook links. Namespace matcher strategy
+   receiver in the [message format](#alerts), including their dashboard/runbook
+   links. Namespace matcher strategy
    `None` is required because the config lives in `monitoring`, but alert labels
    retain `ankilabs`/`quizlabs`. Config selection stays restricted to the existing
    monitoring namespace/label. Node alerts still use the node receiver; unrelated
@@ -397,6 +403,120 @@ After an explicitly authorized rollout:
    Platform - Storage scan tiles show an age under 6 minutes, 0 errors and as
    many volumes measured as bound claims, and the Volume inventory shows each
    claim's own used bytes, far below the node disk size.
+
+## Alerts
+
+Rules live in `configs/alerts.yaml`; `configs/alertmanager-config.yaml` routes
+`scope=nodes` to the node Discord channel and `pods`, `applications`,
+`database` and `platform` to the pod channel. Everything else is discarded.
+
+### Discord message format
+
+Both receivers use the same title and message templates. A notification is one
+group: alerts with the same `alertname` and `namespace` (node alerts have no
+namespace, so one message covers every node). Alertmanager waits 30 seconds
+for related alerts before the first message, sends changes to a group at most
+every 5 minutes and repeats an unchanged firing group every 4 hours.
+
+Firing:
+
+```text
+Edge upstream failure · warning
+AnkiLabs API (/api) · since 18:49 UTC
+[Dashboard](https://grafana.ankilabs.org/d/ankilabs-service-health) · [Runbook](https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#requests)
+```
+
+Resolved:
+
+```text
+Resolved · Pod crash-looping
+ankilabs/api-gateway-0 (api-gateway) · lasted 12m 5s
+ankilabs/api-gateway-1 (api-gateway) · lasted 1h 2m 0s
+```
+
+- The title is the alert's `name` annotation and its severity, or
+  `Resolved ·` and the name. The embed color (red or green) also shows the
+  status.
+- Each line is one alert: its `subject` annotation and the UTC time it started
+  or how long it lasted. Members of a firing group that already recovered are
+  listed as `resolved, lasted …`.
+- At most 10 firing and 10 resolved lines are listed, followed by `and N more`,
+  which keeps messages far below Discord's 4096-character limit. Alertmanager
+  itself truncates longer titles (256) and messages.
+- The last line of a firing message links the first alert's dashboard and
+  runbook section. Descriptions, empty labels and Prometheus' internal source
+  URL are not sent. The message contains no emoji.
+
+`EdgeUpstreamFailure` names each Envoy route after its HTTPRoute rule through a
+`route` label: `AnkiLabs API (/api)`, `AnkiLabs web (/)`, `QuizLabs API (/api)`,
+`QuizLabs multiplayer (/socket.io)` and `QuizLabs web (/)`. An unmapped rule
+falls back to `<namespace>/<route> rule <index>`. AnkiLabs API failures link
+AnkiLabs - Service Health, other routes Platform - Delivery & Edge. When a rule
+is added to or reordered in `k8s/apps/*/httproute.yaml`, update the mapping in
+the alert; `tests/test_alert_notifications.py` fails until they match.
+
+### Add an alert
+
+1. Add the rule to the matching group in `configs/alerts.yaml` with labels
+   `scope` (`nodes`, `pods`, `applications`, `database` or `platform`) and
+   `severity` (`warning` or `critical`).
+2. Give it exactly these annotations:
+
+   | Annotation | Content |
+   | --- | --- |
+   | `name` | Short title in sentence case, at most 40 characters, such as `Pod restarting` |
+   | `subject` | What is affected, from labels, such as `'{{ $labels.namespace }}/{{ $labels.pod }}'`; add a value only when it helps, such as `'{{ $value \| humanizePercentage }} used'` |
+   | `description` | One sentence of at most 120 characters stating the condition; it is shown in Alertmanager and Grafana, not in Discord |
+   | `dashboard_url` | `https://grafana.ankilabs.org/d/<uid>` of the most useful dashboard |
+   | `runbook_url` | This file's URL with the anchor of the section that has the first steps |
+
+3. Put investigation steps in the runbook section, not in annotations, and add
+   the alert to the reference below.
+4. Add a positive and a negative case to `tests/rule-cases.yaml`. Its expected
+   annotations are filled from the rule; a case lists only annotations that use
+   `$value` or a conditional. Run the [local validation](#local-validation).
+
+To see a message in Discord without a real failure, send a short-lived test
+alert to Alertmanager from a machine with cluster access:
+
+```sh
+kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093:9093
+amtool --alertmanager.url=http://localhost:9093 alert add alertname=DiscordFormatTest \
+  scope=pods severity=warning namespace=monitoring \
+  --annotation=name='Discord format test' --annotation=subject='test alert' \
+  --annotation=dashboard_url=https://grafana.ankilabs.org/d/homelab-overview \
+  --annotation=runbook_url=https://github.com/liav-hasson/homelab/blob/main/k8s/platform/monitoring/runbook.md#alerts
+```
+
+The firing message arrives after the 30-second group wait. Repeat the command
+with `--end="$(date -u +%Y-%m-%dT%H:%M:%SZ)"` to resolve it; the resolved
+message follows within 5 minutes.
+
+### Alert reference
+
+| Alert | Discord name | Fires when | First checks |
+| --- | --- | --- | --- |
+| `NodeHighCPU` | Node CPU high | Node CPU above 90% for 5 minutes | Competing workloads before resizing ([Resources](#resources)) |
+| `NodeHighMemory` | Node memory high | Node memory above 90% for 5 minutes | Working sets and OOM events ([Resources](#resources)) |
+| `NodeFilesystemLowSpace` | Node disk low | Below 15% free for 10 minutes | The growing volume before deleting data; every openebs-hostpath volume shares this disk ([Storage](#storage)) |
+| `NodeFilesystemFillingUp` | Node disk filling up | The 6-hour trend fills the disk within 3 days, for an hour | Confirm the trend; restores and image pulls cause short bursts ([Storage](#storage)) |
+| `PersistentVolumeNearRequestedSize` | Volume near requested size | A claim uses over 90% of its request for 30 minutes | What grew; remove data through the application, lower retention or plan a larger claim ([Storage](#storage)) |
+| `OpenEBSVolumeScanStale` | Volume usage scan stale | No volume scan newer than 20 minutes for 5 minutes | Sidecar log and textfile collector; per-volume panels are stale ([Per-volume usage](#per-volume-usage)) |
+| `PodCrashLoopBackOff` | Pod crash-looping | A container in CrashLoopBackOff for 5 minutes | Container logs and last termination reason ([Resources](#resources)) |
+| `PodFrequentRestarts` | Pod restarting | 3 or more restarts in 15 minutes | Container logs and last termination reason ([Resources](#resources)) |
+| `AnkiLabsRequestFailure` | AnkiLabs request failure | A 5xx counter increased or first appeared | `request_id` and timestamps in namespace logs; a new scrape can expose an older failure ([Requests](#requests)) |
+| `AnkiLabsUpstreamFailure` | AnkiLabs lookup upstream failure | A gateway-to-lookup 5xx, timeout or unavailable counter increased or first appeared | Gateway and lookup logs by `request_id` before retrying ([Requests](#requests)) |
+| `AnkiLabsScrapeFailed` | AnkiLabs metrics scrape failing | A target failed scrapes for 3 minutes | Target error, named port, network policy, exporter credentials ([Telemetry](#telemetry)) |
+| `AnkiLabsExpectedTargetMissing` | AnkiLabs metrics target missing | No target for a service for 5 minutes | PodMonitor selection, desired replicas, the postgres-monitoring Secret ([Telemetry](#telemetry)) |
+| `AnkiLabsAIErrorRatioHigh` | AnkiLabs AI calls failing | Over 20% of an action's LLM calls failed in 15 minutes (3 or more calls) | Errors by code, especially `ai_timeout`, and LiteLLM's duration ([AI](#ai)) |
+| `ApplicationDeploymentUnavailable` | Deployment unavailable | No available replica for 5 minutes | Rollout conditions and namespace logs ([Resources](#resources)) |
+| `ApplicationOOMKilled` | Container OOM killed | Last termination was an OOM kill, with a recent restart | Memory against its limit before changing limits ([Resources](#resources)) |
+| `LookupPoolWaiting` | Lookup DB pool waiting | Pool waiters for 3 minutes | Pool size and acquire samples, PostgreSQL activity ([Database](#database)) |
+| `PostgreSQLUnavailable` | PostgreSQL unreachable | `pg_up` is 0 for 2 minutes | Exporter logs: outage, credentials or network policy; never use superuser credentials ([Database](#database)) |
+| `PostgreSQLCollectorFailure` | PostgreSQL collector failing | A collector failed for 3 minutes | Exporter logs, PostgreSQL version and monitoring grants ([Database](#database)) |
+| `QuizLabsMongoUnavailable` | QuizLabs MongoDB unavailable | No ready MongoDB replica for 5 minutes | Pod readiness, restarts, storage, quizlabs logs ([QuizLabs](#quizlabs)) |
+| `EdgeUpstreamFailure` | Edge upstream failure | Envoy connect-failure or timeout counter of an AnkiLabs or QuizLabs route increased or first appeared | Endpoint readiness and the application's logs; retries can hide user impact ([Requests](#requests)) |
+| `EdgeScrapeFailed` | Edge telemetry missing | Envoy or cloudflared metrics missing or failing for 5 minutes | Envoy's internal metrics port, cloudflared port 2000; never expose admin endpoints ([Telemetry](#telemetry)) |
 
 ## Dashboards
 
