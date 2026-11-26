@@ -10,9 +10,7 @@ spec:
     receiver: discard
     groupBy:
       - alertname
-      - instance
       - namespace
-      - pod
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 4h
@@ -35,28 +33,19 @@ spec:
             name: monitoring-discord-webhooks
             key: nodes-webhook-url
           sendResolved: true
-          title: '{{ .CommonLabels.alertname }} ({{ .Status }})'
-          message: |
-            {{- range .Alerts }}
-            Alert: {{ .Labels.alertname }}
-            Status: {{ .Status }}
-            Severity: {{ with .Labels.severity }}{{ . }}{{ else }}unknown{{ end }}
-            Namespace: {{ with .Labels.namespace }}{{ . }}{{ else }}n/a{{ end }}
-            Instance: {{ with .Labels.instance }}{{ . }}{{ else }}n/a{{ end }}
-            Pod: {{ with .Labels.pod }}{{ . }}{{ else }}n/a{{ end }}
-            Summary: {{ .Annotations.summary }}
-            Description: {{ .Annotations.description }}
-            Dashboard: {{ .Annotations.dashboard_url }}
-            {{- if .Annotations.runbook_url }}
-            Runbook: {{ .Annotations.runbook_url }}
-            {{- end }}
-            {{- if .GeneratorURL }}
-            Source: {{ .GeneratorURL }}
-            {{- end }}
-            {{- if .StartsAt }}
-            Started: {{ .StartsAt }}
-            {{- end }}
-
+          title: >-
+            {{ if eq .Status "firing" }}{{ or .CommonAnnotations.name .CommonLabels.alertname }} · {{ .CommonLabels.severity }}{{ else }}Resolved · {{ or .CommonAnnotations.name .CommonLabels.alertname }}{{ end }}
+          message: |-
+            {{ if eq .Status "firing" -}}
+            {{ range $i, $alert := .Alerts.Firing }}{{ if lt $i 10 }}{{ or $alert.Annotations.subject $alert.Labels.alertname }} · since {{ $alert.StartsAt | tz "UTC" | date "15:04" }} UTC
+            {{ end }}{{ end }}{{ if gt (len .Alerts.Firing) 10 }}and {{ slice .Alerts.Firing 10 | len }} more
+            {{ end }}{{ range $i, $alert := .Alerts.Resolved }}{{ if lt $i 10 }}{{ or $alert.Annotations.subject $alert.Labels.alertname }} · resolved, lasted {{ humanizeDuration ($alert.EndsAt.Sub $alert.StartsAt) }}
+            {{ end }}{{ end }}{{ if gt (len .Alerts.Resolved) 10 }}and {{ slice .Alerts.Resolved 10 | len }} more resolved
+            {{ end }}{{ with index .Alerts.Firing 0 }}[Dashboard]({{ .Annotations.dashboard_url }}) · [Runbook]({{ .Annotations.runbook_url }}){{ end }}
+            {{- else -}}
+            {{ range $i, $alert := .Alerts.Resolved }}{{ if lt $i 10 }}{{ if $i }}
+            {{ end }}{{ or $alert.Annotations.subject $alert.Labels.alertname }} · lasted {{ humanizeDuration ($alert.EndsAt.Sub $alert.StartsAt) }}{{ end }}{{ end }}{{ if gt (len .Alerts.Resolved) 10 }}
+            and {{ slice .Alerts.Resolved 10 | len }} more{{ end }}
             {{- end }}
     - name: pods-discord
       discordConfigs:
@@ -64,26 +53,17 @@ spec:
             name: monitoring-discord-webhooks
             key: pods-webhook-url
           sendResolved: true
-          title: '{{ .CommonLabels.alertname }} ({{ .Status }})'
-          message: |
-            {{- range .Alerts }}
-            Alert: {{ .Labels.alertname }}
-            Status: {{ .Status }}
-            Severity: {{ with .Labels.severity }}{{ . }}{{ else }}unknown{{ end }}
-            Namespace: {{ with .Labels.namespace }}{{ . }}{{ else }}n/a{{ end }}
-            Instance: {{ with .Labels.instance }}{{ . }}{{ else }}n/a{{ end }}
-            Pod: {{ with .Labels.pod }}{{ . }}{{ else }}n/a{{ end }}
-            Summary: {{ .Annotations.summary }}
-            Description: {{ .Annotations.description }}
-            Dashboard: {{ .Annotations.dashboard_url }}
-            {{- if .Annotations.runbook_url }}
-            Runbook: {{ .Annotations.runbook_url }}
-            {{- end }}
-            {{- if .GeneratorURL }}
-            Source: {{ .GeneratorURL }}
-            {{- end }}
-            {{- if .StartsAt }}
-            Started: {{ .StartsAt }}
-            {{- end }}
-
+          title: >-
+            {{ if eq .Status "firing" }}{{ or .CommonAnnotations.name .CommonLabels.alertname }} · {{ .CommonLabels.severity }}{{ else }}Resolved · {{ or .CommonAnnotations.name .CommonLabels.alertname }}{{ end }}
+          message: |-
+            {{ if eq .Status "firing" -}}
+            {{ range $i, $alert := .Alerts.Firing }}{{ if lt $i 10 }}{{ or $alert.Annotations.subject $alert.Labels.alertname }} · since {{ $alert.StartsAt | tz "UTC" | date "15:04" }} UTC
+            {{ end }}{{ end }}{{ if gt (len .Alerts.Firing) 10 }}and {{ slice .Alerts.Firing 10 | len }} more
+            {{ end }}{{ range $i, $alert := .Alerts.Resolved }}{{ if lt $i 10 }}{{ or $alert.Annotations.subject $alert.Labels.alertname }} · resolved, lasted {{ humanizeDuration ($alert.EndsAt.Sub $alert.StartsAt) }}
+            {{ end }}{{ end }}{{ if gt (len .Alerts.Resolved) 10 }}and {{ slice .Alerts.Resolved 10 | len }} more resolved
+            {{ end }}{{ with index .Alerts.Firing 0 }}[Dashboard]({{ .Annotations.dashboard_url }}) · [Runbook]({{ .Annotations.runbook_url }}){{ end }}
+            {{- else -}}
+            {{ range $i, $alert := .Alerts.Resolved }}{{ if lt $i 10 }}{{ if $i }}
+            {{ end }}{{ or $alert.Annotations.subject $alert.Labels.alertname }} · lasted {{ humanizeDuration ($alert.EndsAt.Sub $alert.StartsAt) }}{{ end }}{{ end }}{{ if gt (len .Alerts.Resolved) 10 }}
+            and {{ slice .Alerts.Resolved 10 | len }} more{{ end }}
             {{- end }}
